@@ -110,7 +110,8 @@ Interfaz web interactiva para navegar y utilizar todos los agentes.
 
 **Características:**
 - Catálogo visual de todos los agentes con tarjetas organizadas
-- Modal con contenido completo de cada agente
+- **Buscador semántico** con keywords inteligentes
+- Modal con contenido completo de cada agente (contenido real de los .txt)
 - Botón copy-to-clipboard para copiar configuraciones directamente
 - Filtros por pack, categoría y plataforma
 - Diagramas de workflow sugeridos
@@ -118,12 +119,32 @@ Interfaz web interactiva para navegar y utilizar todos los agentes.
 - Tema oscuro/claro
 - Diseño responsive
 
+**Buscador Semántico:**
+
+El buscador encuentra agentes por conceptos relacionados, no solo por nombre:
+
+| Búsqueda | Agentes que encuentra |
+|----------|----------------------|
+| `rapidez`, `optimizacion` | Performance, Refactor, SRE, Capacity |
+| `hacking`, `seguridad` | Ethical Hacker, Threat Modeling, Security Testing |
+| `testing`, `pruebas`, `qa` | Test Strategy, Bug Hunter, Web QA, Mobile QA |
+| `documentador`, `readme`, `docs` | Documentador Agent, Docs & Knowledge |
+| `devops`, `pipeline`, `cicd` | Platform-DevOps, GitOps CI-CD, todos los CI-CD |
+| `incidente`, `postmortem` | Incident Commander, Postmortem & Learning |
+| `arquitectura`, `microservicios` | Web/Mobile/Cloud Architecture |
+| `frontend`, `ui`, `componentes` | Frontend Web, Mobile UI, Design System |
+| `backend`, `api`, `bff` | Web BFF-Backend, Cloud Architecture |
+| `costo`, `ahorro`, `finops` | Capacity & Cost Governance |
+
+También busca en el **contenido completo** del agente.
+
 **Cómo usar:**
 1. Abre `web/index.html` en tu navegador
-2. Explora los agentes usando los filtros
-3. Haz clic en una tarjeta para ver el contenido completo
-4. Usa el botón "Copy to Clipboard" para copiar la configuración
-5. Pega el contenido en el System Prompt de tu agente en Claude Code
+2. Usa el buscador para encontrar agentes por concepto (ej: "testing", "hacking")
+3. Filtra por pack, categoría o plataforma si lo necesitas
+4. Haz clic en una tarjeta para ver el contenido completo
+5. Usa el botón "Copy to Clipboard" para copiar la configuración
+6. Pega el contenido en el System Prompt de tu agente en Claude Code
 
 ---
 

@@ -1183,7 +1183,7 @@
                 <div class="catalog-filters">
                     <div class="filter-group">
                         <label class="filter-label">Buscar</label>
-                        <input type="text" class="filter-input" id="search-input" placeholder="Nombre del agente...">
+                        <input type="text" class="filter-input" id="search-input" placeholder="Buscar: testing, hacking, optimizacion, docs...">
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Pack</label>
@@ -2695,6 +2695,181 @@ NO DEBE HACER
 - Enviar sin validar contenido` }
         ];
 
+        // Sistema de keywords semánticas para búsqueda inteligente
+        const searchKeywords = {
+            // Performance y optimización
+            'rapidez': ['Performance & Efficiency Agent', 'Refactor & Code Quality Agent', 'SRE Agent', 'Platform-DevOps Agent'],
+            'optimizacion': ['Performance & Efficiency Agent', 'Refactor & Code Quality Agent', 'Capacity & Cost Governance Agent', 'SRE Agent'],
+            'velocidad': ['Performance & Efficiency Agent', 'Refactor & Code Quality Agent', 'Web CI-CD Agent', 'Mobile CI-CD Agent'],
+            'performance': ['Performance & Efficiency Agent', 'SRE Agent', 'Observability Agent', 'Capacity & Cost Governance Agent'],
+            'rendimiento': ['Performance & Efficiency Agent', 'SRE Agent', 'Observability Agent'],
+            'lento': ['Performance & Efficiency Agent', 'Refactor & Code Quality Agent', 'Observability Agent'],
+            'memoria': ['Performance & Efficiency Agent', 'Bug Hunter Agent', 'Observability Agent'],
+            'cache': ['Performance & Efficiency Agent', 'Web BFF-Backend Agent', 'Cloud Architecture Agent'],
+
+            // Seguridad y hacking
+            'hacking': ['Ethical Hacker & PenTest Advisor Agent', 'Threat Modeling Agent', 'Security Testing Integrator Agent', 'Cloud Security Agent', 'Mobile Security Agent'],
+            'seguridad': ['Ethical Hacker & PenTest Advisor Agent', 'Threat Modeling Agent', 'Security Testing Integrator Agent', 'Cloud Security Agent', 'Mobile Security Agent', 'License Reviewer & OSS Alternatives Agent'],
+            'security': ['Ethical Hacker & PenTest Advisor Agent', 'Threat Modeling Agent', 'Security Testing Integrator Agent', 'Cloud Security Agent', 'Mobile Security Agent'],
+            'pentest': ['Ethical Hacker & PenTest Advisor Agent', 'Security Testing Integrator Agent'],
+            'vulnerabilidad': ['Ethical Hacker & PenTest Advisor Agent', 'Threat Modeling Agent', 'Security Testing Integrator Agent', 'Bug Hunter Agent'],
+            'owasp': ['Ethical Hacker & PenTest Advisor Agent', 'Security Testing Integrator Agent', 'Web BFF-Backend Agent'],
+            'xss': ['Ethical Hacker & PenTest Advisor Agent', 'Security Testing Integrator Agent', 'Frontend Web Agent'],
+            'sql injection': ['Ethical Hacker & PenTest Advisor Agent', 'Security Testing Integrator Agent', 'Web BFF-Backend Agent'],
+            'amenaza': ['Threat Modeling Agent', 'Ethical Hacker & PenTest Advisor Agent'],
+            'cifrado': ['Cloud Security Agent', 'Mobile Security Agent', 'Ethical Hacker & PenTest Advisor Agent'],
+            'autenticacion': ['Cloud Security Agent', 'Web BFF-Backend Agent', 'Mobile Security Agent'],
+
+            // Testing y QA
+            'testing': ['Test Strategy Agent', 'Bug Hunter Agent', 'Web QA Agent', 'Mobile QA Agent', 'Quality Gatekeeper Agent', 'Security Testing Integrator Agent'],
+            'test': ['Test Strategy Agent', 'Bug Hunter Agent', 'Web QA Agent', 'Mobile QA Agent', 'Quality Gatekeeper Agent'],
+            'pruebas': ['Test Strategy Agent', 'Bug Hunter Agent', 'Web QA Agent', 'Mobile QA Agent', 'Quality Gatekeeper Agent'],
+            'qa': ['Web QA Agent', 'Mobile QA Agent', 'Quality Gatekeeper Agent', 'Test Strategy Agent'],
+            'calidad': ['Quality Gatekeeper Agent', 'Test Strategy Agent', 'Refactor & Code Quality Agent', 'Bug Hunter Agent'],
+            'bug': ['Bug Hunter Agent', 'Test Strategy Agent', 'Quality Gatekeeper Agent'],
+            'error': ['Bug Hunter Agent', 'Observability Agent', 'Incident Commander Agent'],
+            'cobertura': ['Test Strategy Agent', 'Quality Gatekeeper Agent'],
+            'unitario': ['Test Strategy Agent', 'Bug Hunter Agent'],
+            'integracion': ['Test Strategy Agent', 'Desktop Integration Agent', 'Security Testing Integrator Agent'],
+            'e2e': ['Test Strategy Agent', 'Web QA Agent', 'Mobile QA Agent'],
+
+            // Documentación
+            'documentacion': ['Documentador Agent', 'Docs & Knowledge Agent', 'Release Manager Agent'],
+            'documentador': ['Documentador Agent', 'Docs & Knowledge Agent'],
+            'readme': ['Documentador Agent', 'Docs & Knowledge Agent'],
+            'docs': ['Documentador Agent', 'Docs & Knowledge Agent', 'Release Manager Agent'],
+            'adr': ['Documentador Agent', 'Docs & Knowledge Agent'],
+            'conocimiento': ['Docs & Knowledge Agent', 'Postmortem & Learning Agent'],
+            'wiki': ['Docs & Knowledge Agent', 'Documentador Agent'],
+            'guia': ['Documentador Agent', 'Docs & Knowledge Agent', 'Runbook & Operations Agent'],
+
+            // Arquitectura
+            'arquitectura': ['Web Architecture Agent', 'Mobile Architecture Agent', 'Desktop Architecture Agent', 'Cloud Architecture Agent', 'Technology Critic & Improvement Agent'],
+            'architecture': ['Web Architecture Agent', 'Mobile Architecture Agent', 'Desktop Architecture Agent', 'Cloud Architecture Agent'],
+            'diseño': ['Web Architecture Agent', 'Mobile Architecture Agent', 'Design System Steward Agent', 'Threat Modeling Agent'],
+            'modular': ['Web Architecture Agent', 'Mobile Architecture Agent', 'Refactor & Code Quality Agent'],
+            'microservicios': ['Cloud Architecture Agent', 'Web BFF-Backend Agent', 'Platform-DevOps Agent'],
+            'monolito': ['Cloud Architecture Agent', 'Refactor & Code Quality Agent'],
+            'patron': ['Web Architecture Agent', 'Refactor & Code Quality Agent', 'Design System Steward Agent'],
+
+            // DevOps y CI/CD
+            'devops': ['Platform-DevOps Agent', 'GitOps CI-CD Agent', 'Web CI-CD Agent', 'Mobile CI-CD Agent', 'Desktop CI-CD Agent'],
+            'cicd': ['GitOps CI-CD Agent', 'Web CI-CD Agent', 'Mobile CI-CD Agent', 'Desktop CI-CD Agent'],
+            'ci/cd': ['GitOps CI-CD Agent', 'Web CI-CD Agent', 'Mobile CI-CD Agent', 'Desktop CI-CD Agent'],
+            'pipeline': ['GitOps CI-CD Agent', 'Web CI-CD Agent', 'Mobile CI-CD Agent', 'Platform-DevOps Agent'],
+            'deploy': ['GitOps CI-CD Agent', 'Platform-DevOps Agent', 'Release Manager Agent', 'SRE Agent'],
+            'despliegue': ['GitOps CI-CD Agent', 'Platform-DevOps Agent', 'Release Manager Agent'],
+            'kubernetes': ['Platform-DevOps Agent', 'Cloud Architecture Agent', 'SRE Agent'],
+            'docker': ['Platform-DevOps Agent', 'Cloud Architecture Agent', 'GitOps CI-CD Agent'],
+            'terraform': ['Platform-DevOps Agent', 'Cloud Architecture Agent'],
+            'infraestructura': ['Platform-DevOps Agent', 'Cloud Architecture Agent', 'SRE Agent'],
+
+            // Observabilidad y monitoreo
+            'monitoreo': ['Observability Agent', 'SRE Agent', 'Incident Commander Agent'],
+            'logs': ['Observability Agent', 'SRE Agent', 'Bug Hunter Agent'],
+            'metricas': ['Observability Agent', 'SRE Agent', 'Data & Analytics Agent', 'Capacity & Cost Governance Agent'],
+            'alertas': ['Observability Agent', 'SRE Agent', 'Incident Commander Agent'],
+            'tracing': ['Observability Agent', 'Performance & Efficiency Agent'],
+            'dashboard': ['Observability Agent', 'Data & Analytics Agent'],
+
+            // Incidentes y operaciones
+            'incidente': ['Incident Commander Agent', 'Postmortem & Learning Agent', 'Runbook & Operations Agent', 'SRE Agent'],
+            'postmortem': ['Postmortem & Learning Agent', 'Incident Commander Agent', 'Docs & Knowledge Agent'],
+            'runbook': ['Runbook & Operations Agent', 'SRE Agent', 'Incident Commander Agent'],
+            'on-call': ['Incident Commander Agent', 'Runbook & Operations Agent', 'SRE Agent'],
+            'escalamiento': ['Incident Commander Agent', 'SRE Agent'],
+            'recuperacion': ['Incident Commander Agent', 'Chaos & Resilience Agent', 'SRE Agent'],
+            'disaster': ['Chaos & Resilience Agent', 'SRE Agent', 'Cloud Architecture Agent'],
+
+            // Resiliencia y chaos
+            'resiliencia': ['Chaos & Resilience Agent', 'SRE Agent', 'Cloud Architecture Agent'],
+            'chaos': ['Chaos & Resilience Agent', 'SRE Agent'],
+            'fallback': ['Chaos & Resilience Agent', 'Web BFF-Backend Agent', 'SRE Agent'],
+            'retry': ['Chaos & Resilience Agent', 'Web BFF-Backend Agent'],
+            'circuit breaker': ['Chaos & Resilience Agent', 'Web BFF-Backend Agent'],
+
+            // Costos
+            'costo': ['Capacity & Cost Governance Agent', 'Cloud Architecture Agent', 'Technology Critic & Improvement Agent'],
+            'presupuesto': ['Capacity & Cost Governance Agent'],
+            'ahorro': ['Capacity & Cost Governance Agent', 'Performance & Efficiency Agent'],
+            'finops': ['Capacity & Cost Governance Agent', 'Cloud Architecture Agent'],
+
+            // Frontend y UI
+            'frontend': ['Frontend Web Agent', 'Mobile UI Agent', 'Design System Steward Agent', 'Web Accessibility Agent'],
+            'ui': ['Frontend Web Agent', 'Mobile UI Agent', 'Design System Steward Agent'],
+            'ux': ['Frontend Web Agent', 'Mobile UI Agent', 'Web Product-Discovery Agent', 'Web Accessibility Agent'],
+            'componentes': ['Frontend Web Agent', 'Design System Steward Agent', 'Mobile UI Agent'],
+            'react': ['Frontend Web Agent', 'Design System Steward Agent'],
+            'css': ['Frontend Web Agent', 'Design System Steward Agent', 'Web Accessibility Agent'],
+            'accesibilidad': ['Web Accessibility Agent', 'Frontend Web Agent', 'Mobile UI Agent'],
+            'a11y': ['Web Accessibility Agent', 'Frontend Web Agent'],
+            'responsive': ['Frontend Web Agent', 'Mobile UI Agent', 'Web Accessibility Agent'],
+
+            // Backend y API
+            'backend': ['Web BFF-Backend Agent', 'Cloud Architecture Agent', 'Platform-DevOps Agent'],
+            'api': ['Web BFF-Backend Agent', 'Cloud Architecture Agent', 'Documentador Agent'],
+            'bff': ['Web BFF-Backend Agent'],
+            'rest': ['Web BFF-Backend Agent', 'Documentador Agent'],
+            'graphql': ['Web BFF-Backend Agent', 'Cloud Architecture Agent'],
+            'base de datos': ['Web BFF-Backend Agent', 'Cloud Architecture Agent', 'Performance & Efficiency Agent'],
+            'sql': ['Web BFF-Backend Agent', 'Ethical Hacker & PenTest Advisor Agent'],
+
+            // Mobile
+            'mobile': ['Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile Data Agent', 'Mobile QA Agent', 'Mobile CI-CD Agent', 'Mobile Security Agent'],
+            'android': ['Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile CI-CD Agent'],
+            'ios': ['Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile CI-CD Agent'],
+            'app': ['Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile Data Agent'],
+            'offline': ['Mobile Data Agent', 'Mobile Architecture Agent'],
+
+            // Desktop
+            'desktop': ['Desktop Architecture Agent', 'Desktop Integration Agent', 'Desktop CI-CD Agent'],
+            'electron': ['Desktop Architecture Agent', 'Desktop Integration Agent'],
+            'nativo': ['Desktop Architecture Agent', 'Mobile Architecture Agent'],
+
+            // Analytics y datos
+            'analytics': ['Data & Analytics Agent', 'Observability Agent', 'Web Product-Discovery Agent'],
+            'datos': ['Data & Analytics Agent', 'Mobile Data Agent', 'Observability Agent'],
+            'eventos': ['Data & Analytics Agent', 'Observability Agent'],
+            'tracking': ['Data & Analytics Agent', 'Web Product-Discovery Agent'],
+            'metricas negocio': ['Data & Analytics Agent', 'Web Product-Discovery Agent'],
+
+            // Producto
+            'producto': ['Web Product-Discovery Agent', 'Technology Critic & Improvement Agent', 'Release Manager Agent'],
+            'discovery': ['Web Product-Discovery Agent', 'Technology Critic & Improvement Agent'],
+            'feature': ['Web Product-Discovery Agent', 'Release Manager Agent', 'Quality Gatekeeper Agent'],
+            'release': ['Release Manager Agent', 'GitOps CI-CD Agent', 'Quality Gatekeeper Agent'],
+            'version': ['Release Manager Agent', 'GitOps CI-CD Agent'],
+            'changelog': ['Release Manager Agent', 'Documentador Agent'],
+
+            // Refactoring y código
+            'refactor': ['Refactor & Code Quality Agent', 'Technology Critic & Improvement Agent', 'Bug Hunter Agent'],
+            'codigo': ['Refactor & Code Quality Agent', 'Bug Hunter Agent', 'Quality Gatekeeper Agent'],
+            'deuda tecnica': ['Refactor & Code Quality Agent', 'Technology Critic & Improvement Agent'],
+            'clean code': ['Refactor & Code Quality Agent', 'Quality Gatekeeper Agent'],
+            'solid': ['Refactor & Code Quality Agent', 'Web Architecture Agent'],
+            'duplicado': ['Refactor & Code Quality Agent', 'Bug Hunter Agent'],
+
+            // Licencias y legal
+            'licencia': ['License Reviewer & OSS Alternatives Agent'],
+            'open source': ['License Reviewer & OSS Alternatives Agent', 'Technology Critic & Improvement Agent'],
+            'dependencia': ['License Reviewer & OSS Alternatives Agent', 'Technology Critic & Improvement Agent'],
+            'legal': ['License Reviewer & OSS Alternatives Agent'],
+
+            // Design System
+            'design system': ['Design System Steward Agent', 'Frontend Web Agent'],
+            'tokens': ['Design System Steward Agent', 'Frontend Web Agent'],
+            'estilo': ['Design System Steward Agent', 'Frontend Web Agent', 'Refactor & Code Quality Agent'],
+
+            // Condo específicos
+            'condo': ['Financial Rules & Billing Agent', 'Payments Integration & Reconciliation Agent', 'Residents Portal Agent', 'Condo Mobile Resident Agent', 'Admin Dashboard Agent', 'Notifications & Comms Agent'],
+            'gastos comunes': ['Financial Rules & Billing Agent'],
+            'pagos': ['Payments Integration & Reconciliation Agent', 'Financial Rules & Billing Agent'],
+            'residentes': ['Residents Portal Agent', 'Condo Mobile Resident Agent', 'Notifications & Comms Agent'],
+            'condominio': ['Financial Rules & Billing Agent', 'Payments Integration & Reconciliation Agent', 'Residents Portal Agent'],
+            'facturacion': ['Financial Rules & Billing Agent', 'Payments Integration & Reconciliation Agent'],
+            'conciliacion': ['Payments Integration & Reconciliation Agent']
+        };
+
         const kits = {
             startup: {
                 title: 'Startup (1-5 ingenieros)',
@@ -2987,20 +3162,60 @@ NO DEBE HACER
         }
 
         function filterAgents() {
-            const search = document.getElementById('search-input').value.toLowerCase();
+            const search = document.getElementById('search-input').value.toLowerCase().trim();
             const pack = document.getElementById('pack-filter').value;
             const category = document.getElementById('category-filter').value;
             const platform = document.getElementById('platform-filter').value;
 
             const filtered = agents.filter(a => {
-                const matchSearch = a.name.toLowerCase().includes(search);
+                // Búsqueda por nombre
+                const matchName = a.name.toLowerCase().includes(search);
+
+                // Búsqueda por keywords semánticas
+                let matchKeyword = false;
+                if (search) {
+                    // Buscar en todas las keywords que contengan el término de búsqueda
+                    for (const [keyword, agentNames] of Object.entries(searchKeywords)) {
+                        if (keyword.includes(search) || search.includes(keyword)) {
+                            if (agentNames.includes(a.name)) {
+                                matchKeyword = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Búsqueda en el contenido del config
+                const matchConfig = search ? a.config.toLowerCase().includes(search) : false;
+
+                // Match si coincide nombre, keyword o contenido
+                const matchSearch = !search || matchName || matchKeyword || matchConfig;
+
                 const matchPack = !pack || a.pack === pack;
                 const matchCategory = !category || a.category === category;
                 const matchPlatform = !platform || a.platform === platform || a.platform === 'multi';
                 return matchSearch && matchPack && matchCategory && matchPlatform;
             });
 
+            // Mostrar contador de resultados
+            updateSearchResults(filtered.length, search);
             renderAgents(filtered);
+        }
+
+        function updateSearchResults(count, search) {
+            let resultsDiv = document.getElementById('search-results-count');
+            if (!resultsDiv) {
+                resultsDiv = document.createElement('div');
+                resultsDiv.id = 'search-results-count';
+                resultsDiv.style.cssText = 'color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;';
+                document.querySelector('.catalog-filters').appendChild(resultsDiv);
+            }
+            if (search) {
+                resultsDiv.textContent = `${count} agente${count !== 1 ? 's' : ''} encontrado${count !== 1 ? 's' : ''}`;
+                resultsDiv.style.display = 'block';
+            } else {
+                resultsDiv.style.display = 'none';
+            }
         }
 
         // Render Kits
