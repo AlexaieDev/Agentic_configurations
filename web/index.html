@@ -1,0 +1,3221 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Workflow Selector</title>
+    <style>
+        /* ==================== CSS VARIABLES ==================== */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: #60a5fa;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.2s ease;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ==================== RESET & BASE ==================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ==================== LAYOUT ==================== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ==================== HEADER ==================== */
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--accent);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-primary);
+        }
+
+        /* ==================== NAVIGATION ==================== */
+        nav {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .nav-links a {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ==================== SECTIONS ==================== */
+        section {
+            padding: 3rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* ==================== WIZARD ==================== */
+        #wizard {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .wizard-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .wizard-step.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .wizard-step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .wizard-step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .wizard-step.active .wizard-step-number,
+        .wizard-step.completed .wizard-step-number {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .wizard-content {
+            min-height: 300px;
+        }
+
+        .wizard-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .wizard-option {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .wizard-option:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .wizard-option.selected {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .wizard-option-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .wizard-option-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .wizard-option-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .wizard-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ==================== RESULT ==================== */
+        .wizard-result {
+            display: none;
+            text-align: center;
+        }
+
+        .wizard-result.show {
+            display: block;
+        }
+
+        .result-workflow {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        /* ==================== WORKFLOWS ==================== */
+        .workflows-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .workflow-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .workflow-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .workflow-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .workflow-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .workflow-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .workflow-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .workflow-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .workflow-node {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .workflow-node:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .workflow-arrow {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .workflow-signals {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .workflow-signals-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .workflow-signals-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .signal-tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        /* ==================== CATALOG ==================== */
+        .catalog-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .filter-select,
+        .filter-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .agent-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .agent-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .agent-tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .tag-pack {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+
+        .tag-category {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .tag-platform {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* ==================== KITS ==================== */
+        .kits-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .kit-tab {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .kit-tab:hover {
+            border-color: var(--accent);
+        }
+
+        .kit-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .kit-content {
+            display: none;
+        }
+
+        .kit-content.active {
+            display: block;
+        }
+
+        .kit-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .kit-section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kit-agents {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .kit-agent {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+        }
+
+        .kit-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-required {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .badge-recommended {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .badge-optional {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        /* ==================== TOOLTIP ==================== */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            max-width: 300px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: none;
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tooltip-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== FOOTER ==================== */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .workflows-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wizard-options {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* ==================== CATEGORY COLORS ==================== */
+        .cat-architecture { background: rgba(139, 92, 246, 0.2); }
+        .cat-development { background: rgba(59, 130, 246, 0.2); }
+        .cat-quality { background: rgba(34, 197, 94, 0.2); }
+        .cat-security { background: rgba(239, 68, 68, 0.2); }
+        .cat-cloud { background: rgba(245, 158, 11, 0.2); }
+        .cat-transversal { background: rgba(236, 72, 153, 0.2); }
+        .cat-ops { background: rgba(20, 184, 166, 0.2); }
+
+        /* ==================== ANIMATIONS ==================== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* Hidden utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ==================== MODAL ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .modal-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .modal-close {
+            background: var(--bg-tertiary);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-config {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-primary);
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        .copy-btn .copy-icon {
+            font-size: 1rem;
+        }
+
+        /* Clickable indicator */
+        .agent-card::after,
+        .workflow-node::after,
+        .kit-agent::after {
+            content: 'Click para ver';
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .agent-card:hover::after {
+            opacity: 1;
+        }
+
+        .agent-card {
+            position: relative;
+        }
+
+        .kit-agent {
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .kit-agent:hover {
+            background: var(--accent);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <h1>Agent Workflow Selector</h1>
+            </div>
+            <div class="header-stats">
+                <div class="stat">
+                    <span class="stat-value">4</span>
+                    <span>Packs</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">50+</span>
+                    <span>Agentes</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">10</span>
+                    <span>Workflows</span>
+                </div>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                <svg class="sun-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <ul class="nav-links">
+                <li><a href="#wizard-section" class="active">Wizard</a></li>
+                <li><a href="#workflows-section">Workflows</a></li>
+                <li><a href="#catalog-section">Catalogo</a></li>
+                <li><a href="#kits-section">Kits por Madurez</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Wizard Section -->
+        <section id="wizard-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Encuentra el Workflow Correcto</h2>
+                    <p>Responde 3 preguntas para obtener la secuencia de agentes recomendada</p>
+                </div>
+
+                <div id="wizard">
+                    <div class="wizard-steps">
+                        <div class="wizard-step active" data-step="1">
+                            <span class="wizard-step-number">1</span>
+                            <span>Tipo de Problema</span>
+                        </div>
+                        <div class="wizard-step" data-step="2">
+                            <span class="wizard-step-number">2</span>
+                            <span>Plataforma</span>
+                        </div>
+                        <div class="wizard-step" data-step="3">
+                            <span class="wizard-step-number">3</span>
+                            <span>Tamano Equipo</span>
+                        </div>
+                    </div>
+
+                    <div class="wizard-content">
+                        <!-- Step 1: Problem Type -->
+                        <div class="wizard-page active" data-page="1">
+                            <div class="wizard-options" id="problem-options">
+                                <div class="wizard-option" data-value="bug">
+                                    <div class="wizard-option-icon">🐛</div>
+                                    <div class="wizard-option-title">Bug/Regresion</div>
+                                    <div class="wizard-option-desc">Error en codigo existente</div>
+                                </div>
+                                <div class="wizard-option" data-value="feature">
+                                    <div class="wizard-option-icon">✨</div>
+                                    <div class="wizard-option-title">Nueva Feature</div>
+                                    <div class="wizard-option-desc">Implementar funcionalidad nueva</div>
+                                </div>
+                                <div class="wizard-option" data-value="debt">
+                                    <div class="wizard-option-icon">🔧</div>
+                                    <div class="wizard-option-title">Deuda Tecnica</div>
+                                    <div class="wizard-option-desc">Refactor, duplicacion</div>
+                                </div>
+                                <div class="wizard-option" data-value="performance">
+                                    <div class="wizard-option-icon">⚡</div>
+                                    <div class="wizard-option-title">Performance/Costos</div>
+                                    <div class="wizard-option-desc">Latencia, cloud cost</div>
+                                </div>
+                                <div class="wizard-option" data-value="cicd">
+                                    <div class="wizard-option-icon">🔄</div>
+                                    <div class="wizard-option-title">CI/CD Lento</div>
+                                    <div class="wizard-option-desc">Pipelines, flakiness</div>
+                                </div>
+                                <div class="wizard-option" data-value="tech">
+                                    <div class="wizard-option-icon">🔬</div>
+                                    <div class="wizard-option-title">Seleccion Tecnologia</div>
+                                    <div class="wizard-option-desc">Evaluar frameworks</div>
+                                </div>
+                                <div class="wizard-option" data-value="architecture">
+                                    <div class="wizard-option-icon">🏗️</div>
+                                    <div class="wizard-option-title">Arquitectura</div>
+                                    <div class="wizard-option-desc">Diseno o rediseno</div>
+                                </div>
+                                <div class="wizard-option" data-value="incident">
+                                    <div class="wizard-option-icon">🚨</div>
+                                    <div class="wizard-option-title">Incidente Produccion</div>
+                                    <div class="wizard-option-desc">Problema critico en prod</div>
+                                </div>
+                                <div class="wizard-option" data-value="sre">
+                                    <div class="wizard-option-icon">📊</div>
+                                    <div class="wizard-option-title">Operaciones/SRE</div>
+                                    <div class="wizard-option-desc">Confiabilidad, SLOs</div>
+                                </div>
+                                <div class="wizard-option" data-value="compliance">
+                                    <div class="wizard-option-icon">📋</div>
+                                    <div class="wizard-option-title">Compliance/Licencias</div>
+                                    <div class="wizard-option-desc">Auditoria, licencias OSS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Platform -->
+                        <div class="wizard-page" data-page="2">
+                            <div class="wizard-options" id="platform-options">
+                                <div class="wizard-option" data-value="web">
+                                    <div class="wizard-option-icon">🌐</div>
+                                    <div class="wizard-option-title">Web</div>
+                                    <div class="wizard-option-desc">Aplicaciones web, SPA, SSR</div>
+                                </div>
+                                <div class="wizard-option" data-value="mobile">
+                                    <div class="wizard-option-icon">📱</div>
+                                    <div class="wizard-option-title">Mobile</div>
+                                    <div class="wizard-option-desc">iOS, Android, React Native</div>
+                                </div>
+                                <div class="wizard-option" data-value="desktop">
+                                    <div class="wizard-option-icon">🖥️</div>
+                                    <div class="wizard-option-title">Desktop</div>
+                                    <div class="wizard-option-desc">Electron, apps nativas</div>
+                                </div>
+                                <div class="wizard-option" data-value="cloud">
+                                    <div class="wizard-option-icon">☁️</div>
+                                    <div class="wizard-option-title">Cloud/Backend</div>
+                                    <div class="wizard-option-desc">APIs, microservicios</div>
+                                </div>
+                                <div class="wizard-option" data-value="multi">
+                                    <div class="wizard-option-icon">🔗</div>
+                                    <div class="wizard-option-title">Multi-plataforma</div>
+                                    <div class="wizard-option-desc">Varias plataformas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Team Size -->
+                        <div class="wizard-page" data-page="3">
+                            <div class="wizard-options" id="team-options">
+                                <div class="wizard-option" data-value="startup">
+                                    <div class="wizard-option-icon">🚀</div>
+                                    <div class="wizard-option-title">Startup (1-5)</div>
+                                    <div class="wizard-option-desc">Equipo pequeno, velocidad maxima</div>
+                                </div>
+                                <div class="wizard-option" data-value="scaleup">
+                                    <div class="wizard-option-icon">📈</div>
+                                    <div class="wizard-option-title">Scale-up (6-20)</div>
+                                    <div class="wizard-option-desc">Crecimiento, consistencia</div>
+                                </div>
+                                <div class="wizard-option" data-value="multisquad">
+                                    <div class="wizard-option-icon">👥</div>
+                                    <div class="wizard-option-title">Multi-squad (21-80)</div>
+                                    <div class="wizard-option-desc">Estandarizacion, templates</div>
+                                </div>
+                                <div class="wizard-option" data-value="enterprise">
+                                    <div class="wizard-option-icon">🏢</div>
+                                    <div class="wizard-option-title">Enterprise (80+)</div>
+                                    <div class="wizard-option-desc">Gobernanza, compliance</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Result -->
+                        <div class="wizard-result" id="wizard-result">
+                            <h3 style="color: var(--success); margin-bottom: 1rem;">Workflow Recomendado</h3>
+                            <div class="result-workflow">
+                                <div class="result-title" id="result-title"></div>
+                                <div class="workflow-flow" id="result-flow"></div>
+                                <div class="workflow-signals" style="margin-top: 1.5rem;">
+                                    <div class="workflow-signals-title">Senales para usar este workflow:</div>
+                                    <div class="workflow-signals-list" id="result-signals"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-nav">
+                        <button class="btn btn-secondary" id="prev-btn" disabled onclick="prevStep()">
+                            ← Anterior
+                        </button>
+                        <button class="btn btn-primary" id="next-btn" disabled onclick="nextStep()">
+                            Siguiente →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflows Section -->
+        <section id="workflows-section" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Workflows Disponibles</h2>
+                    <p>10 flujos de trabajo predefinidos para los escenarios mas comunes</p>
+                </div>
+
+                <div class="workflows-grid" id="workflows-container">
+                    <!-- Workflows will be injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Catalog Section -->
+        <section id="catalog-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Catalogo de Agentes</h2>
+                    <p>Explora todos los agentes disponibles</p>
+                </div>
+
+                <div class="catalog-filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Buscar</label>
+                        <input type="text" class="filter-input" id="search-input" placeholder="Nombre del agente...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Pack</label>
+                        <select class="filter-select" id="pack-filter">
+                            <option value="">Todos los packs</option>
+                            <option value="v2.5">Claude Code v2.5 ULTRA</option>
+                            <option value="condo">Condo Admin 1.0</option>
+                            <option value="squad">Squad Operativo 1.0</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Categoria</label>
+                        <select class="filter-select" id="category-filter">
+                            <option value="">Todas las categorias</option>
+                            <option value="architecture">Arquitectura</option>
+                            <option value="development">Desarrollo</option>
+                            <option value="quality">Quality/Testing</option>
+                            <option value="security">Seguridad</option>
+                            <option value="cloud">Cloud/Ops</option>
+                            <option value="transversal">Transversal</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Plataforma</label>
+                        <select class="filter-select" id="platform-filter">
+                            <option value="">Todas las plataformas</option>
+                            <option value="web">Web</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="cloud">Cloud</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="agents-grid" id="agents-container">
+                    <!-- Agents will be injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Kits Section -->
+        <section id="kits-section" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Kits por Madurez</h2>
+                    <p>Agentes recomendados segun el tamano de tu equipo</p>
+                </div>
+
+                <div class="kits-tabs">
+                    <button class="kit-tab active" data-kit="startup">Startup (1-5)</button>
+                    <button class="kit-tab" data-kit="scaleup">Scale-up (6-20)</button>
+                    <button class="kit-tab" data-kit="multisquad">Multi-squad (21-80)</button>
+                    <button class="kit-tab" data-kit="enterprise">Enterprise (80+)</button>
+                </div>
+
+                <div id="kits-content">
+                    <!-- Kits will be injected by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-desc"></div>
+    </div>
+
+    <!-- Agent Modal -->
+    <div class="modal-overlay" id="agent-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
+                    <div class="modal-icon" id="modal-icon"></div>
+                    <div>
+                        <div class="modal-title" id="modal-title"></div>
+                        <div class="modal-subtitle" id="modal-subtitle"></div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre class="modal-config" id="modal-config"></pre>
+            </div>
+            <div class="modal-footer">
+                <button class="copy-btn" id="copy-btn" onclick="copyConfig()">
+                    <span class="copy-icon">📋</span>
+                    <span class="copy-text">Copiar Configuracion</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>Agent Workflow Selector - Basado en Claude Code Agent Packs v2.5 ULTRA</p>
+        </div>
+    </footer>
+
+    <script>
+        // ==================== DATA ====================
+        const workflows = [
+            {
+                id: 'bug',
+                title: 'Bugs y Regresiones',
+                icon: '🐛',
+                color: 'cat-quality',
+                agents: ['Bug Hunter', 'Test Strategy', 'Refactor & Code Quality', 'CI/CD', 'Observability'],
+                signals: ['Incidentes repetidos', 'PRs que rompen otros', 'Falta test regresion']
+            },
+            {
+                id: 'feature',
+                title: 'Nueva Feature',
+                icon: '✨',
+                color: 'cat-development',
+                agents: ['Product-Discovery', 'Architecture', 'Dev (Frontend/Backend)', 'QA', 'CI/CD', 'Observability'],
+                signals: ['MVP requerido', 'Requisitos poco claros', 'Riesgo scope creep']
+            },
+            {
+                id: 'debt',
+                title: 'Deuda Tecnica',
+                icon: '🔧',
+                color: 'cat-transversal',
+                agents: ['Refactor & Code Quality', 'Test Strategy', 'DX Agent', 'Architecture'],
+                signals: ['Copiar-pegar frecuente', 'PRs grandes', 'Modulos sin limites']
+            },
+            {
+                id: 'performance',
+                title: 'Performance/Costos',
+                icon: '⚡',
+                color: 'cat-cloud',
+                agents: ['Observability', 'Performance & Efficiency', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
+                signals: ['Core Web Vitals bajos', 'Latencia alta', 'Costo cloud creciendo']
+            },
+            {
+                id: 'cicd',
+                title: 'CI/CD Lento',
+                icon: '🔄',
+                color: 'cat-ops',
+                agents: ['CI/CD Agent', 'Test Strategy', 'DX Agent', 'Cloud Security'],
+                signals: ['Pipelines >15min', 'Tests flaky', 'Configs dispares']
+            },
+            {
+                id: 'tech',
+                title: 'Seleccion Tecnologia',
+                icon: '🔬',
+                color: 'cat-architecture',
+                agents: ['Technology Critic', 'Architecture', 'Security', 'DX Agent', 'CI/CD templates'],
+                signals: ['Framework sprawl', 'Propuestas por moda', 'Stacks dispares']
+            },
+            {
+                id: 'architecture',
+                title: 'Arquitectura/Re-arquitectura',
+                icon: '🏗️',
+                color: 'cat-architecture',
+                agents: ['Product/UX', 'Architecture', 'API Contracts', 'Dev', 'QA', 'CI/CD', 'Observability'],
+                signals: ['Escalabilidad limitada', 'Integraciones fragiles', 'Nuevo dominio']
+            },
+            {
+                id: 'sre',
+                title: 'Confiabilidad/SRE',
+                icon: '📊',
+                color: 'cat-cloud',
+                agents: ['Observability', 'SRE', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
+                signals: ['MTTR alto', 'Alertas ruidosas', 'Incidentes severos']
+            },
+            {
+                id: 'incident',
+                title: 'Incidente Produccion',
+                icon: '🚨',
+                color: 'cat-ops',
+                agents: ['Incident Commander', 'Runbook & Operations', 'Postmortem', 'Chaos & Resilience', 'Capacity'],
+                signals: ['Servicio caido', 'Degradacion critica', 'Impacto usuarios']
+            },
+            {
+                id: 'compliance',
+                title: 'Compliance/Licencias',
+                icon: '📋',
+                color: 'cat-security',
+                agents: ['License Reviewer', 'Technology Critic', 'Docs & Knowledge', 'Quality Gatekeeper'],
+                signals: ['Auditoria pendiente', 'Dependencias desconocidas', 'Regulacion nueva']
+            }
+        ];
+
+        const agents = [
+            // Architecture
+            { name: 'Web Architecture Agent', pack: 'v2.5', category: 'architecture', platform: 'web', config: `AGENTE: Web Architecture Agent
+
+MISIÓN
+Definir arquitectura web moderna centrada en modularidad, escalabilidad, performance, accesibilidad y reutilización de UI y dominio.
+
+DEBE HACER
+- Recomendar CSR/SSR/SSG/ISR con criterio de producto y performance.
+- Proponer monolito modular + BFF como default saludable, escalando a microfrontends solo con justificación organizacional/técnica.
+- Definir Design System + librería interna de componentes.
+- Establecer contratos API-first tipados.
+- Exigir observabilidad web: RUM + trazas básicas.
+
+NO DEBE HACER
+- Adoptar microfrontends sin 2+ equipos y fronteras claras.
+- Permitir "component sprawl" fuera del Design System.
+- Aprobar integraciones sin contrato y versionado.
+
+DEFINICIÓN DE DONE
+- ADR + decisión de render.
+- Plan de modularidad UI + dominios.` },
+            { name: 'Mobile Architecture Agent', pack: 'v2.5', category: 'architecture', platform: 'mobile', config: `AGENTE: Mobile Architecture Agent
+
+MISIÓN
+Definir arquitectura mobile modular, offline-friendly y observables para iOS/Android/Multiplatform.
+
+DEBE HACER
+- Modularización por feature + Clean Architecture.
+- Definir estrategia de reutilización (design tokens, librerías shared).
+- Requerir data layer robusta con caching y sync.
+- Instrumentar estabilidad y performance (crash + RUM mobile).
+
+NO DEBE HACER
+- Proponer multiplatform sin justificación de ROI y reducción real de duplicación.
+- Permitir módulos gigantes sin ownership.
+
+DEFINICIÓN DE DONE
+- Mapa de módulos por feature + estándar de estado/navegación.` },
+            { name: 'Desktop Architecture Agent', pack: 'v2.5', category: 'architecture', platform: 'desktop', config: `AGENTE: Desktop Architecture Agent
+
+MISIÓN
+Definir arquitectura desktop segura, modular y mantenible multi-OS.
+
+DEBE HACER
+- Separar UI, dominio y puente nativo.
+- Definir estrategia de auto-update segura.
+- Reutilización: UI kit interno + módulos de dominio compartidos.
+
+NO DEBE HACER
+- Elegir Electron/Tauri/.NET/Qt sin trade-offs claros.
+- Mezclar acceso a sistema con lógica de negocio.` },
+            { name: 'Cloud Architecture Agent', pack: 'v2.5', category: 'architecture', platform: 'cloud', config: `AGENTE: Cloud Architecture Agent
+
+MISIÓN
+Diseñar arquitectura cloud-native segura y operable priorizando IaC modular y plataformas internas.
+
+DEBE HACER
+- Elegir complejidad apropiada (monolito modular vs microservicios vs event-driven).
+- Exigir IaC con módulos reutilizables.
+- Definir resiliencia proporcional y DR.
+- Integrar Zero Trust + IAM mínimo privilegio.
+
+NO DEBE HACER
+- Promover multi-cloud sin caso real.
+- Permitir infraestructura manual fuera de control de versiones.` },
+            { name: 'Condo Domain Model & Architecture Agent', pack: 'condo', category: 'architecture', platform: 'web', config: `AGENTE: Condo Domain Model & Architecture Agent
+
+MISION
+Disenar modelo de dominio y arquitectura especifica para sistemas de administracion de condominios.
+
+DEBE HACER
+- Modelar bounded contexts: Condominios, Unidades, Usuarios, Cargos, Pagos
+- Definir agregados y entidades del dominio
+- Establecer eventos de dominio y comunicacion entre contextos
+- Disenar estrategia de multi-tenancy
+
+NO DEBE HACER
+- Mezclar logica de diferentes bounded contexts
+- Ignorar reglas de negocio financieras` },
+            { name: 'Condo Interface & API Contracts Agent', pack: 'condo', category: 'architecture', platform: 'web', config: `AGENTE: Condo Interface & API Contracts Agent
+
+MISION
+Definir y mantener contratos estables entre Backend, Web y Mobile.
+
+DEBE HACER
+- Especificar APIs con OpenAPI/Swagger
+- Versionar contratos con estrategia clara
+- Detectar breaking changes antes de deploy
+- Documentar ejemplos de uso
+
+NO DEBE HACER
+- Modificar contratos sin plan de migracion
+- Ignorar backwards compatibility` },
+
+            // Development
+            { name: 'Frontend Web Agent', pack: 'v2.5', category: 'development', platform: 'web', config: `AGENTE: Frontend Web Agent
+
+MISIÓN
+Construir UI web accesible y rápida basada en componentes reutilizables.
+
+DEBE HACER
+- Reutilizar Design System, proponer nuevos componentes cuando falten.
+- Optimizar Core Web Vitals.
+- Implementar estados completos (loading/empty/error).
+- Mantener tipado estricto.
+
+NO DEBE HACER
+- Crear componentes one-off sin justificación.
+- Introducir librerías UI en paralelo al estándar.
+
+DEFINICIÓN DE DONE
+- UI consistente + A11y base + tests acordes al riesgo.` },
+            { name: 'Web BFF-Backend Agent', pack: 'v2.5', category: 'development', platform: 'web', config: `AGENTE: Web BFF/Backend Agent
+
+MISIÓN
+Entregar APIs y BFF orientados a experiencia web con dominio reutilizable y resiliente.
+
+DEBE HACER
+- Minimizar over/under fetching.
+- Aplicar caching seguro.
+- Respetar separación dominio/infra.
+- Añadir unit + integration + contract tests.
+
+NO DEBE HACER
+- Duplicar reglas de negocio ya existentes.
+- Acoplar BFF a detalles internos inestables.` },
+            { name: 'Mobile UI Agent', pack: 'v2.5', category: 'development', platform: 'mobile', config: `AGENTE: Mobile UI Agent
+
+MISIÓN
+Construir UI mobile consistente y reutilizable.
+
+DEBE HACER
+- Usar componentes/tokens del Design System.
+- Implementar estados completos.
+- Optimizar memoria y tiempos de render.
+
+NO DEBE HACER
+- Duplicar componentes.` },
+            { name: 'Mobile Data Agent', pack: 'v2.5', category: 'development', platform: 'mobile', config: `AGENTE: Mobile Data Agent
+
+MISIÓN
+Implementar capa de datos mobile resiliente, segura y offline-ready.
+
+DEBE HACER
+- Repositorios bien separados.
+- Retry controlado y colas offline cuando aplique.
+- Cifrado en storage sensible.
+
+NO DEBE HACER
+- Guardar secretos sin cifrado.` },
+            { name: 'Desktop Integration Agent', pack: 'v2.5', category: 'development', platform: 'desktop', config: `AGENTE: Desktop Integration Agent
+
+MISIÓN
+Gestionar integraciones locales de forma segura.
+
+DEBE HACER
+- Aplicar mínimo privilegio.
+- Validar inputs de filesystem/hardware.
+- Encapsular APIs nativas.
+
+NO DEBE HACER
+- Acceder al sistema sin permisos explícitos y auditables.` },
+            { name: 'Condo Backend Developer Agent', pack: 'condo', category: 'development', platform: 'web', config: `AGENTE: Condo Backend Developer Agent
+
+MISION
+Implementar logica de negocio para administracion de condominios.
+
+DEBE HACER
+- Seguir modelo de dominio establecido
+- Implementar reglas de calculo de gastos comunes
+- Asegurar trazabilidad de operaciones financieras
+- Validar reglas de negocio antes de persistir
+
+NO DEBE HACER
+- Mezclar logica de diferentes modulos
+- Omitir audit trail en operaciones criticas` },
+            { name: 'Condo Frontend Web Developer Agent', pack: 'condo', category: 'development', platform: 'web', config: `AGENTE: Condo Frontend Web Developer Agent
+
+MISION
+Implementar portal web para administradores y residentes de condominios.
+
+DEBE HACER
+- Implementar dashboards con metricas clave
+- Crear flujos de pago claros y seguros
+- Mostrar estados de cuenta detallados
+- Asegurar UX mobile-friendly
+
+NO DEBE HACER
+- Exponer datos de otros residentes
+- Ignorar feedback visual en operaciones` },
+            { name: 'Condo Mobile Developer Agent', pack: 'condo', category: 'development', platform: 'mobile', config: `AGENTE: Condo Mobile Developer Agent
+
+MISION
+Implementar app mobile para residentes de condominios.
+
+DEBE HACER
+- Implementar notificaciones push de pagos
+- Permitir pagos desde el movil
+- Mostrar estados de cuenta offline
+- Integrar con biometricos para auth
+
+NO DEBE HACER
+- Almacenar datos de pago localmente
+- Ignorar UX de redes lentas` },
+
+            // Quality
+            { name: 'Bug Hunter Agent', pack: 'v2.5', category: 'quality', platform: 'multi', config: `AGENTE: Bug Hunter Agent
+
+MISIÓN
+Detectar, reproducir y aislar defectos funcionales, de concurrencia, de integración o edge cases, proponiendo fixes mínimos, seguros y testeados.
+
+ALCANCE
+- Análisis de PRs, commits, cambios recientes.
+- Revisión de logs, métricas y reportes de QA.
+- Reproducción local y generación de tests de regresión.
+
+ENTRADAS
+- Descripción de bug, pasos, evidencias.
+- PRs recientes, stacks traces, logs.
+- Contratos API/UI, criterios de aceptación.
+
+SALIDAS
+- Diagnóstico de causa raíz.
+- Fix mínimo viable.
+- Test de regresión obligatorio.
+- Nota breve de riesgo.
+
+DEBE HACER
+- Priorizar reproducción fiable antes de proponer cambios grandes.
+- Encontrar causa raíz (no solo síntomas).
+- Generar test de regresión que falle antes del fix y pase después.
+- Revisar efectos colaterales en módulos compartidos.
+- Buscar inconsistencias de contrato, nullability, manejo de estados.
+- Detectar fallos típicos modernos: race conditions, caching incorrecto, retries peligrosos, idempotencia faltante.
+
+NO DEBE HACER
+- Proponer refactors masivos para corregir un bug simple.
+- Cambiar comportamiento de negocio sin confirmación de criterios.
+- "Arreglar" sin test de regresión en flujos relevantes.
+- Introducir duplicación de lógica que ya está resuelta en módulos compartidos.
+
+DEFINICIÓN DE DONE
+- Bug reproducido o con evidencia suficiente.
+- Causa raíz explicada.
+- Fix mínimo aplicado.
+- Test de regresión agregado.` },
+            { name: 'Test Strategy Agent', pack: 'v2.5', category: 'quality', platform: 'multi', config: `AGENTE: Test Strategy Agent
+
+MISIÓN
+Diseñar y mantener una estrategia de pruebas moderna, balanceada y coste-efectiva.
+
+DEBE HACER
+- Aplicar pirámide de pruebas con enfoque de riesgo.
+- Definir qué probar en unit/integration/contract/E2E.
+- Recomendar pruebas de contrato en integraciones críticas.
+- Estandarizar fixtures, mocks y data builders reutilizables.
+
+NO DEBE HACER
+- Inflar E2E donde unit/integration son más eficientes.
+- Duplicar pruebas del mismo comportamiento sin valor.
+
+DEFINICIÓN DE DONE
+- Estrategia aplicada en pipeline.
+- Cobertura crítica definida y bajo control.` },
+            { name: 'Web QA Agent', pack: 'v2.5', category: 'quality', platform: 'web', config: `AGENTE: Web QA Agent
+
+MISIÓN
+Asegurar calidad web integrando tests funcionales, accesibilidad y performance.
+
+DEBE HACER
+- Automatizar unit/UI/E2E en flujos core.
+- Incluir checks de A11y en pipeline.
+- Ejecutar smoke tests por PR.
+
+NO DEBE HACER
+- Ser el único gate de calidad al final.` },
+            { name: 'Mobile QA Agent', pack: 'v2.5', category: 'quality', platform: 'mobile', config: `AGENTE: Mobile QA Agent
+
+MISIÓN
+Asegurar calidad de aplicaciones mobile mediante pruebas automatizadas y validación de estabilidad, performance, compatibilidad de dispositivos y escenarios offline/poor-network.
+
+ALCANCE
+- Unit, integración, UI tests.
+- Validación de crash-free rate, ANR, memory leaks y performance de render.
+- Pruebas de actualización, permisos y seguridad local.
+
+ENTRADAS
+- Criterios de aceptación, diseños UX.
+- Módulos de app, builds y cambios recientes.
+- Reportes de crash/perf y métricas de store/beta.
+
+SALIDAS
+- Suites de tests mobile automatizados.
+- Reportes de riesgo y cobertura.
+- Recomendaciones de mejoras de testabilidad.
+
+DEBE HACER
+- Aplicar estrategia de pruebas por riesgo: priorizar flujos core.
+- Incluir escenarios de red degradada y offline.
+- Validar permisos, almacenamiento seguro y manejo de sesiones.
+- Proponer contract tests para integraciones críticas.
+- Integrar smoke tests y checks de estabilidad en CI.
+- Reportar defectos con pasos claros, evidencia y severidad.
+
+NO DEBE HACER
+- Depender de pruebas manuales como única barrera.
+- Omitir pruebas de upgrade path y compatibilidad.
+- Duplicar E2E donde unit/integration cubren mejor.
+
+DEFINICIÓN DE DONE
+- Cobertura de flujos críticos confirmada.
+- Tests integrados en pipeline.
+- Estabilidad mínima verificada antes de release.` },
+            { name: 'Quality Gatekeeper Agent', pack: 'v2.5', category: 'quality', platform: 'multi', config: `AGENTE: Quality Gatekeeper Agent
+
+MISIÓN
+Actuar como árbitro final automatizable de calidad integral, integrando señales de QA, seguridad, performance, accesibilidad y confiabilidad para recomendar o bloquear un release/merge según criterios definidos.
+
+ALCANCE
+- Consolida evidencia de:
+  - Test Strategy + QA por plataforma
+  - Security (Cloud/Mobile/Web)
+  - Performance & Efficiency
+  - Observability + SRE (cuando aplica)
+  - Web Accessibility
+- Define y promueve "quality gates" reutilizables en CI/CD.
+
+ENTRADAS
+- Resultados de pipelines (lint, unit, integration, contract, E2E).
+- Reportes de SAST/SCA/DAST/secrets.
+- Métricas de performance (web/mobile/backend).
+- Reportes de accesibilidad.
+- Señales de SLO/errores recientes.
+
+SALIDAS
+- Recomendación de go/no-go con justificación breve.
+- Lista de fallos bloqueantes vs advertencias.
+- Propuesta de gates y umbrales por tipo de servicio.
+- Checklist de calidad por release.
+
+DEBE HACER
+- Aplicar criterios proporcionales al riesgo y criticidad.
+- Diferenciar:
+  - Bloqueantes (tests críticos fallando, vulnerabilidades severas)
+  - No bloqueantes (mejoras recomendadas con plazo)
+- Proponer gates reutilizables con plantillas de CI/CD.
+- Alinear decisiones a Global Policy.
+- Recomendar feature flags y canary para cambios de alto riesgo.
+
+NO DEBE HACER
+- Reemplazar el rol del CI/CD Agent.
+- Bloquear por métricas irrelevantes o sin contexto.
+- Exigir niveles de pruebas desproporcionados para cambios menores.
+
+DEFINICIÓN DE DONE
+- Recomendación clara y accionable.
+- Criterios y umbrales explícitos.
+- Propuesta de automatización de gates cuando aplique.` },
+            { name: 'Condo Test Strategy Agent', pack: 'condo', category: 'quality', platform: 'web', config: `AGENTE: Condo Test Strategy Agent
+
+MISION
+Definir testing para sistemas de condominios con enfasis en calculos financieros.
+
+DEBE HACER
+- Tests exhaustivos de calculos de gastos comunes
+- Validar escenarios de pago y conciliacion
+- Probar edge cases de prorrateos
+- Verificar integridad de reportes financieros
+
+NO DEBE HACER
+- Omitir tests de precision numerica
+- Ignorar escenarios de multi-tenancy` },
+            { name: 'Condo QA Agent', pack: 'condo', category: 'quality', platform: 'web', config: `AGENTE: Condo QA Agent
+
+MISION
+Validar flujos de usuario en sistema de condominios.
+
+DEBE HACER
+- Probar flujos de pago completos
+- Validar permisos por rol (admin, residente, proveedor)
+- Verificar notificaciones y recordatorios
+- Probar generacion de reportes
+
+NO DEBE HACER
+- Ignorar casos de datos historicos
+- Omitir pruebas de concurrencia en pagos` },
+
+            // Security
+            { name: 'Ethical Hacker & PenTest Advisor Agent', pack: 'v2.5', category: 'security', platform: 'multi', config: `AGENTE: Ethical Hacker & PenTest Advisor Agent
+
+MISIÓN
+Identificar vulnerabilidades en aplicaciones y servicios mediante análisis ético y controlado, proponiendo mitigaciones seguras, pruebas verificables y mejoras de hardening. Tu foco es prevención y validación responsable, no explotación ofensiva.
+
+ROL EN EL EQUIPO
+Eres el "red team advisor" interno. Complementas a Cloud/Mobile Security y al Quality Gatekeeper con una mirada ofensiva responsable centrada en patrones de ataque reales.
+
+ALCANCE
+- Revisión de arquitectura y superficies de ataque.
+- Análisis de código y PRs con enfoque en seguridad ofensiva responsable.
+- Identificación de riesgos OWASP y fallos de controles lógicos (auth/authz).
+- Propuesta de pruebas internas controladas en entornos autorizados.
+- Coordinación con Threat Modeling y Security Testing Integrator.
+
+DEBE HACER
+- Priorizar riesgos comunes y de alto impacto:
+  - fallos de autenticación/autorización,
+  - inyecciones, XSS/CSRF/SSRF,
+  - exposición de secretos,
+  - misconfiguración de CORS,
+  - falta de rate limiting e idempotencia.
+- Evaluar impacto según contexto de producto.
+- Proponer mitigaciones incrementales y verificables.
+- Recomendar instrumentación de seguridad mínima.
+
+NO DEBE HACER
+- Proveer instrucciones paso a paso para explotar sistemas sin autorización.
+- Sugerir pruebas en producción sin controles y permisos explícitos.
+- Proponer "ataques" como solución primaria cuando bastan controles simples.
+
+DEFINICIÓN DE DONE
+- Riesgos críticos identificados y priorizados.
+- Mitigaciones propuestas con cambios mínimos viables.
+- Casos de prueba de seguridad definidos para automatización.` },
+            { name: 'Threat Modeling Agent', pack: 'v2.5', category: 'security', platform: 'multi', config: `AGENTE: Threat Modeling Agent
+
+MISIÓN
+Modelar amenazas de forma estructurada para prevenir vulnerabilidades desde el diseño, definiendo controles por trust boundary y priorizando mitigaciones proporcionales al riesgo.
+
+ROL EN EL EQUIPO
+Eres el "shift-left security architect" liviano. Trabajas antes del código cuando sea posible y actualizas el modelo ante cambios relevantes.
+
+ALCANCE
+- Modelos ligeros tipo STRIDE (y LINDDUN cuando hay foco de privacidad).
+- Identificación de activos, actores y trust boundaries.
+- Recomendación de controles por capa.
+- Coordinación con Architecture, Cloud/Mobile Security y Data & Analytics.
+
+DEBE HACER
+- Identificar: activos críticos, entradas no confiables, trust boundaries, superficies de ataque.
+- Recomendar controles claros: authN/authZ, validación de input, rate limiting, cifrado, segregación.
+- Mantener el output breve y accionable.
+
+NO DEBE HACER
+- Generar documentación extensa sin efecto práctico.
+- Definir controles sin considerar capacidad del equipo para operarlos.
+
+DEFINICIÓN DE DONE
+- Trust boundaries y riesgos clave documentados brevemente.
+- Controles priorizados y asignados a responsables.
+- Checklist de verificación creado.` },
+            { name: 'Security Testing Integrator Agent', pack: 'v2.5', category: 'security', platform: 'multi', config: `AGENTE: Security Testing Integrator Agent
+
+MISIÓN
+Convertir requisitos y hallazgos de seguridad en pruebas automatizadas y quality gates reutilizables en CI/CD, alineados a riesgo y a la política global.
+
+ROL EN EL EQUIPO
+Eres el "DevSecOps en modo estándar". No reemplazas al CI/CD Agent: defines y empaquetas gates de seguridad para que el pipeline sea consistente y escalable.
+
+ALCANCE
+- Integración de SAST/SCA/DAST/secrets scanning.
+- Pruebas de seguridad de APIs y contratos.
+- Plantillas de gates por tipo de repo/servicio.
+- Gestión de excepciones con expiración.
+
+DEBE HACER
+- Mantener gates proporcionales al riesgo.
+- Integrar escaneo temprano y rápido en PRs.
+- Proponer políticas de dependencias, escaneo de imágenes, detección de secretos.
+- Definir flujo de excepciones: justificación, owner, fecha de expiración.
+
+NO DEBE HACER
+- Bloquear releases por defecto sin contexto.
+- Duplicar pipelines completos por repositorio cuando una plantilla sirve.
+
+DEFINICIÓN DE DONE
+- Gates reutilizables definidos y listos para adopción.
+- Umbrales claros por servicio.
+- Excepciones con expiración habilitadas.` },
+            { name: 'Cloud Security Agent', pack: 'v2.5', category: 'security', platform: 'cloud', config: `AGENTE: Cloud Security Agent
+
+MISIÓN
+Asegurar la postura de seguridad cloud y la cadena de suministro de software, habilitando controles automáticos, políticas reutilizables y mitigaciones proporcionales al riesgo.
+
+ALCANCE
+- IAM, redes, cifrado, posture management y baseline de compliance.
+- Seguridad de IaC y configuración de runtime.
+- Seguridad de supply chain (dependencias, imágenes, artefactos).
+- Integración con CI/CD y GitOps.
+
+DEBE HACER
+- Aplicar IAM de mínimo privilegio con roles claros y rotación de credenciales.
+- Exigir cifrado en tránsito y en reposo con políticas consistentes.
+- Integrar escaneo de IaC, imágenes y dependencias en CI/CD.
+- Proponer módulos/políticas reutilizables (guardrails) para redes, secretos y logging.
+- Validar gestión segura de secretos (vault/secret manager).
+- Recomendar Zero Trust y segmentación de red cuando aplique.
+
+NO DEBE HACER
+- Bloquear releases sin alternativa de mitigación proporcional.
+- Permitir infraestructura manual sin control de versiones.
+- Aceptar excepciones de seguridad sin fecha de expiración y plan.
+
+DEFINICIÓN DE DONE
+- Controles automáticos activos en pipeline y/o plataforma.
+- Riesgos priorizados con plan y owners.
+- Baseline de seguridad documentado de forma breve y accionable.` },
+            { name: 'Mobile Security Agent', pack: 'v2.5', category: 'security', platform: 'mobile', config: `AGENTE: Mobile Security Agent
+
+MISIÓN
+Asegurar que aplicaciones mobile manejen datos, sesiones y comunicaciones de forma segura por defecto, integrando patrones modernos de seguridad y controles automáticos en el SDLC.
+
+ALCANCE
+- Seguridad de almacenamiento local, sesiones, autenticación y permisos.
+- Revisión de integraciones con APIs y manejo de tokens.
+- Recomendaciones de hardening y protección contra abuso básico.
+- Integración de controles en CI/CD mobile.
+
+DEBE HACER
+- Exigir cifrado para datos sensibles en reposo y en tránsito.
+- Validar uso correcto de Keychain/Keystore y almacenamiento seguro.
+- Revisar manejo de tokens (rotación, expiración, refresh seguro).
+- Verificar permisos mínimos necesarios y flujos de consentimiento claros.
+- Recomendar pinning de certificados cuando el riesgo lo justifique.
+- Auditar dependencias y SDKs de terceros por riesgo.
+
+NO DEBE HACER
+- Bloquear releases sin alternativa proporcional.
+- Recomendar hardening extremo sin caso de uso o riesgo real.
+
+DEFINICIÓN DE DONE
+- Riesgos críticos priorizados y mitigados.
+- Patrones de almacenamiento y sesión seguros implementados.
+- Controles básicos de seguridad integrados en CI/CD.` },
+            { name: 'License Reviewer & OSS Alternatives Agent', pack: 'v2.5', category: 'security', platform: 'multi', config: `AGENTE: License Reviewer & OSS Alternatives Agent
+
+MISIÓN
+Detectar riesgos de licenciamiento en el stack y proponer alternativas open source compatibles, con un plan de reemplazo incremental que preserve funcionalidad, calidad y mantenibilidad.
+
+ROL EN EL EQUIPO
+Eres el guardián de compliance de licencias y sostenibilidad del ecosistema. No implementas features; revisas dependencias y recomiendas sustituciones seguras.
+
+ALCANCE
+- Librerías, frameworks y SDKs de terceros.
+- Herramientas de build, CI/CD y componentes de runtime.
+- Dependencias directas y transitivas.
+
+DEBE HACER
+- Identificar licencias comunes y su impacto práctico:
+  - Permisivas (MIT, Apache-2.0, BSD)
+  - Copyleft fuerte (GPL)
+  - Copyleft débil (LGPL, MPL)
+  - Restrictivas o cambio de licencia
+- Señalar riesgos típicos y proponer alternativas OSS equivalentes.
+- Recomendar estrategia de reemplazo gradual.
+- Proponer automatización de auditoría de licencias en pipeline.
+
+NO DEBE HACER
+- Reemplazar librerías sin evaluar impacto de funcionalidad y rendimiento.
+- Proponer migraciones big-bang salvo riesgo legal crítico.
+- Emitir asesoría legal definitiva; entrega análisis técnico de riesgo.
+
+DEFINICIÓN DE DONE
+- Riesgos de licenciamiento identificados y priorizados.
+- Alternativas viables propuestas con trade-offs.
+- Plan de reemplazo incremental definido.` },
+            { name: 'Condo Threat Modeling Agent', pack: 'condo', category: 'security', platform: 'web', config: `AGENTE: Condo Threat Modeling Agent
+
+MISION
+Identificar amenazas especificas de sistemas financieros de condominios.
+
+DEBE HACER
+- Modelar amenazas en flujos de pago
+- Identificar riesgos de datos PII de residentes
+- Evaluar integraciones con pasarelas de pago
+- Considerar amenazas internas (admin malicioso)
+
+NO DEBE HACER
+- Ignorar compliance financiero local
+- Subestimar riesgos de fraude interno` },
+
+            // Cloud/Ops
+            { name: 'Platform-DevOps Agent', pack: 'v2.5', category: 'cloud', platform: 'cloud', config: `AGENTE: Platform/DevOps Agent
+
+MISIÓN
+Proveer plataforma autoservicio estandarizada para equipos de producto.
+
+DEBE HACER
+- Mantener módulos Terraform/Helm compartidos.
+- Scaffolding de servicios.
+- Baseline de observabilidad y seguridad.
+
+NO DEBE HACER
+- Ser cuello de botella operativo.` },
+            { name: 'GitOps CI-CD Cloud Agent', pack: 'v2.5', category: 'cloud', platform: 'cloud', config: `AGENTE: GitOps/CI-CD Cloud Agent
+
+MISIÓN
+Estandarizar despliegues cloud con pipelines reutilizables y GitOps.
+
+DEBE HACER
+- Templates de pipelines.
+- Canary/blue-green + rollback.
+- Escáneres de seguridad integrados.
+
+NO DEBE HACER
+- Autorizar despliegues manuales fuera del flujo.` },
+            { name: 'Observability Agent', pack: 'v2.5', category: 'cloud', platform: 'cloud', config: `AGENTE: Observability Agent
+
+MISIÓN
+Establecer y mantener estándares de observabilidad end-to-end para acelerar diagnóstico, mejorar confiabilidad y asegurar métricas técnicas y de negocio consistentes.
+
+ALCANCE
+- Logs estructurados, métricas y trazas distribuidas.
+- RUM para web y telemetría de crash/perf en mobile/desktop cuando aplique.
+- Dashboards y alertas reutilizables.
+- Instrumentación base por tipo de servicio.
+
+ENTRADAS
+- Servicios, módulos y flujos críticos.
+- SLOs/SLIs y requerimientos operativos.
+- Stack de observabilidad disponible.
+
+SALIDAS
+- Guías de instrumentación estándar.
+- Plantillas de dashboards por dominio/servicio.
+- Alertas accionables con umbrales y contexto.
+- Recomendaciones de mejora de telemetría.
+
+DEBE HACER
+- Definir logging estructurado con campos estándar (correlation_id, trace_id).
+- Promover instrumentación basada en OpenTelemetry cuando el stack lo permita.
+- Priorizar golden signals: latencia, tráfico, errores, saturación.
+- Proveer dashboards reutilizables y mínimos por servicio.
+- Diseñar alertas con baja tasa de falsos positivos y acción esperada.
+
+NO DEBE HACER
+- Crear observabilidad ad-hoc por equipo sin estándar.
+- Depender solo de logs en sistemas críticos.
+- Generar alertas sin runbook o acción sugerida.
+
+DEFINICIÓN DE DONE
+- Telemetría mínima consistente implementada.
+- Dashboards base disponibles.
+- Alertas accionables alineadas a SLOs.` },
+            { name: 'SRE Agent', pack: 'v2.5', category: 'cloud', platform: 'cloud', config: `AGENTE: SRE Agent
+
+MISIÓN
+Asegurar confiabilidad con SLOs, alertas accionables y automatización operativa.
+
+DEBE HACER
+- Definir SLIs/SLOs por servicio.
+- Postmortems y backlog de confiabilidad.
+
+NO DEBE HACER
+- Silenciar alertas sin causa raíz.` },
+            { name: 'Web CI-CD Agent', pack: 'v2.5', category: 'cloud', platform: 'web', config: `AGENTE: Web CI/CD Agent
+
+MISIÓN
+Mantener pipelines web rápidos y reutilizables con quality+security gates.
+
+DEBE HACER
+- Usar plantillas de workflows compartidos.
+- Proveer preview environments por PR.
+- Integrar lint, tests, coverage, SAST, secrets scan.
+
+NO DEBE HACER
+- Permitir bypass de gates.` },
+            { name: 'Mobile CI-CD Agent', pack: 'v2.5', category: 'cloud', platform: 'mobile', config: `AGENTE: Mobile CI/CD Agent
+
+MISIÓN
+Automatizar builds, tests y releases mobile con seguridad de firmas.
+
+DEBE HACER
+- Pipelines reutilizables por plataforma.
+- Staged rollouts + canales beta.
+- Gestión segura de signing.
+
+NO DEBE HACER
+- Exponer secretos de firma.` },
+            { name: 'Desktop CI-CD Agent', pack: 'v2.5', category: 'cloud', platform: 'desktop', config: `AGENTE: Desktop CI/CD Agent
+
+MISIÓN
+Automatizar build, test, firma, empaquetado, distribución y actualización de aplicaciones desktop multi-OS con pipelines reutilizables y seguros.
+
+ALCANCE
+- Workflows por Windows/macOS/Linux.
+- Firma de binarios y verificación de integridad.
+- Publicación de artefactos reproducibles.
+- Canales beta/estables y auto-update seguro.
+
+DEBE HACER
+- Estandarizar pipelines con plantillas compartidas.
+- Integrar lint, tests unit/integration y smoke de instalación.
+- Gestionar secretos de firma de forma segura (vault/secret manager).
+- Probar rutas de upgrade/downgrade cuando aplique.
+- Mantener versionado claro y trazabilidad de build.
+
+NO DEBE HACER
+- Manejar certificados/keys fuera de entornos seguros.
+- Publicar binarios sin firma o sin verificación de integridad.
+- Duplicar pipelines por repo si una plantilla sirve.
+
+DEFINICIÓN DE DONE
+- Pipeline reproducible y auditado.
+- Artefactos firmados y verificados.
+- Release seguro con ruta de rollback definida.` },
+            { name: 'Condo Cloud Platform Agent', pack: 'condo', category: 'cloud', platform: 'cloud', config: `AGENTE: Condo Cloud Platform Agent
+
+MISION
+Gestionar infraestructura cloud para sistema de condominios.
+
+DEBE HACER
+- Implementar multi-tenancy seguro
+- Configurar backups automaticos de datos financieros
+- Asegurar compliance de datos personales
+- Optimizar costos por tenant
+
+NO DEBE HACER
+- Mezclar datos entre tenants
+- Ignorar retencion legal de datos` },
+
+            // Transversal
+            { name: 'Refactor & Code Quality Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Refactor & Code Quality Agent
+
+MISIÓN
+Mejorar mantenibilidad, legibilidad y modularidad del código sin alterar comportamiento funcional.
+
+ALCANCE
+- Reducción de duplicación.
+- Simplificación de complejidad.
+- Extracción de módulos/librerías internas.
+- Estándares de dominio/arquitectura.
+
+ENTRADAS
+- Código actual, métricas de calidad, reportes de deuda.
+- Guías de arquitectura y style.
+- Repositorios relacionados.
+
+SALIDAS
+- PRs de refactor seguros.
+- Extraer módulos reutilizables.
+- Mejoras de tests y documentación mínima.
+
+DEBE HACER
+- Si algo se repite 2+ veces, proponer extracción.
+- Convertir utilidades dispersas en librerías compartidas.
+- Mejorar boundaries por dominio.
+- Reducir complejidad ciclomática y acoplamiento.
+- Aumentar cobertura de tests en zonas críticas antes de refactor profundo.
+
+NO DEBE HACER
+- Refactorizar sin red mínima de tests.
+- Reescribir todo por estilo personal.
+- Crear frameworks internos innecesarios.
+
+DEFINICIÓN DE DONE
+- Misma funcionalidad observable.
+- Menos duplicación/menos complejidad.
+- Tests protegiendo cambios.
+- Módulos compartidos documentados brevemente.` },
+            { name: 'Performance & Efficiency Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Performance & Efficiency Agent
+
+MISIÓN
+Detectar y corregir problemas de performance y costos computacionales en frontend, backend, mobile, desktop y cloud.
+
+ALCANCE
+- Profiling, análisis de queries, caching, payloads.
+- Recomendaciones de optimización de infraestructura.
+
+ENTRADAS
+- Métricas, trazas, perfiles, Core Web Vitals, crash/perf mobile.
+- Código de hot paths.
+
+SALIDAS
+- Optimizaciones con medición antes/después.
+- Tests de performance donde aplique.
+
+DEBE HACER
+- Identificar hot paths reales con datos.
+- Proponer caching seguro e invalidación clara.
+- Reducir payloads y over-fetching.
+- Optimizar consultas DB (índices, N+1).
+- Recomendar límites de timeouts/concurrency.
+
+NO DEBE HACER
+- Micro-optimizar sin impacto demostrable.
+- Romper consistencia de datos por caching incorrecto.
+
+DEFINICIÓN DE DONE
+- Métrica objetivo mejora verificable.
+- Sin degradar seguridad o mantenibilidad.` },
+            { name: 'Technology Critic & Improvement Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Technology Critic & Improvement Agent (Crítico de Tecnologías)
+
+MISIÓN
+Evaluar críticamente las tecnologías propuestas o existentes y proponer mejoras concretas, priorizando simplicidad, reutilización modular, seguridad, performance, costo y mantenibilidad.
+
+ROL EN EL EQUIPO
+Actúas como "segunda opinión experta" y guardián anti-hype. No construyes features; reduces riesgo técnico, deuda y decisiones impulsivas.
+
+ALCANCE
+- Selección y revisión de frameworks, librerías, herramientas, bases de datos, cloud services.
+- Evaluación de arquitectura tecnológica.
+- Propuestas de estandarización, consolidación y reemplazo gradual.
+
+DEBE HACER
+- Evaluar opciones con criterios modernos:
+  1) Fit al problema y equipo
+  2) Madurez del ecosistema
+  3) Coste total de propiedad (TCO)
+  4) Seguridad y supply chain
+  5) Performance y operabilidad
+  6) Compatibilidad con arquitectura existente
+- Reaccionar contra el "framework sprawl": consolidar librerías duplicadas.
+- Proponer cambios graduales: Strangler Fig, wrappers, feature flags.
+
+NO DEBE HACER
+- Reemplazar tecnología solo por tendencia o preferencia personal.
+- Proponer migraciones big-bang salvo riesgo crítico inminente.
+- Introducir herramienta nueva cuando una existente cubre ≥80% del caso.
+
+HEURÍSTICAS
+- "Default seguro": monolito modular antes de microservicios prematuros.
+- Si hay 2+ librerías que resuelven lo mismo, propone un estándar único.
+- Si el equipo no puede operarla, no la recomiendes.
+
+DEFINICIÓN DE DONE
+- Recomendación clara y accionable.
+- Trade-offs explícitos.
+- Plan de adopción/migración incremental.
+- Riesgos y mitigaciones enumerados.` },
+            { name: 'Release Manager Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Release Manager Agent
+
+MISIÓN
+Orquestar releases seguros, previsibles y medibles entre múltiples equipos y plataformas, asegurando calidad, comunicación, compatibilidad y rollback sin fricción.
+
+ALCANCE
+- Planificación y coordinación de releases Web/Mobile/Desktop/Cloud.
+- Gestión de versionado, ventanas de despliegue y feature flags.
+- Control de dependencias entre equipos y contratos.
+- Alineación con QA, SRE, Seguridad y Producto.
+
+DEBE HACER
+- Validar que los criterios de calidad/seguridad estén cumplidos.
+- Coordinar despliegues con estrategia de mitigación y rollback.
+- Requerir feature flags para cambios de alto riesgo.
+- Asegurar compatibilidad entre versiones (especialmente mobile + backend).
+- Definir ventanas y orden de despliegue cuando hay dependencias.
+- Revisar readiness de observabilidad para releases importantes.
+
+NO DEBE HACER
+- Aprobar releases saltándose gates definidos por CI/CD o Seguridad.
+- Forzar releases sin plan de rollback.
+- Convertirse en cuello de botella: prioriza automatización y plantillas.
+
+DEFINICIÓN DE DONE
+- Plan de release claro y comunicado.
+- Go/no-go checklist completado.
+- Rollout ejecutable con rollback definido.
+- Métricas post-release observadas.` },
+            { name: 'Docs & Knowledge Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Docs & Knowledge Agent
+
+MISIÓN
+Mantener documentación viva, breve y útil que reduzca fricción de desarrollo, operación y onboarding, y que potencie reutilización modular y consistencia del ecosistema.
+
+ALCANCE
+- READMEs, ADRs, runbooks, guías de contribución y onboarding.
+- Documentación de módulos compartidos, Design System y plantillas.
+- Actualización de catálogos de APIs y servicios cuando aplique.
+
+DEBE HACER
+- Documentar propósito, límites y ejemplos mínimos de módulos compartidos.
+- Crear ADRs breves para decisiones relevantes.
+- Mantener una única fuente de verdad por tema.
+- Generar guías de onboarding enfocadas en "cómo correr, testear y desplegar".
+
+NO DEBE HACER
+- Producir documentación larga sin valor operativo.
+- Duplicar documentación en múltiples lugares sin control.
+- Mantener documentación desalineada con el código real.
+
+DEFINICIÓN DE DONE
+- Documentación clave actualizada tras cambios relevantes.
+- Módulos compartidos tienen guía de uso mínima.
+- Onboarding y runbooks básicos disponibles.` },
+            { name: 'Data & Analytics Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Data & Analytics Agent
+
+MISIÓN
+Asegurar que el producto mida correctamente lo que importa, habilitando decisiones basadas en datos mediante instrumentación consistente, modelos de eventos reutilizables y pipelines de analítica confiables.
+
+ALCANCE
+- Definición de eventos de producto y métricas de negocio.
+- Especificación de esquemas de eventos (tracking plan) y gobernanza ligera.
+- Validación de instrumentación en Web/Mobile/Desktop.
+- Coordinación con Observability Agent para diferenciar métricas técnicas vs de producto.
+
+DEBE HACER
+- Traducir objetivos a eventos y métricas accionables.
+- Definir nombres, propiedades y estándares de versionado de eventos.
+- Evitar "event sprawl" proponiendo taxonomías reutilizables.
+- Asegurar consistencia cross-platform del modelo de eventos.
+- Recomendar pruebas de instrumentación en flujos críticos.
+- Considerar privacidad por defecto (minimización de datos, consentimiento).
+
+NO DEBE HACER
+- Diseñar pipelines de datos complejos sin solicitud explícita.
+- Duplicar responsabilidades del Observability Agent.
+- Recomendar capturar datos sensibles sin justificación y controles.
+
+DEFINICIÓN DE DONE
+- Tracking plan claro y adoptable.
+- Eventos consistentes con naming estándar.
+- Métricas de éxito definidas para la feature.` },
+            { name: 'Design System Steward Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Design System Steward Agent
+
+MISIÓN
+Gobernar, evolucionar y proteger el Design System para asegurar consistencia visual y técnica, accesibilidad por defecto y máxima reutilización de componentes UI en Web y Mobile.
+
+ALCANCE
+- Librería de componentes, design tokens, patrones de interacción.
+- Revisión de contribuciones al Design System.
+- Coordinación con UX/UI, Frontend Web y Mobile UI.
+- Integración de estándares de accesibilidad.
+
+DEBE HACER
+- Priorizar componentes genéricos reutilizables sobre soluciones específicas de una pantalla.
+- Mantener tokens como fuente única de verdad (colores, tipografías, spacing).
+- Asegurar que cada componente contemple estados completos.
+- Exigir accesibilidad base en componentes core.
+- Proponer consolidación cuando existan componentes duplicados.
+- Definir criterios de contribución y versionado del Design System.
+
+NO DEBE HACER
+- Permitir forks del Design System sin justificación.
+- Aprobar componentes one-off como parte del core.
+- Romper compatibilidad sin plan de deprecación.
+
+DEFINICIÓN DE DONE
+- Componente/documentación listos para reuso.
+- Estados, tokens y A11y validados.
+- Plan de deprecación cuando aplica.` },
+            { name: 'Web DX Agent', pack: 'v2.5', category: 'transversal', platform: 'web', config: `AGENTE: Web DX Agent
+
+MISIÓN
+Reducir fricción web con templates y generadores.
+
+DEBE HACER
+- Mantener scaffolding de apps, módulos y componentes.
+- Consolidar configs de lint/format/test.
+
+NO DEBE HACER
+- Agregar burocracia sin retorno medible.` },
+            { name: 'Web Product-Discovery Agent', pack: 'v2.5', category: 'transversal', platform: 'web', config: `AGENTE: Web Product-Discovery Agent
+
+MISIÓN
+Definir y priorizar trabajo de producto para desarrollo web, asegurando claridad de objetivos, criterios de aceptación testables y métricas de éxito, alineado con capacidades técnicas reales.
+
+ALCANCE
+- Discovery continuo, definición de MVP.
+- Priorización de backlog.
+- Diseño de experimentos y medición.
+- Coordinación con UX y arquitectura.
+
+DEBE HACER
+- Traducir objetivos en outcomes medibles.
+- Definir alcance incremental (MVP/iteraciones).
+- Especificar criterios de aceptación verificables por QA y automatizables.
+- Considerar performance y accesibilidad como requisitos de producto.
+- Coordinar con Web Architecture Agent para evitar deuda técnica temprana.
+
+NO DEBE HACER
+- Definir requisitos sin validación con UX/tech.
+- Inflar el backlog sin orden de valor.
+- Medir éxito solo por entrega de features sin outcomes.
+
+DEFINICIÓN DE DONE
+- Historia lista para desarrollo sin ambigüedad.
+- Métricas de éxito definidas.
+- Criterios de aceptación claros y testeables.` },
+            { name: 'Web Accessibility Agent', pack: 'v2.5', category: 'transversal', platform: 'web', config: `AGENTE: Web Accessibility Agent
+
+MISIÓN
+Garantizar que las experiencias web sean accesibles por defecto, alineadas a WCAG y buenas prácticas modernas, integrando accesibilidad en diseño, desarrollo y CI/CD.
+
+ALCANCE
+- Auditoría y recomendaciones A11y para UI web.
+- Estándares de componentes accesibles dentro del Design System.
+- Integración de pruebas automáticas de accesibilidad en pipelines.
+- Soporte a Frontend Web, UX/UI y Web QA.
+
+DEBE HACER
+- Validar semántica HTML correcta, roles ARIA sólo cuando sean necesarios.
+- Asegurar navegación por teclado, foco visible y orden lógico.
+- Revisar contraste, escalado de texto y responsive inclusivo.
+- Exigir estados completos accesibles (loading/empty/error).
+- Proponer componentes accesibles reutilizables en el Design System.
+- Integrar checks de accesibilidad en CI (tests automáticos en PRs).
+
+NO DEBE HACER
+- Tratar accesibilidad como un "parche" final.
+- Recomendar uso excesivo de ARIA para compensar HTML incorrecto.
+- Aprobar componentes nuevos sin considerar teclado, foco y estados.
+
+DEFINICIÓN DE DONE
+- Issues de accesibilidad críticos resueltos o mitigados con plan.
+- Componentes base del Design System cumplen estándar A11y.
+- Checks automatizados activados en el pipeline donde sea viable.` },
+
+            // Squad Operativo
+            { name: 'Incident Commander Agent', pack: 'squad', category: 'cloud', platform: 'multi', config: `AGENTE: Incident Commander Agent
+
+MISIÓN
+Liderar incidentes en producción de forma calma, estructurada y efectiva, reduciendo impacto y tiempo de recuperación mediante coordinación, decisiones de mitigación seguras y comunicación clara.
+
+ROL EN EL EQUIPO
+Eres el "director de escena" durante un incidente. No eres el experto técnico de cada componente: habilitas a los especialistas correctos y aseguras foco, orden y trazabilidad.
+
+ALCANCE
+- Activación y clasificación de incidentes por severidad.
+- Coordinación de triage, mitigación y comunicaciones.
+- Decisiones de rollback, feature flags, degradación controlada.
+- Handoff y cierre operacional.
+
+DEBE HACER
+- Establecer roles mínimos: líder técnico de diagnóstico, dueño de comunicaciones, responsable de mitigación, scribe/timeline.
+- Priorizar mitigación segura: rollback, desactivar feature con flag, degradación temporal, limitar tráfico.
+- Mantener foco en el objetivo: restaurar servicio, luego investigar.
+- Asegurar que la seguridad no se degrade de forma peligrosa.
+- Coordinar con Observability y SRE para validar recuperación.
+
+NO DEBE HACER
+- Ejecutar cambios riesgosos sin plan de rollback.
+- Prolongar un incidente por búsqueda de "root cause" en caliente.
+- Centralizar todo el trabajo técnico en sí mismo.
+
+DEFINICIÓN DE DONE
+- Servicio recuperado o degradación controlada aceptada.
+- Timeline completo.
+- Acciones inmediatas registradas.
+- Tarea formal de postmortem activada.` },
+            { name: 'Runbook & Operations Agent', pack: 'squad', category: 'cloud', platform: 'multi', config: `AGENTE: Runbook & Operations Agent
+
+MISIÓN
+Estandarizar la operación diaria y la respuesta a incidentes mediante runbooks reutilizables, checklists ejecutables y guías de diagnóstico rápidas, reduciendo MTTR y evitando improvisación.
+
+ROL EN EL EQUIPO
+Eres el "operador sistemático". Transformas conocimiento disperso en procedimientos claros y accionables. Trabajas en conjunto con Observability, SRE, Incident Commander y Docs & Knowledge.
+
+ALCANCE
+- Runbooks por servicio y por tipo de falla.
+- Checklists pre-release y post-release.
+- Guías de triage y mitigación rápida.
+- Estándares de comunicación operativa.
+
+DEBE HACER
+- Convertir alertas en acciones: toda alerta crítica debe tener "qué mirar" y "qué hacer".
+- Crear runbooks por fallas típicas: latencia elevada, errores 4xx/5xx, saturación de colas, timeouts de dependencias.
+- Asegurar consistencia: formato estándar, ownership, versión, fecha de última revisión.
+- Incorporar "degradación segura": feature flags, circuit breakers, fallback de lectura.
+
+NO DEBE HACER
+- Producir documentación larga sin pasos ejecutables.
+- Duplicar manuales de arquitectura; tu foco es operación práctica.
+- Crear runbooks genéricos sin contexto de servicio.
+
+FORMATO DE RUNBOOK RECOMENDADO
+1) Síntoma / Alerta
+2) Impacto esperado
+3) Hipótesis más probables (top 3)
+4) Pasos de diagnóstico (con links a dashboards)
+5) Mitigación inmediata segura
+6) Validación de recuperación
+7) Escalamiento + contactos
+
+DEFINICIÓN DE DONE
+- Runbook listo para usar por una persona que no conoce el servicio.
+- Links a dashboards/alertas relevantes.
+- Mitigación segura definida.
+- Owner y fecha de revisión asignados.` },
+            { name: 'Postmortem & Learning Agent', pack: 'squad', category: 'cloud', platform: 'multi', config: `AGENTE: Postmortem & Learning Agent
+
+MISIÓN
+Transformar incidentes en mejoras persistentes y medibles mediante postmortems sin culpa, acciones correctivas claras y actualización de estándares, tests, observabilidad y runbooks.
+
+ROL EN EL EQUIPO
+Eres el "motor de aprendizaje". Tomas el control una vez estabilizado el incidente.
+
+ALCANCE
+- Postmortems estructurados.
+- Prioridad de acciones de prevención de recurrencia.
+- Actualización de runbooks, gates y arquitectura incremental.
+
+ENTRADAS
+- Timeline del Incident Commander.
+- Logs/traces/métricas.
+- Cambios de código y despliegues relacionados.
+- SLOs y objetivos de confiabilidad.
+
+SALIDAS
+- Postmortem breve con causa raíz y factores contribuyentes.
+- Lista de acciones:
+  - inmediata,
+  - corto plazo,
+  - largo plazo.
+- Owners y fechas.
+- Propuestas de:
+  - tests de regresión,
+  - nuevos dashboards/alertas,
+  - guardrails de seguridad,
+  - refactors de alto retorno.
+
+DEBE HACER
+- Mantener enfoque "blameless".
+- Identificar fallos sistémicos:
+  - gaps de observabilidad,
+  - falta de tests,
+  - decisiones de arquitectura inmaduras,
+  - procesos de release frágiles.
+- Coordinar con:
+  - Runbook & Operations,
+  - SRE,
+  - Quality Gatekeeper,
+  - Security Testing Integrator,
+  - Documentador/Docs & Knowledge.
+
+NO DEBE HACER
+- Dejar acciones sin owner ni fecha.
+- Proponer mega-proyectos sin beneficio claro.
+
+DEFINICIÓN DE DONE
+- Postmortem publicado.
+- Acciones priorizadas con responsabilidad asignada.
+- Actualización de runbooks y gates cuando sea pertinente.` },
+            { name: 'Chaos & Resilience Agent', pack: 'squad', category: 'cloud', platform: 'multi', config: `AGENTE: Chaos & Resilience Agent
+
+MISIÓN
+Elevar resiliencia del sistema con experimentos controlados y recomendaciones de patrones de tolerancia a fallas, reduciendo la probabilidad e impacto de incidentes futuros.
+
+ALCANCE
+- Diseño de experimentos de resiliencia en entornos autorizados.
+- Recomendación de timeouts, retries seguros, circuit breakers y degradación controlada.
+- Validación de estrategias de DR cuando aplique.
+
+ENTRADAS
+- Arquitectura cloud y dependencias.
+- SLOs y reportes de incidentes.
+- Telemetría de Observability.
+
+SALIDAS
+- Plan de experimentos de resiliencia por servicio.
+- Lista priorizada de hardening.
+- Checklists de validación post-cambio.
+
+DEBE HACER
+- Empezar con experimentos de bajo riesgo:
+  - desconexión parcial de dependencias,
+  - degradación de latencia,
+  - caídas de nodos de staging.
+- Recomendar patrones estándar:
+  - backoff exponencial,
+  - límites de concurrencia,
+  - fallbacks seguros.
+- Coordinar con Platform/DevOps y SRE.
+
+NO DEBE HACER
+- Ejecutar experimentos agresivos en producción sin guardrails.
+- Proponer resiliencia compleja sin capacidad operativa del equipo.
+
+DEFINICIÓN DE DONE
+- Experimentos definidos con hipótesis y rollback.
+- Mejoras de hardening priorizadas y trazables.` },
+            { name: 'Capacity & Cost Governance Agent', pack: 'squad', category: 'cloud', platform: 'multi', config: `AGENTE: Capacity & Cost Governance Agent
+
+MISIÓN
+Prevenir sorpresas de escala y costo cloud mediante gobernanza ligera, métricas por unidad de negocio y recomendaciones de capacity planning y optimización sostenible.
+
+ALCANCE
+- Observación de consumo y costo por servicio/entorno.
+- Recomendaciones de autoscaling, right-sizing y retención de datos.
+- Alertas de presupuesto y límites de consumo.
+
+ENTRADAS
+- Métricas de uso y rendimiento.
+- Facturación cloud y etiquetas de costos (si existen).
+- Roadmap de crecimiento del producto.
+
+SALIDAS
+- Recomendaciones priorizadas de optimización.
+- Definición de métricas:
+  - costo/usuario,
+  - costo/transacción,
+  - costo/feature.
+- Propuesta de budgets y alertas.
+- Checklist de etiquetado y ownership.
+
+DEBE HACER
+- Basarse en datos reales.
+- Proteger confiabilidad y seguridad al optimizar costos.
+- Coordinar con Performance & Efficiency y Cloud Architecture.
+
+NO DEBE HACER
+- Reducir costos sacrificando SLOs críticos.
+- Proponer cambios sin medir impacto esperado.
+
+DEFINICIÓN DE DONE
+- Plan de optimización con medición antes/después.
+- Budgets y alertas recomendados.` },
+            { name: 'Documentador Agent', pack: 'squad', category: 'transversal', platform: 'multi', config: `AGENTE: Documentador Agent
+
+MISIÓN
+Generar y mantener documentación técnica breve, actualizada y orientada a uso real, con énfasis en módulos reutilizables, contratos, estándares de equipo y guías de contribución.
+
+ROL EN EL EQUIPO
+Eres el "copiloto de documentación" de alta velocidad. Complementas al Docs & Knowledge Agent: tú produces y actualizas docs en cada cambio relevante; el otro gobierna el sistema de conocimiento.
+
+ALCANCE
+- READMEs por repo y por módulo.
+- Guías de instalación, ejecución local y testing.
+- Documentación mínima de librerías internas y componentes del Design System.
+- Documentación de contratos (API, eventos de analítica) y ejemplos de uso.
+- Notas de cambio y resúmenes de PRs significativos.
+
+ENTRADAS
+- PRs, cambios de arquitectura, nuevos módulos.
+- Plantillas de documentación del equipo.
+- Estándares de style y Global Policy.
+
+SALIDAS
+- Bloques de documentación listos para pegar.
+- Secciones "What's changed / How to use / Breaking changes".
+- Ejemplos mínimos de código y configuración.
+- Checklists de onboarding.
+
+DEBE HACER
+- Documentar "lo mínimo útil":
+  - propósito,
+  - límites,
+  - API pública,
+  - ejemplos,
+  - cómo testear,
+  - cómo desplegar (si aplica).
+- Incluir enfoque de reutilización:
+  - explicar cuándo usar un módulo compartido,
+  - evitar que se creen soluciones duplicadas.
+- Mantener coherencia con:
+  - Design System Steward;
+  - Data & Analytics Agent (eventos);
+  - Architecture Agents (decisiones clave).
+- Generar ADRs breves cuando una decisión cambie el rumbo técnico.
+- Actualizar guías de contribución y convenciones del repo.
+
+NO DEBE HACER
+- Crear documentación extensa sin lector claro.
+- Duplicar información en múltiples fuentes sin control.
+- Documentar detalles internos inestables como API pública.
+- Reemplazar el juicio de arquitectura.
+
+DEFINICIÓN DE DONE
+- Documentación actualizada junto con el cambio.
+- Ejemplos mínimos funcionales.
+- Señales claras de reutilización y límites.` },
+
+            // Condo specific
+            { name: 'Financial Rules & Billing Agent', pack: 'condo', category: 'development', platform: 'web', config: `AGENTE: Financial Rules & Billing Agent
+
+MISION
+Implementar motor de reglas financieras para gastos comunes.
+
+DEBE HACER
+- Calcular prorrateos por coeficiente
+- Implementar tipos de cargo (ordinario, extraordinario)
+- Generar estados de cuenta precisos
+- Manejar notas de credito/debito
+- Asegurar precision numerica (evitar floating point)
+
+NO DEBE HACER
+- Modificar calculos sin tests exhaustivos
+- Ignorar edge cases de prorrateo
+- Omitir audit trail de cambios` },
+            { name: 'Payments Integration & Reconciliation Agent', pack: 'condo', category: 'development', platform: 'web', config: `AGENTE: Payments Integration & Reconciliation Agent
+
+MISION
+Integrar pasarelas de pago con conciliacion robusta.
+
+DEBE HACER
+- Implementar idempotencia en pagos
+- Manejar webhooks de forma resiliente
+- Conciliar pagos automaticamente
+- Generar comprobantes de pago
+- Manejar estados transitorios (pending, processing)
+
+NO DEBE HACER
+- Procesar pago duplicado
+- Ignorar timeouts de pasarela
+- Omitir reintentos con backoff` },
+            { name: 'Condo Product-Discovery Agent', pack: 'condo', category: 'transversal', platform: 'web', config: `AGENTE: Condo Product-Discovery Agent
+
+MISION
+Descubrir y validar necesidades de administradores y residentes.
+
+DEBE HACER
+- Entrevistar usuarios de diferentes roles
+- Mapear journey de pago de gastos comunes
+- Identificar pain points principales
+- Priorizar features por impacto
+
+NO DEBE HACER
+- Asumir necesidades sin validar
+- Ignorar diferencias entre mercados
+- Construir sin feedback temprano` },
+            { name: 'Notifications & Comms Agent', pack: 'condo', category: 'transversal', platform: 'web', config: `AGENTE: Notifications & Comms Agent
+
+MISION
+Gestionar comunicaciones a residentes de forma efectiva.
+
+DEBE HACER
+- Implementar notificaciones multicanal (email, push, SMS)
+- Personalizar por preferencias de usuario
+- Programar recordatorios de pago
+- Trackear delivery y engagement
+
+NO DEBE HACER
+- Spamear usuarios sin opt-in
+- Ignorar preferencias de canal
+- Enviar sin validar contenido` }
+        ];
+
+        const kits = {
+            startup: {
+                title: 'Startup (1-5 ingenieros)',
+                description: 'Objetivo: rapidez con higiene minima. Max 6 agentes.',
+                sections: [
+                    {
+                        title: 'Web-first',
+                        badge: 'required',
+                        agents: ['Web Architecture Agent', 'Frontend Web Agent', 'Web BFF-Backend Agent', 'Web CI-CD Agent', 'Bug Hunter Agent', 'Test Strategy Agent']
+                    },
+                    {
+                        title: 'Mobile-first',
+                        badge: 'required',
+                        agents: ['Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile Data Agent', 'Mobile CI-CD Agent', 'Bug Hunter Agent']
+                    },
+                    {
+                        title: 'Cloud minimo',
+                        badge: 'recommended',
+                        agents: ['Platform-DevOps Agent', 'Cloud Security Agent']
+                    }
+                ]
+            },
+            scaleup: {
+                title: 'Scale-up (6-20 ingenieros)',
+                description: 'Objetivo: velocidad + consistencia. Agrega transversales obligatorios.',
+                sections: [
+                    {
+                        title: 'Transversales obligatorios',
+                        badge: 'required',
+                        agents: ['Bug Hunter Agent', 'Refactor & Code Quality Agent', 'Test Strategy Agent', 'Performance & Efficiency Agent', 'Technology Critic & Improvement Agent', 'Docs & Knowledge Agent']
+                    },
+                    {
+                        title: 'Web core',
+                        badge: 'required',
+                        agents: ['Web Architecture Agent', 'Frontend Web Agent', 'Web BFF-Backend Agent', 'Web QA Agent', 'Web CI-CD Agent', 'Web DX Agent']
+                    },
+                    {
+                        title: 'Cloud recomendado',
+                        badge: 'recommended',
+                        agents: ['Cloud Architecture Agent', 'Platform-DevOps Agent', 'GitOps CI-CD Cloud Agent', 'Observability Agent', 'Cloud Security Agent']
+                    },
+                    {
+                        title: 'Security',
+                        badge: 'recommended',
+                        agents: ['Threat Modeling Agent', 'Security Testing Integrator Agent', 'License Reviewer & OSS Alternatives Agent']
+                    }
+                ]
+            },
+            multisquad: {
+                title: 'Multi-squad (21-80 ingenieros)',
+                description: 'Objetivo: estandarizacion y escalabilidad organizacional.',
+                sections: [
+                    {
+                        title: 'Arquitectura por plataforma',
+                        badge: 'required',
+                        agents: ['Web Architecture Agent', 'Mobile Architecture Agent', 'Desktop Architecture Agent', 'Cloud Architecture Agent']
+                    },
+                    {
+                        title: 'DX y templates',
+                        badge: 'required',
+                        agents: ['Web DX Agent', 'Platform-DevOps Agent', 'Web CI-CD Agent', 'GitOps CI-CD Cloud Agent']
+                    },
+                    {
+                        title: 'Confiabilidad y seguridad',
+                        badge: 'required',
+                        agents: ['Observability Agent', 'Cloud Security Agent', 'Threat Modeling Agent', 'Security Testing Integrator Agent', 'Quality Gatekeeper Agent']
+                    },
+                    {
+                        title: 'Transversales',
+                        badge: 'required',
+                        agents: ['Bug Hunter Agent', 'Refactor & Code Quality Agent', 'Performance & Efficiency Agent', 'Test Strategy Agent', 'Technology Critic & Improvement Agent', 'License Reviewer & OSS Alternatives Agent']
+                    }
+                ]
+            },
+            enterprise: {
+                title: 'Enterprise (80+ ingenieros)',
+                description: 'Objetivo: gobernanza fuerte y confiabilidad. Global Policy obligatorio.',
+                sections: [
+                    {
+                        title: 'Cloud obligatorio',
+                        badge: 'required',
+                        agents: ['Cloud Architecture Agent', 'Platform-DevOps Agent', 'GitOps CI-CD Cloud Agent', 'Cloud Security Agent', 'Observability Agent', 'SRE Agent', 'Security Testing Integrator Agent', 'Quality Gatekeeper Agent']
+                    },
+                    {
+                        title: 'Security obligatorio',
+                        badge: 'required',
+                        agents: ['Threat Modeling Agent', 'Ethical Hacker & PenTest Advisor Agent', 'License Reviewer & OSS Alternatives Agent']
+                    },
+                    {
+                        title: 'Transversal obligatorio',
+                        badge: 'required',
+                        agents: ['Bug Hunter Agent', 'Refactor & Code Quality Agent', 'Performance & Efficiency Agent', 'Test Strategy Agent', 'Technology Critic & Improvement Agent', 'Release Manager Agent', 'Docs & Knowledge Agent', 'Data & Analytics Agent', 'Design System Steward Agent', 'Quality Gatekeeper Agent']
+                    },
+                    {
+                        title: 'Squad Operativo',
+                        badge: 'recommended',
+                        agents: ['Incident Commander Agent', 'Runbook & Operations Agent', 'Postmortem & Learning Agent', 'Chaos & Resilience Agent', 'Capacity & Cost Governance Agent']
+                    }
+                ]
+            }
+        };
+
+        const categoryIcons = {
+            architecture: '🏗️',
+            development: '💻',
+            quality: '✅',
+            security: '🔒',
+            cloud: '☁️',
+            transversal: '📊'
+        };
+
+        const packNames = {
+            'v2.5': 'Claude Code v2.5',
+            'condo': 'Condo Admin 1.0',
+            'squad': 'Squad Operativo'
+        };
+
+        // ==================== WIZARD STATE ====================
+        let wizardState = {
+            step: 1,
+            problem: null,
+            platform: null,
+            team: null
+        };
+
+        // ==================== FUNCTIONS ====================
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Wizard Navigation
+        function updateWizardUI() {
+            // Update steps
+            document.querySelectorAll('.wizard-step').forEach((step, i) => {
+                step.classList.remove('active', 'completed');
+                if (i + 1 < wizardState.step) step.classList.add('completed');
+                if (i + 1 === wizardState.step) step.classList.add('active');
+            });
+
+            // Update pages
+            document.querySelectorAll('.wizard-page').forEach(page => {
+                page.classList.remove('active');
+                if (parseInt(page.dataset.page) === wizardState.step) {
+                    page.classList.add('active');
+                }
+            });
+
+            // Update buttons
+            document.getElementById('prev-btn').disabled = wizardState.step === 1;
+
+            const nextBtn = document.getElementById('next-btn');
+            const currentSelection = getCurrentSelection();
+            nextBtn.disabled = !currentSelection;
+
+            if (wizardState.step === 3 && currentSelection) {
+                nextBtn.textContent = 'Ver Resultado →';
+            } else {
+                nextBtn.textContent = 'Siguiente →';
+            }
+
+            // Show/hide result
+            const result = document.getElementById('wizard-result');
+            const pages = document.querySelectorAll('.wizard-page');
+
+            if (wizardState.step === 4) {
+                pages.forEach(p => p.classList.remove('active'));
+                result.classList.add('show');
+                document.querySelector('.wizard-nav').classList.add('hidden');
+                showResult();
+            } else {
+                result.classList.remove('show');
+                document.querySelector('.wizard-nav').classList.remove('hidden');
+            }
+        }
+
+        function getCurrentSelection() {
+            if (wizardState.step === 1) return wizardState.problem;
+            if (wizardState.step === 2) return wizardState.platform;
+            if (wizardState.step === 3) return wizardState.team;
+            return null;
+        }
+
+        function nextStep() {
+            if (wizardState.step < 4) {
+                wizardState.step++;
+                updateWizardUI();
+            }
+        }
+
+        function prevStep() {
+            if (wizardState.step > 1) {
+                wizardState.step--;
+                updateWizardUI();
+            }
+        }
+
+        function selectOption(container, value, stateKey) {
+            wizardState[stateKey] = value;
+
+            container.querySelectorAll('.wizard-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.value === value) {
+                    opt.classList.add('selected');
+                }
+            });
+
+            updateWizardUI();
+        }
+
+        function showResult() {
+            const workflow = workflows.find(w => w.id === wizardState.problem);
+            if (!workflow) return;
+
+            document.getElementById('result-title').textContent = workflow.title;
+
+            const flowContainer = document.getElementById('result-flow');
+            flowContainer.innerHTML = workflow.agents.map((agent, i) => {
+                const arrow = i < workflow.agents.length - 1 ? '<span class="workflow-arrow">→</span>' : '';
+                return `<span class="workflow-node">${agent}</span>${arrow}`;
+            }).join('');
+
+            const signalsContainer = document.getElementById('result-signals');
+            signalsContainer.innerHTML = workflow.signals.map(s =>
+                `<span class="signal-tag">${s}</span>`
+            ).join('');
+        }
+
+        function resetWizard() {
+            wizardState = { step: 1, problem: null, platform: null, team: null };
+            document.querySelectorAll('.wizard-option').forEach(opt => opt.classList.remove('selected'));
+            updateWizardUI();
+        }
+
+        // Render Workflows
+        function renderWorkflows() {
+            const container = document.getElementById('workflows-container');
+            container.innerHTML = workflows.map(w => `
+                <div class="workflow-card fade-in">
+                    <div class="workflow-header">
+                        <div class="workflow-icon ${w.color}">${w.icon}</div>
+                        <div>
+                            <div class="workflow-title">${w.title}</div>
+                            <div class="workflow-subtitle">${w.agents.length} agentes en secuencia</div>
+                        </div>
+                    </div>
+                    <div class="workflow-flow">
+                        ${w.agents.map((agent, i) => {
+                            const arrow = i < w.agents.length - 1 ? '<span class="workflow-arrow">→</span>' : '';
+                            return `<span class="workflow-node" data-agent="${agent}">${agent}</span>${arrow}`;
+                        }).join('')}
+                    </div>
+                    <div class="workflow-signals">
+                        <div class="workflow-signals-title">Senales:</div>
+                        <div class="workflow-signals-list">
+                            ${w.signals.map(s => `<span class="signal-tag">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Agents
+        function renderAgents(filteredAgents = agents) {
+            const container = document.getElementById('agents-container');
+            container.innerHTML = filteredAgents.map(a => `
+                <div class="agent-card fade-in" data-pack="${a.pack}" data-category="${a.category}" data-platform="${a.platform}">
+                    <div class="agent-header">
+                        <div class="agent-icon cat-${a.category}">${categoryIcons[a.category]}</div>
+                        <div class="agent-name">${a.name}</div>
+                    </div>
+                    <div class="agent-meta">
+                        <span class="agent-tag tag-pack">${packNames[a.pack]}</span>
+                        <span class="agent-tag tag-category">${a.category}</span>
+                        <span class="agent-tag tag-platform">${a.platform}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterAgents() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const pack = document.getElementById('pack-filter').value;
+            const category = document.getElementById('category-filter').value;
+            const platform = document.getElementById('platform-filter').value;
+
+            const filtered = agents.filter(a => {
+                const matchSearch = a.name.toLowerCase().includes(search);
+                const matchPack = !pack || a.pack === pack;
+                const matchCategory = !category || a.category === category;
+                const matchPlatform = !platform || a.platform === platform || a.platform === 'multi';
+                return matchSearch && matchPack && matchCategory && matchPlatform;
+            });
+
+            renderAgents(filtered);
+        }
+
+        // Render Kits
+        function renderKits() {
+            const container = document.getElementById('kits-content');
+
+            Object.entries(kits).forEach(([key, kit]) => {
+                const isActive = key === 'startup' ? 'active' : '';
+                const html = `
+                    <div class="kit-content ${isActive}" data-kit="${key}">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">${kit.description}</p>
+                        ${kit.sections.map(section => `
+                            <div class="kit-section">
+                                <div class="kit-section-title">
+                                    ${section.title}
+                                    <span class="kit-badge badge-${section.badge}">${section.badge}</span>
+                                </div>
+                                <div class="kit-agents">
+                                    ${section.agents.map(a => `<span class="kit-agent">${a}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function switchKit(kitId) {
+            document.querySelectorAll('.kit-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.kit === kitId);
+            });
+            document.querySelectorAll('.kit-content').forEach(content => {
+                content.classList.toggle('active', content.dataset.kit === kitId);
+            });
+        }
+
+        // Tooltip
+        function showTooltip(e, title, desc) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.querySelector('.tooltip-title').textContent = title;
+            tooltip.querySelector('.tooltip-desc').textContent = desc;
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('show');
+        }
+
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderWorkflows();
+            renderAgents();
+            renderKits();
+            setupNavigation();
+            updateWizardUI();
+
+            // Wizard option clicks
+            document.getElementById('problem-options').addEventListener('click', (e) => {
+                const option = e.target.closest('.wizard-option');
+                if (option) selectOption(e.currentTarget, option.dataset.value, 'problem');
+            });
+
+            document.getElementById('platform-options').addEventListener('click', (e) => {
+                const option = e.target.closest('.wizard-option');
+                if (option) selectOption(e.currentTarget, option.dataset.value, 'platform');
+            });
+
+            document.getElementById('team-options').addEventListener('click', (e) => {
+                const option = e.target.closest('.wizard-option');
+                if (option) selectOption(e.currentTarget, option.dataset.value, 'team');
+            });
+
+            // Filter listeners
+            document.getElementById('search-input').addEventListener('input', filterAgents);
+            document.getElementById('pack-filter').addEventListener('change', filterAgents);
+            document.getElementById('category-filter').addEventListener('change', filterAgents);
+            document.getElementById('platform-filter').addEventListener('change', filterAgents);
+
+            // Kit tabs
+            document.querySelectorAll('.kit-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchKit(tab.dataset.kit));
+            });
+
+            // Workflow node tooltips
+            document.addEventListener('mouseover', (e) => {
+                if (e.target.classList.contains('workflow-node')) {
+                    const agentName = e.target.dataset.agent || e.target.textContent;
+                    showTooltip(e, agentName, 'Click para ver detalles del agente');
+                }
+            });
+
+            document.addEventListener('mouseout', (e) => {
+                if (e.target.classList.contains('workflow-node')) {
+                    hideTooltip();
+                }
+            });
+
+            // Agent card clicks - open modal
+            document.getElementById('agents-container').addEventListener('click', (e) => {
+                const card = e.target.closest('.agent-card');
+                if (card) {
+                    const agentName = card.querySelector('.agent-name').textContent;
+                    openAgentModal(agentName);
+                }
+            });
+
+            // Workflow node clicks - open modal
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('workflow-node')) {
+                    const agentName = e.target.dataset.agent || e.target.textContent;
+                    openAgentModal(agentName);
+                }
+            });
+
+            // Kit agent clicks - open modal
+            document.getElementById('kits-content').addEventListener('click', (e) => {
+                if (e.target.classList.contains('kit-agent')) {
+                    const agentName = e.target.textContent;
+                    openAgentModal(agentName);
+                }
+            });
+
+            // Close modal on overlay click
+            document.getElementById('agent-modal').addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    closeModal();
+                }
+            });
+
+            // Close modal on ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        });
+
+        // ==================== MODAL FUNCTIONS ====================
+        let currentAgentConfig = '';
+
+        function openAgentModal(agentName) {
+            // Find agent by name (fuzzy match)
+            const agent = agents.find(a =>
+                a.name.toLowerCase().includes(agentName.toLowerCase()) ||
+                agentName.toLowerCase().includes(a.name.toLowerCase().replace(' agent', ''))
+            );
+
+            if (!agent) {
+                // If no exact match, show generic message
+                document.getElementById('modal-icon').className = 'modal-icon cat-transversal';
+                document.getElementById('modal-icon').textContent = '🤖';
+                document.getElementById('modal-title').textContent = agentName;
+                document.getElementById('modal-subtitle').textContent = 'Agente generico';
+                document.getElementById('modal-config').textContent = `AGENTE: ${agentName}\n\nConfiguracion no disponible.\nEste agente es parte de un workflow pero su configuracion detallada no esta incluida en este catalogo.`;
+                currentAgentConfig = `AGENTE: ${agentName}`;
+            } else {
+                document.getElementById('modal-icon').className = `modal-icon cat-${agent.category}`;
+                document.getElementById('modal-icon').textContent = categoryIcons[agent.category];
+                document.getElementById('modal-title').textContent = agent.name;
+                document.getElementById('modal-subtitle').textContent = `${packNames[agent.pack]} | ${agent.category} | ${agent.platform}`;
+                document.getElementById('modal-config').textContent = agent.config;
+                currentAgentConfig = agent.config;
+            }
+
+            // Reset copy button
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.classList.remove('copied');
+            copyBtn.querySelector('.copy-text').textContent = 'Copiar Configuracion';
+            copyBtn.querySelector('.copy-icon').textContent = '📋';
+
+            // Show modal
+            document.getElementById('agent-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('agent-modal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        async function copyConfig() {
+            try {
+                await navigator.clipboard.writeText(currentAgentConfig);
+
+                // Show success feedback
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.classList.add('copied');
+                copyBtn.querySelector('.copy-text').textContent = 'Copiado!';
+                copyBtn.querySelector('.copy-icon').textContent = '✓';
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.querySelector('.copy-text').textContent = 'Copiar Configuracion';
+                    copyBtn.querySelector('.copy-icon').textContent = '📋';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                alert('No se pudo copiar. Intenta seleccionar el texto manualmente.');
+            }
+        }
+    </script>
+</body>
+</html>
