@@ -476,4 +476,4 @@ Para uso interno y personalización por organización.
 
 ---
 
-**Última actualización:** Diciembre 2024
+**Última actualización:** Diciembre 2025
