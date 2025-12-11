@@ -1,0 +1,295 @@
+{
+  "version": "2.5",
+  "purpose": "Ultra agent catalog with expanded security (ethical hacking, threat modeling, DevSecOps gates) for Claude Code.",
+  "global_policy_file": "agents/global/Global Policy Agent Rules.txt",
+  "router_agent_file": "agents/global/Agent Selector & Orchestration Advisor.txt",
+  "human_index_file": "agents/global/index.txt",
+  "platforms": {
+    "web": {
+      "agents": [
+        "Web Architecture Agent.txt",
+        "Frontend Web Agent.txt",
+        "Web BFF-Backend Agent.txt",
+        "Web QA Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Web DX Agent.txt",
+        "Web Product-Discovery Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Design System Steward Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "mobile": {
+      "agents": [
+        "Mobile Architecture Agent.txt",
+        "Mobile UI Agent.txt",
+        "Mobile Data Agent.txt",
+        "Mobile QA Agent.txt",
+        "Mobile CI-CD Agent.txt",
+        "Mobile Security Agent.txt",
+        "Design System Steward Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "desktop": {
+      "agents": [
+        "Desktop Architecture Agent.txt",
+        "Desktop Integration Agent.txt",
+        "Desktop CI-CD Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "cloud": {
+      "agents": [
+        "Cloud Architecture Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt",
+        "Cloud Security Agent.txt",
+        "Observability Agent.txt",
+        "SRE Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "Security Testing Integrator Agent.txt"
+      ]
+    },
+    "security": {
+      "agents": [
+        "Ethical Hacker & PenTest Advisor Agent.txt",
+        "Threat Modeling Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Cloud Security Agent.txt",
+        "Mobile Security Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ]
+    },
+    "transversal": {
+      "agents": [
+        "Bug Hunter Agent.txt",
+        "Refactor & Code Quality Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Test Strategy Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Release Manager Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "Data & Analytics Agent.txt",
+        "Design System Steward Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ]
+    }
+  },
+  "use_case_routing": {
+    "new_feature_high_risk": [
+      "Web Product-Discovery Agent.txt",
+      "Design System Steward Agent.txt",
+      "Web Accessibility Agent.txt",
+      "Web Architecture Agent.txt",
+      "Threat Modeling Agent.txt",
+      "Security Testing Integrator Agent.txt",
+      "Quality Gatekeeper Agent.txt",
+      "Release Manager Agent.txt",
+      "Observability Agent.txt"
+    ],
+    "bug_in_production": [
+      "Bug Hunter Agent.txt",
+      "Observability Agent.txt",
+      "Ethical Hacker & PenTest Advisor Agent.txt",
+      "Test Strategy Agent.txt",
+      "Web QA Agent.txt",
+      "Web CI-CD Agent.txt",
+      "Quality Gatekeeper Agent.txt"
+    ],
+    "tech_stack_change": [
+      "Technology Critic & Improvement Agent.txt",
+      "License Reviewer & OSS Alternatives Agent.txt",
+      "Threat Modeling Agent.txt",
+      "Cloud Security Agent.txt",
+      "Web/Mobile/Cloud Architecture Agent.txt",
+      "Security Testing Integrator Agent.txt"
+    ],
+    "reduce_cloud_cost_latency": [
+      "Observability Agent.txt",
+      "Performance & Efficiency Agent.txt",
+      "Cloud Architecture Agent.txt",
+      "Platform-DevOps Agent.txt",
+      "GitOps CI-CD Cloud Agent.txt",
+      "Cloud Security Agent.txt"
+    ],
+    "compliance_licensing": [
+      "License Reviewer & OSS Alternatives Agent.txt",
+      "Technology Critic & Improvement Agent.txt",
+      "Docs & Knowledge Agent.txt",
+      "Quality Gatekeeper Agent.txt"
+    ]
+  },
+  "recommended_kits": {
+    "startup_early_1_5": {
+      "max_agents_total": 6,
+      "web_first": [
+        "Web Architecture Agent.txt",
+        "Frontend Web Agent.txt",
+        "Web BFF-Backend Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Bug Hunter Agent.txt",
+        "Test Strategy Agent.txt"
+      ],
+      "mobile_first": [
+        "Mobile Architecture Agent.txt",
+        "Mobile UI Agent.txt",
+        "Mobile Data Agent.txt",
+        "Mobile CI-CD Agent.txt",
+        "Bug Hunter Agent.txt"
+      ],
+      "desktop_first": [
+        "Desktop Architecture Agent.txt",
+        "Desktop Integration Agent.txt",
+        "Desktop CI-CD Agent.txt",
+        "Bug Hunter Agent.txt"
+      ],
+      "cloud_minimum_guardrails": [
+        "Platform-DevOps Agent.txt",
+        "Cloud Security Agent.txt"
+      ],
+      "security_optional_when_needed": [
+        "Threat Modeling Agent.txt",
+        "Ethical Hacker & PenTest Advisor Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ]
+    },
+    "scaleup_6_20": {
+      "web_core": [
+        "Web Architecture Agent.txt",
+        "Frontend Web Agent.txt",
+        "Web BFF-Backend Agent.txt",
+        "Web QA Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Web DX Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Design System Steward Agent.txt"
+      ],
+      "mobile_core": [
+        "Mobile Architecture Agent.txt",
+        "Mobile UI Agent.txt",
+        "Mobile Data Agent.txt",
+        "Mobile QA Agent.txt",
+        "Mobile CI-CD Agent.txt",
+        "Mobile Security Agent.txt",
+        "Design System Steward Agent.txt"
+      ],
+      "transversal_mandatory": [
+        "Bug Hunter Agent.txt",
+        "Refactor & Code Quality Agent.txt",
+        "Test Strategy Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Data & Analytics Agent.txt"
+      ],
+      "security_recommended": [
+        "Threat Modeling Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ],
+      "quality_governance_recommended": [
+        "Quality Gatekeeper Agent.txt"
+      ],
+      "release_optional_but_recommended": [
+        "Release Manager Agent.txt"
+      ],
+      "cloud_recommended": [
+        "Cloud Architecture Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt",
+        "Observability Agent.txt",
+        "Cloud Security Agent.txt"
+      ]
+    },
+    "multisquad_21_80": {
+      "platform_architecture_required": [
+        "Web Architecture Agent.txt",
+        "Mobile Architecture Agent.txt",
+        "Desktop Architecture Agent.txt",
+        "Cloud Architecture Agent.txt"
+      ],
+      "dx_and_templates_required": [
+        "Web DX Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "Web CI-CD Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt"
+      ],
+      "reliability_security_required": [
+        "Observability Agent.txt",
+        "Cloud Security Agent.txt",
+        "Threat Modeling Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Quality Gatekeeper Agent.txt"
+      ],
+      "accessibility_security_recommended": [
+        "Web Accessibility Agent.txt",
+        "Mobile Security Agent.txt"
+      ],
+      "compliance_recommended": [
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ],
+      "release_recommended": [
+        "Release Manager Agent.txt"
+      ],
+      "knowledge_required": [
+        "Docs & Knowledge Agent.txt"
+      ],
+      "transversal_required": [
+        "Bug Hunter Agent.txt",
+        "Refactor & Code Quality Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Test Strategy Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ]
+    },
+    "enterprise_80_plus": {
+      "global_policy_required": true,
+      "cloud_mandatory": [
+        "Cloud Architecture Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt",
+        "Cloud Security Agent.txt",
+        "Observability Agent.txt",
+        "SRE Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Quality Gatekeeper Agent.txt"
+      ],
+      "security_mandatory": [
+        "Threat Modeling Agent.txt",
+        "Ethical Hacker & PenTest Advisor Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ],
+      "platform_mandatory_where_applicable": [
+        "Web Architecture Agent.txt",
+        "Web QA Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Web DX Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Design System Steward Agent.txt",
+        "Mobile Architecture Agent.txt",
+        "Mobile QA Agent.txt",
+        "Mobile CI-CD Agent.txt",
+        "Mobile Security Agent.txt",
+        "Desktop Architecture Agent.txt",
+        "Desktop CI-CD Agent.txt"
+      ],
+      "transversal_mandatory": [
+        "Bug Hunter Agent.txt",
+        "Refactor & Code Quality Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Test Strategy Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Release Manager Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Data & Analytics Agent.txt",
+        "Design System Steward Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ],
+      "technology_critic_always_on_for_major_decisions": true
+    }
+  }
+}

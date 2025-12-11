@@ -1,0 +1,119 @@
+{
+  "name": "Condo Admin 1.0",
+  "version": "1.0",
+  "purpose": "Domain-specific agent squad for building condominium management system with payments, billing, web portal and mobile app.",
+  "focus_domains": [
+    "common_expenses_billing",
+    "account_statement",
+    "online_payments",
+    "reconciliation",
+    "role_based_access",
+    "notifications",
+    "admin_dashboard"
+  ],
+  "folders": [
+    "global",
+    "product",
+    "architecture",
+    "development",
+    "payments_finance",
+    "quality",
+    "security",
+    "platform_ops",
+    "comms",
+    "docs"
+  ],
+  "agents": {
+    "global": [
+      "Global Policy Agent Rules.txt",
+      "Agent Selector & Orchestration Advisor.txt"
+    ],
+    "product": [
+      "Condo Product-Discovery Agent.txt",
+      "Data & Analytics Agent.txt",
+      "Design System Steward Agent.txt",
+      "Web Accessibility Agent.txt"
+    ],
+    "architecture": [
+      "Condo Domain Model & Architecture Agent.txt",
+      "Condo Interface & API Contracts Agent.txt",
+      "Web Architecture Agent.txt",
+      "Cloud Architecture Agent.txt"
+    ],
+    "development": [
+      "Condo Backend Developer Agent.txt",
+      "Condo Frontend Web Developer Agent.txt",
+      "Condo Mobile Developer Agent.txt",
+      "Frontend Web Agent.txt",
+      "Web BFF-Backend Agent.txt",
+      "Mobile Architecture Agent.txt",
+      "Mobile UI Agent.txt",
+      "Mobile Data Agent.txt"
+    ],
+    "payments_finance": [
+      "Financial Rules & Billing Agent.txt",
+      "Payments Integration & Reconciliation Agent.txt"
+    ],
+    "quality": [
+      "Condo Test Strategy Agent.txt",
+      "Condo QA Agent.txt",
+      "Test Strategy Agent.txt",
+      "Bug Hunter Agent.txt",
+      "Quality Gatekeeper Agent.txt"
+    ],
+    "security": [
+      "Condo Threat Modeling Agent.txt",
+      "Threat Modeling Agent.txt",
+      "Ethical Hacker & PenTest Advisor Agent.txt",
+      "Security Testing Integrator Agent.txt",
+      "Cloud Security Agent.txt",
+      "Mobile Security Agent.txt",
+      "License Reviewer & OSS Alternatives Agent.txt"
+    ],
+    "platform_ops": [
+      "Condo Cloud Platform Agent.txt",
+      "Platform-DevOps Agent.txt",
+      "GitOps CI-CD Cloud Agent.txt",
+      "Observability Agent.txt",
+      "SRE Agent.txt",
+      "Runbook & Operations Agent.txt"
+    ],
+    "comms": [
+      "Notifications & Comms Agent.txt"
+    ],
+    "docs": [
+      "Documentador Agent.txt",
+      "Docs & Knowledge Agent.txt"
+    ]
+  },
+  "recommended_kits": {
+    "mvp_web_only": [
+      "Condo Product-Discovery Agent.txt",
+      "Condo Domain Model & Architecture Agent.txt",
+      "Condo Interface & API Contracts Agent.txt",
+      "Condo Backend Developer Agent.txt",
+      "Condo Frontend Web Developer Agent.txt",
+      "Condo Test Strategy Agent.txt",
+      "Bug Hunter Agent.txt"
+    ],
+    "mvp_web_plus_mobile": [
+      "Condo Product-Discovery Agent.txt",
+      "Condo Domain Model & Architecture Agent.txt",
+      "Condo Interface & API Contracts Agent.txt",
+      "Condo Backend Developer Agent.txt",
+      "Condo Frontend Web Developer Agent.txt",
+      "Condo Mobile Developer Agent.txt",
+      "Condo Test Strategy Agent.txt",
+      "Bug Hunter Agent.txt"
+    ],
+    "payments_robust": [
+      "Financial Rules & Billing Agent.txt",
+      "Payments Integration & Reconciliation Agent.txt",
+      "Condo Threat Modeling Agent.txt",
+      "Cloud Security Agent.txt",
+      "Security Testing Integrator Agent.txt",
+      "Quality Gatekeeper Agent.txt",
+      "Observability Agent.txt"
+    ]
+  }
+}

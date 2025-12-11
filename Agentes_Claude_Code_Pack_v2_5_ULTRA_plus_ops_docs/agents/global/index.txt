@@ -1,0 +1,321 @@
+INDEX.txt — Catálogo de Agentes por Tamaño del Equipo y Madurez
+
+PROPÓSITO
+Este índice te ayuda a seleccionar qué agentes usar según:
+- Producto y plataforma (Web, Mobile, Desktop, Cloud)
+- Tamaño del equipo
+- Nivel de madurez (startup vs scale-up vs enterprise)
+- Objetivo principal (velocidad, calidad, confiabilidad, gobernanza)
+
+Cómo usar este índice
+1) Parte con el “núcleo mínimo” de tu plataforma principal.
+2) Agrega agentes transversales de Code Health tan pronto tengas 2+ repos activos.
+3) Incorpora agentes de Cloud/SRE/Security cuando tu sistema tenga:
+   - tráfico real,
+   - integración con pagos/datos sensibles,
+   - varias squad/streams,
+   - o costo cloud relevante.
+4) Usa Technology Critic cuando la organización:
+   - esté creciendo,
+   - haya señales de “framework sprawl”,
+   - o planee una migración grande.
+
+
+============================================================
+A) LISTA RÁPIDA DE AGENTES
+============================================================
+
+TRANSVERSALES (Code Health)
+- Bug Hunter Agent
+- Refactor & Code Quality Agent
+- Performance & Efficiency Agent
+- Test Strategy Agent
+- Technology Critic & Improvement Agent
+- Docs / Knowledge Agent (si lo agregas a tu set)
+- Developer Experience (DX) Agent
+
+WEB
+- Web Architecture Agent
+- Frontend Web Agent
+- Web BFF/Backend Agent
+- Web QA Agent
+- Web CI/CD Agent
+- Web DX Agent
+- Web Product-Discovery Agent
+
+MOBILE
+- Mobile Architecture Agent
+- Mobile UI Agent
+- Mobile Data Agent
+- Mobile QA Agent
+- Mobile CI/CD Agent
+
+DESKTOP
+- Desktop Architecture Agent
+- Desktop Integration Agent
+- Desktop CI/CD Agent
+
+CLOUD / PLATFORM
+- Cloud Architecture Agent
+- Platform/DevOps Agent
+- GitOps CI/CD Cloud Agent
+- SRE Agent
+- Cloud Security Agent
+- Observability Agent
+
+
+============================================================
+B) KITS RECOMENDADOS POR ESCENARIO
+============================================================
+
+B1) Startup muy temprana (1–5 personas de ingeniería)
+Objetivo: máxima velocidad sin perder higiene mínima.
+
+WEB (si es tu core)
+NÚCLEO
+- Web Architecture Agent (ligero)
+- Frontend Web Agent
+- Web BFF/Backend Agent
+- Web CI/CD Agent
+
+CALIDAD MÍNIMA
+- Bug Hunter Agent
+- Test Strategy Agent
+
+RECOMENDADO SI HAY TIEMPO
+- Web DX Agent
+- Technology Critic & Improvement Agent (uso puntual)
+
+MOBILE (si es tu core)
+NÚCLEO
+- Mobile Architecture Agent
+- Mobile UI Agent
+- Mobile Data Agent
+- Mobile CI/CD Agent
+
+CALIDAD MÍNIMA
+- Bug Hunter Agent
+- Test Strategy Agent
+
+CLOUD
+- Platform/DevOps Agent (muy liviano, enfoque IaC básico)
+- Cloud Security Agent (solo guardrails esenciales)
+
+Nota práctica:
+En este tamaño, un mismo humano suele “operar” varios agentes.
+
+
+B2) Startup en crecimiento / Scale-up (6–20 personas)
+Objetivo: velocidad + consistencia + evitar deuda invisible.
+
+WEB
+NÚCLEO
+- Web Architecture Agent
+- Frontend Web Agent
+- Web BFF/Backend Agent
+- Web QA Agent
+- Web CI/CD Agent
+
+TRANSVERSALES YA OBLIGATORIOS
+- Bug Hunter Agent
+- Refactor & Code Quality Agent
+- Test Strategy Agent
+- Performance & Efficiency Agent
+- Web DX Agent
+
+GOBERNANZA LIGERA
+- Technology Critic & Improvement Agent
+
+MOBILE
+NÚCLEO
+- Mobile Architecture Agent
+- Mobile UI Agent
+- Mobile Data Agent
+- Mobile QA Agent
+- Mobile CI/CD Agent
+
+TRANSVERSALES
+- Bug Hunter Agent
+- Test Strategy Agent
+- Performance & Efficiency Agent
+
+CLOUD
+- Cloud Architecture Agent
+- Platform/DevOps Agent
+- GitOps CI/CD Cloud Agent
+- Observability Agent
+- Cloud Security Agent (con gates básicos)
+
+
+B3) Empresa con múltiples squads (21–80 personas)
+Objetivo: estandarización, escalabilidad organizacional y confiabilidad.
+
+WEB
+- Web Architecture Agent (con ADRs y estándares)
+- Frontend Web Agent
+- Web BFF/Backend Agent
+- Web QA Agent
+- Web CI/CD Agent
+- Web DX Agent
+- Web Product-Discovery Agent
+
+TRANSVERSALES
+- Bug Hunter Agent
+- Refactor & Code Quality Agent
+- Test Strategy Agent
+- Performance & Efficiency Agent
+- Technology Critic & Improvement Agent
+
+MOBILE
+- Mobile Architecture Agent
+- Mobile UI Agent
+- Mobile Data Agent
+- Mobile QA Agent
+- Mobile CI/CD Agent
+
+DESKTOP (si aplica)
+- Desktop Architecture Agent
+- Desktop Integration Agent
+- Desktop CI/CD Agent
+
+CLOUD / PLATFORM
+- Cloud Architecture Agent
+- Platform/DevOps Agent
+- GitOps CI/CD Cloud Agent
+- SRE Agent
+- Cloud Security Agent
+- Observability Agent
+
+Consejo:
+Este es el punto ideal para formalizar “plantillas oficiales” de repos y pipelines.
+
+
+B4) Enterprise (80+ personas, regulado o crítico)
+Objetivo: gobernanza fuerte, control de riesgos, resiliencia y compliance.
+
+WEB
+- Web Architecture Agent (con gobernanza de dominios)
+- Frontend Web Agent
+- Web BFF/Backend Agent
+- Web QA Agent
+- Web CI/CD Agent
+- Web DX Agent
+- Web Product-Discovery Agent
+
+TRANSVERSALES (obligatorios)
+- Bug Hunter Agent
+- Refactor & Code Quality Agent
+- Test Strategy Agent
+- Performance & Efficiency Agent
+- Technology Critic & Improvement Agent
+
+CLOUD / PLATFORM (obligatorios)
+- Cloud Architecture Agent
+- Platform/DevOps Agent
+- GitOps CI/CD Cloud Agent
+- SRE Agent
+- Cloud Security Agent
+- Observability Agent
+
+Recomendación enterprise:
+Usa la “Global Policy Agent Rules” como política base que todos los agentes deben heredar.
+
+
+============================================================
+C) CUÁNDO ACTIVAR CADA AGENTE (SEÑALES)
+============================================================
+
+Bug Hunter Agent
+Úsalo cuando:
+- hay bugs recurrentes en prod,
+- el equipo está creciendo,
+- necesitas fijar estándar de test de regresión.
+
+Refactor & Code Quality Agent
+Úsalo cuando:
+- ves duplicación frecuente,
+- PRs se vuelven difíciles de revisar,
+- cambias features y rompes otras sin querer.
+
+Performance & Efficiency Agent
+Úsalo cuando:
+- Core Web Vitals bajan,
+- hay quejas de latencia,
+- el costo cloud sube sin explicación.
+
+Test Strategy Agent
+Úsalo cuando:
+- hay debates sobre “qué testear”,
+- E2E se vuelve lento e inestable,
+- necesitas balance de costo/impacto.
+
+Technology Critic & Improvement Agent
+Úsalo cuando:
+- aparece “framework sprawl”,
+- quieres introducir una nueva plataforma,
+- planeas migraciones grandes.
+
+Observability Agent
+Úsalo cuando:
+- ya hay usuarios reales,
+- necesitas reducir MTTR,
+- quieres SLOs medibles.
+
+Cloud Security Agent
+Úsalo cuando:
+- manejas datos sensibles,
+- trabajas en entornos regulados,
+- hay múltiples equipos desplegando a cloud.
+
+DX Agent
+Úsalo cuando:
+- el onboarding tarda demasiado,
+- cada repo tiene configuración distinta,
+- builds y tests son lentos por desorden de tooling.
+
+
+============================================================
+D) PROPUESTA DE ADOPCIÓN EN 4 FASES
+============================================================
+
+Fase 1 — “Ship fast con higiene”
+- Agentes core de tu plataforma
+- Web/Mobile CI/CD
+- Bug Hunter
+- Test Strategy
+
+Fase 2 — “No dejes crecer la deuda”
+- Refactor & Code Quality
+- DX
+- QA por plataforma
+
+Fase 3 — “Operar con datos”
+- Observability
+- Performance & Efficiency
+- Cloud Architecture + Platform/DevOps
+
+Fase 4 — “Escala organizacional”
+- Technology Critic
+- SRE
+- Cloud Security
+- Políticas globales obligatorias
+
+
+============================================================
+E) NOTAS DE DISEÑO DE AGENTES (BUENAS PRÁCTICAS)
+============================================================
+
+- Mantén agentes con una responsabilidad principal.
+- Evita solapamientos: cuando haya dudas, Architecture define estándar y los demás lo implementan.
+- Haz que todos respeten la política global.
+- Prefiere outputs cortos y accionables:
+  - checklist,
+  - ADR breve,
+  - PR sugerida,
+  - test de regresión.
+- Todo agente debe favorecer:
+  - reutilización modular,
+  - contratos explícitos,
+  - seguridad por defecto,
+  - observabilidad mínima,
+  - simplicidad como criterio fundamental.

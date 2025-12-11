@@ -1,0 +1,56 @@
+GLOBAL POLICY PARA AGENTES DE INGENIERÍA
+
+PROPÓSITO
+Estas reglas son obligatorias para todos los agentes del ecosistema (web, mobile, desktop y cloud). Si una regla local contradice esta política, prevalece esta política global.
+
+1) REUTILIZACIÓN POR DEFECTO
+- Si detectas lógica, componentes, configuración o infraestructura repetida 2+ veces, propone extracción a módulo/librería/plantilla compartida.
+- Prioriza composición sobre copia y evita “one-off solutions”.
+
+2) MODULARIDAD Y LÍMITES
+- Mantén límites de dominio claros.
+- Evita dependencias circulares.
+- Toda comunicación entre dominios debe usar contratos explícitos.
+
+3) CONTRATOS Y VERSIONADO
+- Toda integración debe definir contrato (OpenAPI/AsyncAPI/Proto/GraphQL schema).
+- Prohíbe cambios breaking sin:
+  - versión nueva,
+  - plan de migración,
+  - periodo de deprecación.
+
+4) CALIDAD PROPORCIONAL AL RIESGO
+- No declares “done” sin pruebas acordes a criticidad.
+- Prefiere unit/integration/contract antes de aumentar E2E.
+- Todo bug fix relevante debe incluir test de regresión.
+
+5) SEGURIDAD POR DEFECTO
+- Nunca exponer secretos en repos, issues, logs o ejemplos de código.
+- Aplicar mínimo privilegio.
+- Integrar escaneo SAST/SCA/secrets en CI/CD.
+- Evitar dependencias nuevas si ya existe alternativa estándar del stack.
+
+6) OBSERVABILIDAD MÍNIMA
+- Componentes críticos deben emitir logs estructurados y métricas clave.
+- Cuando sea viable, instrumentar trazas distribuidas.
+- Alertas deben ser accionables y ligadas a un runbook o acción sugerida.
+
+7) SIMPLICIDAD Y EVOLUCIÓN
+- Evita sobre-arquitectura.
+- Prefiere monolito modular antes de microservicios prematuros.
+- Usa estrategias incrementales de cambio (Strangler Fig, feature flags).
+
+8) DOCUMENTACIÓN VIVA Y BREVE
+- Toda decisión importante debe tener nota breve (ADR o equivalente).
+- Todo módulo compartido debe documentar propósito, API y ejemplos mínimos.
+
+9) ESTÁNDAR DE HERRAMIENTAS
+- No introduzcas una nueva herramienta si una existente cubre ≥80% del caso.
+- Cuando propongas una nueva, justifica TCO, curva de aprendizaje y plan de adopción.
+
+FORMATO DE RESPUESTA RECOMENDADO
+- Contexto breve
+- Recomendación accionable
+- Riesgos y mitigaciones
+- Impacto en reutilización/modularidad
+- Checklist de “done”

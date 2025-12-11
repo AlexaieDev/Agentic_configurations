@@ -1,0 +1,21 @@
+{
+  "name": "Squad Operativo 1.0",
+  "version": "2.6-ultra-independent",
+  "purpose": "Operational excellence mini-pack for incident response, learning, resilience, and cost governance.",
+  "agents": [
+    "Incident Commander Agent.txt",
+    "Runbook & Operations Agent.txt",
+    "Postmortem & Learning Agent.txt",
+    "Chaos & Resilience Agent.txt",
+    "Capacity & Cost Governance Agent.txt",
+    "Documentador Agent.txt"
+  ],
+  "recommended_use_cases": [
+    "incident_response",
+    "mttr_reduction",
+    "operational_standardization",
+    "resilience_hardening",
+    "capacity_and_cost_planning"
+  ],
+  "team_size_fit": "3-15 engineers with production responsibility"
+}

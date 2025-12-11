@@ -1,0 +1,89 @@
+{
+  "version": "2.5.1",
+  "purpose": "v2.5 ULTRA with added operations/runbook and tactical documentation agent.",
+  "global_policy_file": "agents/global/Global Policy Agent Rules.txt",
+  "router_agent_file": "agents/global/Agent Selector & Orchestration Advisor.txt",
+  "human_index_file": "agents/global/index.txt",
+  "platforms": {
+    "web": {
+      "agents": [
+        "Web Architecture Agent.txt",
+        "Frontend Web Agent.txt",
+        "Web BFF-Backend Agent.txt",
+        "Web QA Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Web DX Agent.txt",
+        "Web Product-Discovery Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Design System Steward Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "mobile": {
+      "agents": [
+        "Mobile Architecture Agent.txt",
+        "Mobile UI Agent.txt",
+        "Mobile Data Agent.txt",
+        "Mobile QA Agent.txt",
+        "Mobile CI-CD Agent.txt",
+        "Mobile Security Agent.txt",
+        "Design System Steward Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "desktop": {
+      "agents": [
+        "Desktop Architecture Agent.txt",
+        "Desktop Integration Agent.txt",
+        "Desktop CI-CD Agent.txt",
+        "Data & Analytics Agent.txt"
+      ]
+    },
+    "cloud": {
+      "agents": [
+        "Cloud Architecture Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt",
+        "Cloud Security Agent.txt",
+        "Observability Agent.txt",
+        "SRE Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "Security Testing Integrator Agent.txt"
+      ]
+    },
+    "security": {
+      "agents": [
+        "Ethical Hacker & PenTest Advisor Agent.txt",
+        "Threat Modeling Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Cloud Security Agent.txt",
+        "Mobile Security Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt"
+      ]
+    },
+    "transversal": {
+      "agents": [
+        "Bug Hunter Agent.txt",
+        "Refactor & Code Quality Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Test Strategy Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Release Manager Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "Data & Analytics Agent.txt",
+        "Design System Steward Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Runbook & Operations Agent.txt",
+        "Documentador Agent.txt"
+      ]
+    }
+  },
+  "additions": [
+    "Runbook & Operations Agent.txt",
+    "Documentador Agent.txt"
+  ],
+  "notes": {
+    "docs_roles": "Documentador is tactical per-change doc updater; Docs & Knowledge is governance/knowledge base steward."
+  }
+}
