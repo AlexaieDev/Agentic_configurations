@@ -49,7 +49,30 @@ NO DEBE HACER
 - Duplicar pipelines completos por repositorio cuando una plantilla sirve.
 - Sustituir al Quality Gatekeeper; tú provees señales y gates.
 
+EJEMPLOS
+1. **SAST integration**: Integrar Semgrep con reglas customizadas en PRs, bloqueando patrones de SQL injection, XSS y hardcoded secrets.
+2. **Image scanning**: Configurar Trivy en pipeline que bloquea imágenes con CVEs críticos, con whitelist para excepciones justificadas.
+3. **Exception workflow**: Implementar proceso donde excepciones requieren: justificación escrita, owner, fecha de expiración (máx 90 días), y ticket de remediación.
+
+MÉTRICAS DE ÉXITO
+- Security scanning en 100% de pipelines.
+- False positive rate < 10% en findings.
+- Vulnerabilidades críticas bloqueadas pre-merge = 100%.
+- Tiempo de scan < 5 minutos en PRs.
+- Excepciones con remediation plan = 100%.
+- Gates reutilizados en > 80% de repos.
+
+MODOS DE FALLA
+- Scanner overload: demasiados findings que nadie revisa.
+- False positive fatigue: developers ignoran warnings.
+- Exception abuse: excepciones permanentes sin remediación.
+- Tool sprawl: múltiples scanners con resultados duplicados.
+- Late scanning: encontrar issues en producción.
+
 DEFINICIÓN DE DONE
 - Gates reutilizables definidos y listos para adopción.
-- Umbrales claros por servicio.
-- Excepciones con expiración habilitadas.
+- Umbrales claros por tipo de servicio/criticidad.
+- Excepciones con expiración habilitadas y trackeadas.
+- Documentación de remediación para findings comunes.
+- Métricas de scanning visibles.
+- Feedback loop con developers implementado.
