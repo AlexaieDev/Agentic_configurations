@@ -1,11 +1,36 @@
 {
-  "version": "2.5",
-  "purpose": "Ultra agent catalog with expanded security (ethical hacking, threat modeling, DevSecOps gates) for Claude Code.",
+  "version": "2.7",
+  "release_date": "2025-12",
+  "purpose": "Ultra agent catalog with expanded security, operational excellence, and complete software lifecycle coverage for Claude Code. All agents include standardized sections for quality and actionability.",
+  "changelog": {
+    "2.7": "Complete team expansion: Added 8 new agents for operational excellence (Incident Commander, Database Architect, Chaos & Resilience, FinOps & Cost) and software lifecycle (API Design, Compliance, Technical Debt, i18n). Total agents now cover the entire software development and operations lifecycle.",
+    "2.6": "Quality improvement: All agents now include COORDINA CON (coordination), EJEMPLOS (examples), MÉTRICAS DE ÉXITO (success metrics), and MODOS DE FALLA (failure modes) sections for better guidance and measurable outcomes."
+  },
+  "agent_structure": {
+    "required_sections": [
+      "MISIÓN",
+      "DEBE HACER",
+      "NO DEBE HACER",
+      "DEFINICIÓN DE DONE"
+    ],
+    "recommended_sections": [
+      "ROL EN EL EQUIPO",
+      "ALCANCE",
+      "ENTRADAS",
+      "SALIDAS",
+      "COORDINA CON",
+      "EJEMPLOS",
+      "MÉTRICAS DE ÉXITO",
+      "MODOS DE FALLA"
+    ]
+  },
   "global_policy_file": "agents/global/Global Policy Agent Rules.txt",
   "router_agent_file": "agents/global/Agent Selector & Orchestration Advisor.txt",
   "human_index_file": "agents/global/index.txt",
   "platforms": {
     "web": {
+      "description": "Agents for web application development, frontend, backend, accessibility, and DX",
+      "agent_count": 10,
       "agents": [
         "Web Architecture Agent.txt",
         "Frontend Web Agent.txt",
@@ -20,6 +45,8 @@
       ]
     },
     "mobile": {
+      "description": "Agents for iOS, Android, and cross-platform mobile development",
+      "agent_count": 8,
       "agents": [
         "Mobile Architecture Agent.txt",
         "Mobile UI Agent.txt",
@@ -32,6 +59,8 @@
       ]
     },
     "desktop": {
+      "description": "Agents for desktop application development (Electron, Tauri, native)",
+      "agent_count": 4,
       "agents": [
         "Desktop Architecture Agent.txt",
         "Desktop Integration Agent.txt",
@@ -40,6 +69,8 @@
       ]
     },
     "cloud": {
+      "description": "Agents for cloud architecture, DevOps, SRE, reliability, cost optimization, and infrastructure",
+      "agent_count": 12,
       "agents": [
         "Cloud Architecture Agent.txt",
         "Platform-DevOps Agent.txt",
@@ -48,20 +79,29 @@
         "Observability Agent.txt",
         "SRE Agent.txt",
         "Quality Gatekeeper Agent.txt",
-        "Security Testing Integrator Agent.txt"
+        "Security Testing Integrator Agent.txt",
+        "Incident Commander Agent.txt",
+        "Database Architect Agent.txt",
+        "Chaos & Resilience Agent.txt",
+        "FinOps & Cost Agent.txt"
       ]
     },
     "security": {
+      "description": "Agents for security testing, threat modeling, compliance, and governance",
+      "agent_count": 7,
       "agents": [
         "Ethical Hacker & PenTest Advisor Agent.txt",
         "Threat Modeling Agent.txt",
         "Security Testing Integrator Agent.txt",
         "Cloud Security Agent.txt",
         "Mobile Security Agent.txt",
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Compliance Agent.txt"
       ]
     },
     "transversal": {
+      "description": "Cross-platform agents for quality, testing, documentation, APIs, technical debt, and internationalization",
+      "agent_count": 15,
       "agents": [
         "Bug Hunter Agent.txt",
         "Refactor & Code Quality Agent.txt",
@@ -73,56 +113,160 @@
         "Quality Gatekeeper Agent.txt",
         "Data & Analytics Agent.txt",
         "Design System Steward Agent.txt",
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "API Design Agent.txt",
+        "Compliance Agent.txt",
+        "Technical Debt Agent.txt",
+        "i18n Agent.txt"
       ]
     }
   },
   "use_case_routing": {
-    "new_feature_high_risk": [
-      "Web Product-Discovery Agent.txt",
-      "Design System Steward Agent.txt",
-      "Web Accessibility Agent.txt",
-      "Web Architecture Agent.txt",
-      "Threat Modeling Agent.txt",
-      "Security Testing Integrator Agent.txt",
-      "Quality Gatekeeper Agent.txt",
-      "Release Manager Agent.txt",
-      "Observability Agent.txt"
-    ],
-    "bug_in_production": [
-      "Bug Hunter Agent.txt",
-      "Observability Agent.txt",
-      "Ethical Hacker & PenTest Advisor Agent.txt",
-      "Test Strategy Agent.txt",
-      "Web QA Agent.txt",
-      "Web CI-CD Agent.txt",
-      "Quality Gatekeeper Agent.txt"
-    ],
-    "tech_stack_change": [
-      "Technology Critic & Improvement Agent.txt",
-      "License Reviewer & OSS Alternatives Agent.txt",
-      "Threat Modeling Agent.txt",
-      "Cloud Security Agent.txt",
-      "Web/Mobile/Cloud Architecture Agent.txt",
-      "Security Testing Integrator Agent.txt"
-    ],
-    "reduce_cloud_cost_latency": [
-      "Observability Agent.txt",
-      "Performance & Efficiency Agent.txt",
-      "Cloud Architecture Agent.txt",
-      "Platform-DevOps Agent.txt",
-      "GitOps CI-CD Cloud Agent.txt",
-      "Cloud Security Agent.txt"
-    ],
-    "compliance_licensing": [
-      "License Reviewer & OSS Alternatives Agent.txt",
-      "Technology Critic & Improvement Agent.txt",
-      "Docs & Knowledge Agent.txt",
-      "Quality Gatekeeper Agent.txt"
-    ]
+    "new_feature_high_risk": {
+      "description": "For implementing new features with significant business or technical risk",
+      "agents": [
+        "Web Product-Discovery Agent.txt",
+        "Design System Steward Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Web Architecture Agent.txt",
+        "Threat Modeling Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Quality Gatekeeper Agent.txt",
+        "Release Manager Agent.txt",
+        "Observability Agent.txt",
+        "API Design Agent.txt"
+      ]
+    },
+    "bug_in_production": {
+      "description": "For investigating and fixing production bugs",
+      "agents": [
+        "Bug Hunter Agent.txt",
+        "Observability Agent.txt",
+        "Incident Commander Agent.txt",
+        "Ethical Hacker & PenTest Advisor Agent.txt",
+        "Test Strategy Agent.txt",
+        "Web QA Agent.txt",
+        "Web CI-CD Agent.txt",
+        "Quality Gatekeeper Agent.txt"
+      ]
+    },
+    "tech_stack_change": {
+      "description": "For evaluating and implementing technology changes",
+      "agents": [
+        "Technology Critic & Improvement Agent.txt",
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Threat Modeling Agent.txt",
+        "Cloud Security Agent.txt",
+        "Web Architecture Agent.txt",
+        "Mobile Architecture Agent.txt",
+        "Cloud Architecture Agent.txt",
+        "Security Testing Integrator Agent.txt",
+        "Technical Debt Agent.txt"
+      ]
+    },
+    "reduce_cloud_cost_latency": {
+      "description": "For optimizing cloud costs and improving performance",
+      "agents": [
+        "Observability Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Cloud Architecture Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "GitOps CI-CD Cloud Agent.txt",
+        "Cloud Security Agent.txt",
+        "FinOps & Cost Agent.txt",
+        "Database Architect Agent.txt"
+      ]
+    },
+    "compliance_licensing": {
+      "description": "For license compliance, regulatory requirements, and OSS governance",
+      "agents": [
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Compliance Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Quality Gatekeeper Agent.txt"
+      ]
+    },
+    "new_team_onboarding": {
+      "description": "For accelerating new team member onboarding",
+      "agents": [
+        "Docs & Knowledge Agent.txt",
+        "Web DX Agent.txt",
+        "Platform-DevOps Agent.txt",
+        "Design System Steward Agent.txt",
+        "Test Strategy Agent.txt",
+        "API Design Agent.txt"
+      ]
+    },
+    "refactoring_tech_debt": {
+      "description": "For addressing technical debt and code quality",
+      "agents": [
+        "Refactor & Code Quality Agent.txt",
+        "Technical Debt Agent.txt",
+        "Test Strategy Agent.txt",
+        "Technology Critic & Improvement Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Quality Gatekeeper Agent.txt"
+      ]
+    },
+    "incident_response": {
+      "description": "For responding to and learning from production incidents",
+      "agents": [
+        "Incident Commander Agent.txt",
+        "SRE Agent.txt",
+        "Observability Agent.txt",
+        "Bug Hunter Agent.txt",
+        "Chaos & Resilience Agent.txt",
+        "Docs & Knowledge Agent.txt"
+      ]
+    },
+    "resilience_validation": {
+      "description": "For validating system resilience and disaster recovery",
+      "agents": [
+        "Chaos & Resilience Agent.txt",
+        "SRE Agent.txt",
+        "Incident Commander Agent.txt",
+        "Observability Agent.txt",
+        "Cloud Architecture Agent.txt",
+        "Database Architect Agent.txt"
+      ]
+    },
+    "international_expansion": {
+      "description": "For expanding products to international markets",
+      "agents": [
+        "i18n Agent.txt",
+        "Web Accessibility Agent.txt",
+        "Compliance Agent.txt",
+        "Frontend Web Agent.txt",
+        "Mobile UI Agent.txt",
+        "Design System Steward Agent.txt"
+      ]
+    },
+    "api_platform": {
+      "description": "For building and maintaining API platforms",
+      "agents": [
+        "API Design Agent.txt",
+        "Web BFF-Backend Agent.txt",
+        "Web Architecture Agent.txt",
+        "Docs & Knowledge Agent.txt",
+        "Test Strategy Agent.txt",
+        "Security Testing Integrator Agent.txt"
+      ]
+    },
+    "database_optimization": {
+      "description": "For database design, migration, and optimization",
+      "agents": [
+        "Database Architect Agent.txt",
+        "Performance & Efficiency Agent.txt",
+        "Cloud Architecture Agent.txt",
+        "SRE Agent.txt",
+        "Observability Agent.txt"
+      ]
+    }
   },
   "recommended_kits": {
     "startup_early_1_5": {
+      "description": "Minimal agent set for teams of 1-5 developers",
       "max_agents_total": 6,
       "web_first": [
         "Web Architecture Agent.txt",
@@ -156,6 +300,7 @@
       ]
     },
     "scaleup_6_20": {
+      "description": "Expanded agent set for growing teams of 6-20 developers",
       "web_core": [
         "Web Architecture Agent.txt",
         "Frontend Web Agent.txt",
@@ -182,7 +327,9 @@
         "Performance & Efficiency Agent.txt",
         "Technology Critic & Improvement Agent.txt",
         "Docs & Knowledge Agent.txt",
-        "Data & Analytics Agent.txt"
+        "Data & Analytics Agent.txt",
+        "API Design Agent.txt",
+        "Technical Debt Agent.txt"
       ],
       "security_recommended": [
         "Threat Modeling Agent.txt",
@@ -200,35 +347,42 @@
         "Platform-DevOps Agent.txt",
         "GitOps CI-CD Cloud Agent.txt",
         "Observability Agent.txt",
-        "Cloud Security Agent.txt"
+        "Cloud Security Agent.txt",
+        "Database Architect Agent.txt"
       ]
     },
     "multisquad_21_80": {
+      "description": "Full agent set for multi-squad organizations of 21-80 developers",
       "platform_architecture_required": [
         "Web Architecture Agent.txt",
         "Mobile Architecture Agent.txt",
         "Desktop Architecture Agent.txt",
-        "Cloud Architecture Agent.txt"
+        "Cloud Architecture Agent.txt",
+        "Database Architect Agent.txt"
       ],
       "dx_and_templates_required": [
         "Web DX Agent.txt",
         "Platform-DevOps Agent.txt",
         "Web CI-CD Agent.txt",
-        "GitOps CI-CD Cloud Agent.txt"
+        "GitOps CI-CD Cloud Agent.txt",
+        "API Design Agent.txt"
       ],
       "reliability_security_required": [
         "Observability Agent.txt",
         "Cloud Security Agent.txt",
         "Threat Modeling Agent.txt",
         "Security Testing Integrator Agent.txt",
-        "Quality Gatekeeper Agent.txt"
+        "Quality Gatekeeper Agent.txt",
+        "Incident Commander Agent.txt",
+        "SRE Agent.txt"
       ],
       "accessibility_security_recommended": [
         "Web Accessibility Agent.txt",
         "Mobile Security Agent.txt"
       ],
       "compliance_recommended": [
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Compliance Agent.txt"
       ],
       "release_recommended": [
         "Release Manager Agent.txt"
@@ -242,10 +396,18 @@
         "Performance & Efficiency Agent.txt",
         "Test Strategy Agent.txt",
         "Technology Critic & Improvement Agent.txt",
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Technical Debt Agent.txt"
+      ],
+      "cost_optimization_recommended": [
+        "FinOps & Cost Agent.txt"
+      ],
+      "internationalization_when_applicable": [
+        "i18n Agent.txt"
       ]
     },
     "enterprise_80_plus": {
+      "description": "Complete agent set for enterprise organizations of 80+ developers",
       "global_policy_required": true,
       "cloud_mandatory": [
         "Cloud Architecture Agent.txt",
@@ -255,12 +417,17 @@
         "Observability Agent.txt",
         "SRE Agent.txt",
         "Security Testing Integrator Agent.txt",
-        "Quality Gatekeeper Agent.txt"
+        "Quality Gatekeeper Agent.txt",
+        "Incident Commander Agent.txt",
+        "Database Architect Agent.txt",
+        "Chaos & Resilience Agent.txt",
+        "FinOps & Cost Agent.txt"
       ],
       "security_mandatory": [
         "Threat Modeling Agent.txt",
         "Ethical Hacker & PenTest Advisor Agent.txt",
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "Compliance Agent.txt"
       ],
       "platform_mandatory_where_applicable": [
         "Web Architecture Agent.txt",
@@ -287,9 +454,41 @@
         "Data & Analytics Agent.txt",
         "Design System Steward Agent.txt",
         "Quality Gatekeeper Agent.txt",
-        "License Reviewer & OSS Alternatives Agent.txt"
+        "License Reviewer & OSS Alternatives Agent.txt",
+        "API Design Agent.txt",
+        "Technical Debt Agent.txt",
+        "i18n Agent.txt"
       ],
-      "technology_critic_always_on_for_major_decisions": true
+      "technology_critic_always_on_for_major_decisions": true,
+      "chaos_engineering_for_critical_systems": true
     }
+  },
+  "quality_standards": {
+    "metrics_coverage": "All agents now include measurable success metrics",
+    "examples_coverage": "All agents now include 3 practical examples",
+    "coordination_coverage": "All agents now specify coordination with related agents",
+    "failure_modes_coverage": "All agents now document common failure modes to avoid",
+    "lifecycle_coverage": "Agents now cover the complete software development and operations lifecycle"
+  },
+  "agent_count_summary": {
+    "total_unique_agents": 40,
+    "by_platform": {
+      "web": 10,
+      "mobile": 8,
+      "desktop": 4,
+      "cloud": 12,
+      "security": 7,
+      "transversal": 15
+    },
+    "new_in_v27": [
+      "Incident Commander Agent.txt",
+      "Database Architect Agent.txt",
+      "Chaos & Resilience Agent.txt",
+      "FinOps & Cost Agent.txt",
+      "API Design Agent.txt",
+      "Compliance Agent.txt",
+      "Technical Debt Agent.txt",
+      "i18n Agent.txt"
+    ]
   }
 }

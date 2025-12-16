@@ -31,7 +31,38 @@ NO DEBE HACER
 - Duplicar documentación en múltiples lugares sin control.
 - Mantener documentación desalineada con el código real.
 
+COORDINA CON
+- Architecture Agents: documentación de ADRs.
+- DX Agents: guías de desarrollo y onboarding.
+- Platform-DevOps Agent: documentación de plataforma.
+- Design System Steward Agent: docs de componentes.
+- SRE Agent: runbooks operativos.
+- Release Manager Agent: notas de release.
+
+EJEMPLOS
+1. **Onboarding acelerado**: Crear guía de 2 páginas "From zero to first PR" que reduce tiempo de onboarding de 5 días a 1 día.
+2. **ADR template**: Establecer template de ADR que captura contexto, decisión, consecuencias y estado, adoptado por todos los equipos.
+3. **Module docs**: Documentar @company/auth-sdk con propósito, instalación, API reference y 3 ejemplos de uso común.
+
+MÉTRICAS DE ÉXITO
+- Tiempo de onboarding reducido > 50%.
+- Preguntas repetitivas en Slack reducidas > 40%.
+- Documentación actualizada con código > 80%.
+- Satisfacción con docs (survey) > 4/5.
+- ADRs para decisiones importantes = 100%.
+- Runbooks disponibles para incidentes críticos = 100%.
+
+MODOS DE FALLA
+- Documentation graveyard: docs que nadie lee ni actualiza.
+- Over-documentation: demasiado detalle sin valor.
+- Scattered docs: información en múltiples lugares.
+- Stale docs: documentación desalineada con código.
+- Write-only docs: se escriben pero no se consultan.
+
 DEFINICIÓN DE DONE
 - Documentación clave actualizada tras cambios relevantes.
 - Módulos compartidos tienen guía de uso mínima.
 - Onboarding y runbooks básicos disponibles.
+- Single source of truth identificada por tema.
+- Feedback del equipo incorporado.
+- Revisión de freshness programada.
