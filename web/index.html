@@ -257,6 +257,14 @@
             min-height: 300px;
         }
 
+        .wizard-page {
+            display: none;
+        }
+
+        .wizard-page.active {
+            display: block;
+        }
+
         .wizard-options {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -733,6 +741,148 @@
             }
         }
 
+        /* ==================== PHASES TIMELINE ==================== */
+        .phases-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .phase-group {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .phase-header:hover {
+            background: var(--bg-primary);
+        }
+
+        .phase-icon {
+            font-size: 1.75rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            background: var(--accent);
+        }
+
+        .phase-info {
+            flex: 1;
+        }
+
+        .phase-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .phase-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .phase-count {
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .phase-toggle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .phase-group.expanded .phase-toggle {
+            transform: rotate(180deg);
+        }
+
+        .phase-workflows {
+            display: none;
+            padding: 1.5rem;
+            gap: 1rem;
+        }
+
+        .phase-group.expanded .phase-workflows {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+
+        .phase-workflow-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .phase-workflow-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .phase-workflow-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .phase-workflow-icon {
+            font-size: 1.5rem;
+        }
+
+        .phase-workflow-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .phase-workflow-agents {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .phase-workflow-agent {
+            background: var(--bg-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Phase colors */
+        .phase-planificacion .phase-icon { background: rgba(139, 92, 246, 0.3); }
+        .phase-desarrollo .phase-icon { background: rgba(59, 130, 246, 0.3); }
+        .phase-testing .phase-icon { background: rgba(34, 197, 94, 0.3); }
+        .phase-deploy .phase-icon { background: rgba(245, 158, 11, 0.3); }
+        .phase-mantenimiento .phase-icon { background: rgba(239, 68, 68, 0.3); }
+
+        @media (max-width: 768px) {
+            .phase-group.expanded .phase-workflows {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* ==================== CATEGORY COLORS ==================== */
         .cat-architecture { background: rgba(139, 92, 246, 0.2); }
         .cat-development { background: rgba(59, 130, 246, 0.2); }
@@ -989,6 +1139,7 @@
             <ul class="nav-links">
                 <li><a href="#wizard-section" class="active">Wizard</a></li>
                 <li><a href="#workflows-section">Workflows</a></li>
+                <li><a href="#phases-section">Por Fase</a></li>
                 <li><a href="#catalog-section">Catalogo</a></li>
                 <li><a href="#kits-section">Kits por Madurez</a></li>
             </ul>
@@ -1165,11 +1316,25 @@
             <div class="container">
                 <div class="section-header">
                     <h2>Workflows Disponibles</h2>
-                    <p>10 flujos de trabajo predefinidos para los escenarios mas comunes</p>
+                    <p><span id="workflow-count"></span> flujos de trabajo predefinidos para los escenarios mas comunes</p>
                 </div>
 
                 <div class="workflows-grid" id="workflows-container">
                     <!-- Workflows will be injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflows by Phase Section -->
+        <section id="phases-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Workflows por Fase de Desarrollo</h2>
+                    <p>Encuentra el workflow adecuado según la etapa de tu proyecto</p>
+                </div>
+
+                <div class="phases-timeline" id="phases-container">
+                    <!-- Phases will be injected by JS -->
                 </div>
             </div>
         </section>
@@ -1288,12 +1453,22 @@
 
     <script>
         // ==================== DATA ====================
+        // Development phases
+        const phases = [
+            { id: 'planificacion', name: 'Planificación', icon: '📋', description: 'Discovery, diseño y decisiones técnicas' },
+            { id: 'desarrollo', name: 'Desarrollo', icon: '💻', description: 'Implementación de features y código' },
+            { id: 'testing', name: 'Testing', icon: '🧪', description: 'QA, pruebas y validación' },
+            { id: 'deploy', name: 'Deploy', icon: '🚀', description: 'Release, CI/CD y lanzamiento' },
+            { id: 'mantenimiento', name: 'Mantenimiento', icon: '🔧', description: 'Operaciones, SRE y mejora continua' }
+        ];
+
         const workflows = [
             {
                 id: 'bug',
                 title: 'Bugs y Regresiones',
                 icon: '🐛',
                 color: 'cat-quality',
+                phase: 'testing',
                 agents: ['Bug Hunter', 'Test Strategy', 'Refactor & Code Quality', 'CI/CD', 'Observability'],
                 signals: ['Incidentes repetidos', 'PRs que rompen otros', 'Falta test regresion']
             },
@@ -1302,6 +1477,7 @@
                 title: 'Nueva Feature',
                 icon: '✨',
                 color: 'cat-development',
+                phase: 'desarrollo',
                 agents: ['Product-Discovery', 'Architecture', 'Dev (Frontend/Backend)', 'QA', 'CI/CD', 'Observability'],
                 signals: ['MVP requerido', 'Requisitos poco claros', 'Riesgo scope creep']
             },
@@ -1310,6 +1486,7 @@
                 title: 'Deuda Tecnica',
                 icon: '🔧',
                 color: 'cat-transversal',
+                phase: 'mantenimiento',
                 agents: ['Refactor & Code Quality', 'Test Strategy', 'DX Agent', 'Architecture'],
                 signals: ['Copiar-pegar frecuente', 'PRs grandes', 'Modulos sin limites']
             },
@@ -1318,6 +1495,7 @@
                 title: 'Performance/Costos',
                 icon: '⚡',
                 color: 'cat-cloud',
+                phase: 'mantenimiento',
                 agents: ['Observability', 'Performance & Efficiency', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
                 signals: ['Core Web Vitals bajos', 'Latencia alta', 'Costo cloud creciendo']
             },
@@ -1326,6 +1504,7 @@
                 title: 'CI/CD Lento',
                 icon: '🔄',
                 color: 'cat-ops',
+                phase: 'deploy',
                 agents: ['CI/CD Agent', 'Test Strategy', 'DX Agent', 'Cloud Security'],
                 signals: ['Pipelines >15min', 'Tests flaky', 'Configs dispares']
             },
@@ -1334,6 +1513,7 @@
                 title: 'Seleccion Tecnologia',
                 icon: '🔬',
                 color: 'cat-architecture',
+                phase: 'planificacion',
                 agents: ['Technology Critic', 'Architecture', 'Security', 'DX Agent', 'CI/CD templates'],
                 signals: ['Framework sprawl', 'Propuestas por moda', 'Stacks dispares']
             },
@@ -1342,6 +1522,7 @@
                 title: 'Arquitectura/Re-arquitectura',
                 icon: '🏗️',
                 color: 'cat-architecture',
+                phase: 'planificacion',
                 agents: ['Product/UX', 'Architecture', 'API Contracts', 'Dev', 'QA', 'CI/CD', 'Observability'],
                 signals: ['Escalabilidad limitada', 'Integraciones fragiles', 'Nuevo dominio']
             },
@@ -1350,6 +1531,7 @@
                 title: 'Confiabilidad/SRE',
                 icon: '📊',
                 color: 'cat-cloud',
+                phase: 'mantenimiento',
                 agents: ['Observability', 'SRE', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
                 signals: ['MTTR alto', 'Alertas ruidosas', 'Incidentes severos']
             },
@@ -1358,6 +1540,7 @@
                 title: 'Incidente Produccion',
                 icon: '🚨',
                 color: 'cat-ops',
+                phase: 'mantenimiento',
                 agents: ['Incident Commander', 'Runbook & Operations', 'Postmortem', 'Chaos & Resilience', 'Capacity'],
                 signals: ['Servicio caido', 'Degradacion critica', 'Impacto usuarios']
             },
@@ -1366,6 +1549,7 @@
                 title: 'Compliance/Licencias',
                 icon: '📋',
                 color: 'cat-security',
+                phase: 'mantenimiento',
                 agents: ['License Reviewer', 'Technology Critic', 'Docs & Knowledge', 'Quality Gatekeeper'],
                 signals: ['Auditoria pendiente', 'Dependencias desconocidas', 'Regulacion nueva']
             },
@@ -1374,6 +1558,7 @@
                 title: 'Diseño de APIs',
                 icon: '🔌',
                 color: 'cat-development',
+                phase: 'planificacion',
                 agents: ['API Design', 'GraphQL', 'Contract Testing', 'Documentador', 'Security'],
                 signals: ['API nueva', 'Integracion third-party', 'Versionado necesario']
             },
@@ -1382,6 +1567,7 @@
                 title: 'Auditoria Seguridad',
                 icon: '🛡️',
                 color: 'cat-security',
+                phase: 'testing',
                 agents: ['Ethical Hacker', 'Threat Modeling', 'Vulnerability Management', 'Authentication', 'Secret Management'],
                 signals: ['Pentest requerido', 'Breach detectado', 'Compliance SOC2/ISO']
             },
@@ -1390,6 +1576,7 @@
                 title: 'Lanzamiento Mobile',
                 icon: '📱',
                 color: 'cat-mobile',
+                phase: 'deploy',
                 agents: ['Mobile Architecture', 'App Store Optimization', 'Push Notification', 'Mobile CI-CD', 'Mobile QA'],
                 signals: ['Nueva app', 'Release mayor', 'Expansion de mercado']
             },
@@ -1398,6 +1585,7 @@
                 title: 'Pipeline de Datos',
                 icon: '📈',
                 color: 'cat-data',
+                phase: 'desarrollo',
                 agents: ['Data Pipeline', 'Data Quality', 'ML Ops', 'Database Architect', 'Observability'],
                 signals: ['ETL necesario', 'Data warehouse', 'ML en produccion']
             },
@@ -1406,6 +1594,7 @@
                 title: 'Internacionalizacion',
                 icon: '🌍',
                 color: 'cat-transversal',
+                phase: 'desarrollo',
                 agents: ['i18n Agent', 'Frontend', 'Mobile UI', 'QA', 'Documentador'],
                 signals: ['Nuevo mercado', 'Multi-idioma', 'RTL support']
             },
@@ -1414,6 +1603,7 @@
                 title: 'Documentacion Tecnica',
                 icon: '📚',
                 color: 'cat-transversal',
+                phase: 'desarrollo',
                 agents: ['Documentador', 'ADR Agent', 'Docs & Knowledge', 'API Design', 'Onboarding'],
                 signals: ['Docs desactualizados', 'Nuevo equipo', 'API publica']
             },
@@ -1422,6 +1612,7 @@
                 title: 'Onboarding Devs',
                 icon: '👋',
                 color: 'cat-transversal',
+                phase: 'planificacion',
                 agents: ['Onboarding', 'Documentador', 'DX Agent', 'Code Review', 'Configuration Management'],
                 signals: ['Nuevo developer', 'Rotacion alta', 'Setup complejo']
             },
@@ -1430,6 +1621,7 @@
                 title: 'Migracion Sistema',
                 icon: '🚚',
                 color: 'cat-architecture',
+                phase: 'deploy',
                 agents: ['Migration', 'Monolith to Microservices', 'Database Architect', 'Feature Flag', 'Test Strategy'],
                 signals: ['Legacy system', 'Cloud migration', 'Database change']
             },
@@ -1438,6 +1630,7 @@
                 title: 'Estrategia Testing',
                 icon: '🧪',
                 color: 'cat-quality',
+                phase: 'testing',
                 agents: ['Test Strategy', 'E2E Testing', 'Contract Testing', 'Load Testing', 'Visual Regression'],
                 signals: ['Cobertura baja', 'Tests flaky', 'Sin integracion']
             },
@@ -1446,6 +1639,7 @@
                 title: 'Features Real-time',
                 icon: '⚡',
                 color: 'cat-development',
+                phase: 'desarrollo',
                 agents: ['WebSocket & Real-time', 'Message Queue', 'Event-Driven Architecture', 'Caching Strategy', 'Observability'],
                 signals: ['Chat/colaboracion', 'Notificaciones live', 'Datos en tiempo real']
             }
@@ -8335,6 +8529,22 @@ DEFINICIÓN DE DONE
                 }
             });
 
+            // Restore visual selections
+            const selections = {
+                'problem-options': wizardState.problem,
+                'platform-options': wizardState.platform,
+                'team-options': wizardState.team
+            };
+
+            Object.entries(selections).forEach(([containerId, value]) => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.querySelectorAll('.wizard-option').forEach(opt => {
+                        opt.classList.toggle('selected', opt.dataset.value === value);
+                    });
+                }
+            });
+
             // Update buttons
             document.getElementById('prev-btn').disabled = wizardState.step === 1;
 
@@ -8425,7 +8635,7 @@ DEFINICIÓN DE DONE
         function renderWorkflows() {
             const container = document.getElementById('workflows-container');
             container.innerHTML = workflows.map(w => `
-                <div class="workflow-card fade-in">
+                <div class="workflow-card fade-in" onclick="openWorkflowModal('${w.id}')" style="cursor: pointer;">
                     <div class="workflow-header">
                         <div class="workflow-icon ${w.color}">${w.icon}</div>
                         <div>
@@ -8447,6 +8657,72 @@ DEFINICIÓN DE DONE
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Render Phases Timeline
+        function renderPhases() {
+            const container = document.getElementById('phases-container');
+
+            container.innerHTML = phases.map(phase => {
+                const phaseWorkflows = workflows.filter(w => w.phase === phase.id);
+
+                return `
+                    <div class="phase-group phase-${phase.id}" data-phase="${phase.id}">
+                        <div class="phase-header" onclick="togglePhase('${phase.id}')">
+                            <div class="phase-icon">${phase.icon}</div>
+                            <div class="phase-info">
+                                <div class="phase-title">${phase.name}</div>
+                                <div class="phase-description">${phase.description}</div>
+                            </div>
+                            <span class="phase-count">${phaseWorkflows.length} workflows</span>
+                            <span class="phase-toggle">▼</span>
+                        </div>
+                        <div class="phase-workflows">
+                            ${phaseWorkflows.map(w => `
+                                <div class="phase-workflow-card" onclick="openWorkflowModal('${w.id}')">
+                                    <div class="phase-workflow-header">
+                                        <span class="phase-workflow-icon">${w.icon}</span>
+                                        <span class="phase-workflow-title">${w.title}</span>
+                                    </div>
+                                    <div class="phase-workflow-agents">
+                                        ${w.agents.map(a => `<span class="phase-workflow-agent">${a}</span>`).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function togglePhase(phaseId) {
+            const group = document.querySelector(`.phase-group[data-phase="${phaseId}"]`);
+            group.classList.toggle('expanded');
+        }
+
+        function openWorkflowModal(workflowId) {
+            const workflow = workflows.find(w => w.id === workflowId);
+            if (!workflow) return;
+
+            const phase = phases.find(p => p.id === workflow.phase);
+            const workflowText = `WORKFLOW: ${workflow.title}
+
+FASE: ${phase ? phase.name : 'N/A'}
+
+AGENTES EN SECUENCIA:
+${workflow.agents.map((a, i) => `${i + 1}. ${a}`).join('\n')}
+
+SEÑALES DE ACTIVACIÓN:
+${workflow.signals.map(s => `- ${s}`).join('\n')}
+
+FLUJO:
+${workflow.agents.join(' → ')}`;
+
+            document.getElementById('modal-icon').textContent = workflow.icon;
+            document.getElementById('modal-title').textContent = workflow.title;
+            document.getElementById('modal-subtitle').textContent = `Fase: ${phase ? phase.name : 'N/A'} • ${workflow.agents.length} agentes`;
+            document.getElementById('modal-config').textContent = workflowText;
+            document.getElementById('agent-modal').classList.add('show');
         }
 
         // Render Agents
@@ -8594,6 +8870,7 @@ DEFINICIÓN DE DONE
 
             // Count workflows
             document.getElementById('stat-workflows').textContent = workflows.length;
+            document.getElementById('workflow-count').textContent = workflows.length;
         }
 
         // ==================== EVENT LISTENERS ====================
@@ -8601,6 +8878,7 @@ DEFINICIÓN DE DONE
             initTheme();
             updateStats();
             renderWorkflows();
+            renderPhases();
             renderAgents();
             renderKits();
             setupNavigation();
