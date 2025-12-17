@@ -741,6 +741,8 @@
         .cat-cloud { background: rgba(245, 158, 11, 0.2); }
         .cat-transversal { background: rgba(236, 72, 153, 0.2); }
         .cat-ops { background: rgba(20, 184, 166, 0.2); }
+        .cat-mobile { background: rgba(99, 102, 241, 0.2); }
+        .cat-data { background: rgba(251, 146, 60, 0.2); }
 
         /* ==================== ANIMATIONS ==================== */
         @keyframes fadeIn {
@@ -1366,6 +1368,86 @@
                 color: 'cat-security',
                 agents: ['License Reviewer', 'Technology Critic', 'Docs & Knowledge', 'Quality Gatekeeper'],
                 signals: ['Auditoria pendiente', 'Dependencias desconocidas', 'Regulacion nueva']
+            },
+            {
+                id: 'api-design',
+                title: 'Diseño de APIs',
+                icon: '🔌',
+                color: 'cat-development',
+                agents: ['API Design', 'GraphQL', 'Contract Testing', 'Documentador', 'Security'],
+                signals: ['API nueva', 'Integracion third-party', 'Versionado necesario']
+            },
+            {
+                id: 'security-audit',
+                title: 'Auditoria Seguridad',
+                icon: '🛡️',
+                color: 'cat-security',
+                agents: ['Ethical Hacker', 'Threat Modeling', 'Vulnerability Management', 'Authentication', 'Secret Management'],
+                signals: ['Pentest requerido', 'Breach detectado', 'Compliance SOC2/ISO']
+            },
+            {
+                id: 'mobile-launch',
+                title: 'Lanzamiento Mobile',
+                icon: '📱',
+                color: 'cat-mobile',
+                agents: ['Mobile Architecture', 'App Store Optimization', 'Push Notification', 'Mobile CI-CD', 'Mobile QA'],
+                signals: ['Nueva app', 'Release mayor', 'Expansion de mercado']
+            },
+            {
+                id: 'data-pipeline',
+                title: 'Pipeline de Datos',
+                icon: '📈',
+                color: 'cat-data',
+                agents: ['Data Pipeline', 'Data Quality', 'ML Ops', 'Database Architect', 'Observability'],
+                signals: ['ETL necesario', 'Data warehouse', 'ML en produccion']
+            },
+            {
+                id: 'i18n',
+                title: 'Internacionalizacion',
+                icon: '🌍',
+                color: 'cat-transversal',
+                agents: ['i18n Agent', 'Frontend', 'Mobile UI', 'QA', 'Documentador'],
+                signals: ['Nuevo mercado', 'Multi-idioma', 'RTL support']
+            },
+            {
+                id: 'documentation',
+                title: 'Documentacion Tecnica',
+                icon: '📚',
+                color: 'cat-transversal',
+                agents: ['Documentador', 'ADR Agent', 'Docs & Knowledge', 'API Design', 'Onboarding'],
+                signals: ['Docs desactualizados', 'Nuevo equipo', 'API publica']
+            },
+            {
+                id: 'dev-onboarding',
+                title: 'Onboarding Devs',
+                icon: '👋',
+                color: 'cat-transversal',
+                agents: ['Onboarding', 'Documentador', 'DX Agent', 'Code Review', 'Configuration Management'],
+                signals: ['Nuevo developer', 'Rotacion alta', 'Setup complejo']
+            },
+            {
+                id: 'migration',
+                title: 'Migracion Sistema',
+                icon: '🚚',
+                color: 'cat-architecture',
+                agents: ['Migration', 'Monolith to Microservices', 'Database Architect', 'Feature Flag', 'Test Strategy'],
+                signals: ['Legacy system', 'Cloud migration', 'Database change']
+            },
+            {
+                id: 'testing-strategy',
+                title: 'Estrategia Testing',
+                icon: '🧪',
+                color: 'cat-quality',
+                agents: ['Test Strategy', 'E2E Testing', 'Contract Testing', 'Load Testing', 'Visual Regression'],
+                signals: ['Cobertura baja', 'Tests flaky', 'Sin integracion']
+            },
+            {
+                id: 'realtime',
+                title: 'Features Real-time',
+                icon: '⚡',
+                color: 'cat-development',
+                agents: ['WebSocket & Real-time', 'Message Queue', 'Event-Driven Architecture', 'Caching Strategy', 'Observability'],
+                signals: ['Chat/colaboracion', 'Notificaciones live', 'Datos en tiempo real']
             }
         ];
 
