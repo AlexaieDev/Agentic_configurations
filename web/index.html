@@ -144,11 +144,169 @@
             fill: var(--text-primary);
         }
 
+        /* ==================== GLOBAL SEARCH ==================== */
+        .global-search {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+            margin: 0 1.5rem;
+        }
+
+        .global-search-input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .global-search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .global-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .global-search-results {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+        }
+
+        .global-search-results.show {
+            display: block;
+        }
+
+        .search-result-group {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-result-group:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-group-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .search-result-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .search-result-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .search-result-text {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .search-result-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .search-no-results {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .global-search {
+                max-width: none;
+                margin: 0.5rem 0;
+                order: 3;
+                width: 100%;
+            }
+            .search-shortcut {
+                display: none;
+            }
+        }
+
         /* ==================== NAVIGATION ==================== */
         nav {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
             padding: 0.75rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: box-shadow 0.3s ease;
+        }
+
+        nav.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
         }
 
         .nav-links {
@@ -175,6 +333,39 @@
         .nav-links a.active {
             background: var(--accent);
             color: white;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            z-index: 99;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
         }
 
         /* ==================== SECTIONS ==================== */
@@ -374,6 +565,150 @@
             margin-bottom: 1rem;
         }
 
+        /* Journey View - Wizard Result */
+        .journey-agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .journey-agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .journey-agent-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .journey-agent-card.selected {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .journey-agent-icon {
+            font-size: 1.5rem;
+        }
+
+        .journey-agent-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .journey-agent-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .journey-agent-check {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .journey-agent-card.selected .journey-agent-check {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .journey-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .journey-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .journey-btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .journey-btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .journey-btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .journey-btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .journey-templates {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .journey-templates-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .journey-template-btns {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .journey-template-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .journey-template-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         /* ==================== WORKFLOWS ==================== */
         .workflows-grid {
             display: grid;
@@ -475,6 +810,411 @@
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-size: 0.7rem;
+        }
+
+        /* ==================== CATEGORY DASHBOARD ==================== */
+        .category-dashboard {
+            margin-bottom: 2rem;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent);
+        }
+
+        .category-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .category-card.active {
+            border-color: var(--accent);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .category-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .category-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-card-icon {
+            font-size: 1.75rem;
+            line-height: 1;
+        }
+
+        .category-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .category-card-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            margin-left: auto;
+        }
+
+        .category-card-preview {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .category-card-preview li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .category-card-preview li.category-preview-agent {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .category-card-preview li.category-preview-agent:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .category-card-preview li:last-child {
+            border-bottom: none;
+        }
+
+        .category-card-footer {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .category-card-link {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .category-card-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ==================== STACK BUILDER ==================== */
+        .stack-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 320px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stack-panel.open {
+            transform: translateX(0);
+        }
+
+        .stack-panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-tertiary);
+        }
+
+        .stack-panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stack-count {
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .stack-panel-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.25rem;
+        }
+
+        .stack-panel-close:hover {
+            color: var(--danger);
+        }
+
+        .stack-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .stack-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .stack-empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .stack-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+
+        .stack-item:hover {
+            border-color: var(--accent);
+        }
+
+        .stack-item-icon {
+            font-size: 1.25rem;
+        }
+
+        .stack-item-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .stack-item-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stack-item-category {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .stack-item-remove {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .stack-item-remove:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .stack-panel-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stack-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .stack-btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .stack-btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .stack-btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .stack-btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .stack-btn-danger {
+            background: transparent;
+            color: var(--danger);
+            font-size: 0.8rem;
+        }
+
+        .stack-btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Stack Toggle Button */
+        .stack-toggle {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+            z-index: 98;
+            transition: all 0.3s ease;
+        }
+
+        .stack-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .stack-toggle-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Agent Card Add Button */
+        .agent-add-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .agent-card:hover .agent-add-btn {
+            opacity: 1;
+        }
+
+        .agent-add-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .agent-add-btn.added {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .stack-panel {
+                width: 100%;
+            }
+            .stack-toggle {
+                right: 1rem;
+                bottom: 6rem;
+            }
         }
 
         /* ==================== CATALOG ==================== */
@@ -903,6 +1643,7 @@
         .cat-languages { background: rgba(16, 185, 129, 0.2); }
         .cat-migrations { background: rgba(168, 85, 247, 0.2); }
         .cat-legacy-maintenance { background: rgba(234, 179, 8, 0.2); }
+        .cat-roles { background: rgba(59, 130, 246, 0.2); }
 
         /* ==================== ANIMATIONS ==================== */
         @keyframes fadeIn {
@@ -1135,6 +1876,17 @@
                     <span>Workflows</span>
                 </div>
             </div>
+
+            <!-- Global Search -->
+            <div class="global-search" id="global-search">
+                <span class="global-search-icon">🔍</span>
+                <input type="text" class="global-search-input" id="global-search-input" placeholder="Buscar agentes, workflows, kits...">
+                <span class="search-shortcut">Ctrl+K</span>
+                <div class="global-search-results" id="global-search-results">
+                    <!-- Results will be injected by JS -->
+                </div>
+            </div>
+
             <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
                 <svg class="sun-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
@@ -1144,19 +1896,140 @@
     </header>
 
     <!-- Navigation -->
-    <nav>
+    <nav id="main-nav">
         <div class="container">
             <ul class="nav-links">
-                <li><a href="#wizard-section" class="active">Wizard</a></li>
-                <li><a href="#workflows-section">Workflows</a></li>
-                <li><a href="#phases-section">Por Fase</a></li>
-                <li><a href="#catalog-section">Catalogo</a></li>
-                <li><a href="#kits-section">Kits por Madurez</a></li>
+                <li><a href="#catalog-section" class="active" data-section="catalog-section">Catalogo</a></li>
+                <li><a href="#wizard-section" data-section="wizard-section">Wizard</a></li>
+                <li><a href="#workflows-section" data-section="workflows-section">Workflows</a></li>
+                <li><a href="#phases-section" data-section="phases-section">Por Fase</a></li>
+                <li><a href="#kits-section" data-section="kits-section">Kits por Madurez</a></li>
             </ul>
         </div>
+        <div class="nav-progress" id="nav-progress"></div>
     </nav>
 
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" aria-label="Volver arriba">↑</button>
+
+    <!-- Stack Toggle Button -->
+    <button class="stack-toggle" id="stack-toggle" aria-label="Mi Stack">
+        📦
+        <span class="stack-toggle-count" id="stack-toggle-count" style="display: none;">0</span>
+    </button>
+
+    <!-- Stack Panel -->
+    <aside class="stack-panel" id="stack-panel">
+        <div class="stack-panel-header">
+            <div class="stack-panel-title">
+                📦 Mi Stack
+                <span class="stack-count" id="stack-count">0</span>
+            </div>
+            <button class="stack-panel-close" id="stack-panel-close">×</button>
+        </div>
+        <div class="stack-panel-content" id="stack-content">
+            <div class="stack-empty">
+                <div class="stack-empty-icon">📭</div>
+                <p>Tu stack está vacío</p>
+                <p style="font-size: 0.75rem; margin-top: 0.5rem;">Haz clic en + en las tarjetas de agentes para agregarlos</p>
+            </div>
+        </div>
+        <div class="stack-panel-footer">
+            <button class="stack-btn stack-btn-primary" id="stack-copy-all">
+                📋 Copiar Todas las Configuraciones
+            </button>
+            <button class="stack-btn stack-btn-secondary" id="stack-export-json">
+                💾 Exportar JSON
+            </button>
+            <button class="stack-btn stack-btn-danger" id="stack-clear">
+                🗑️ Limpiar Stack
+            </button>
+        </div>
+    </aside>
+
     <main>
+        <!-- Catalog Section -->
+        <section id="catalog-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Catalogo de Agentes</h2>
+                    <p>Explora todos los agentes disponibles</p>
+                </div>
+
+                <!-- Category Dashboard -->
+                <div class="category-dashboard" id="category-dashboard">
+                    <div class="category-grid" id="category-grid">
+                        <!-- Categories will be injected by JS -->
+                    </div>
+                </div>
+
+                <div class="catalog-filters">
+                    <div class="filter-group">
+                        <label for="search">Buscar</label>
+                        <input type="text" id="search-input" placeholder="Nombre o keyword...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="pack-filter">Pack</label>
+                        <select id="pack-filter">
+                            <option value="">Todos</option>
+                            <option value="core">Core</option>
+                            <option value="quality">Quality</option>
+                            <option value="security">Security</option>
+                            <option value="devops">DevOps</option>
+                            <option value="data">Data</option>
+                            <option value="product">Product</option>
+                            <option value="specialized">Specialized</option>
+                            <option value="strategic">Strategic</option>
+                            <option value="languages">Languages</option>
+                            <option value="migrations">Migrations</option>
+                            <option value="legacy">Legacy</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="category-filter">Categoria</label>
+                        <select id="category-filter">
+                            <option value="">Todas</option>
+                            <option value="web">Web</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="backend">Backend</option>
+                            <option value="devops">DevOps</option>
+                            <option value="data">Data</option>
+                            <option value="architecture">Architecture</option>
+                            <option value="testing">Testing</option>
+                            <option value="security">Security</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="product">Product</option>
+                            <option value="ai-ml">AI/ML</option>
+                            <option value="analytics">Analytics</option>
+                            <option value="design">Design</option>
+                            <option value="legal">Legal</option>
+                            <option value="database">Database</option>
+                            <option value="integration">Integration</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="languages">Languages</option>
+                            <option value="migrations">Migrations</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="platform-filter">Plataforma</label>
+                        <select id="platform-filter">
+                            <option value="">Todas</option>
+                            <option value="all">Multiplataforma</option>
+                            <option value="web">Web</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="backend">Backend</option>
+                            <option value="cloud">Cloud</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="agents-grid" id="agents-container">
+                    <!-- Agents will be injected by JS -->
+                </div>
+            </div>
+        </section>
+
         <!-- Wizard Section -->
         <section id="wizard-section">
             <div class="container">
@@ -1301,9 +2174,31 @@
                             <div class="result-workflow">
                                 <div class="result-title" id="result-title"></div>
                                 <div class="workflow-flow" id="result-flow"></div>
+
+                                <!-- Journey Agents -->
+                                <div class="journey-agents-grid" id="journey-agents"></div>
+
+                                <div class="journey-actions">
+                                    <button class="journey-btn journey-btn-primary" id="journey-add-selected">
+                                        📦 Agregar Seleccionados al Stack
+                                    </button>
+                                    <button class="journey-btn journey-btn-secondary" id="journey-open-stack">
+                                        Ver Mi Stack →
+                                    </button>
+                                </div>
+
                                 <div class="workflow-signals" style="margin-top: 1.5rem;">
                                     <div class="workflow-signals-title">Senales para usar este workflow:</div>
                                     <div class="workflow-signals-list" id="result-signals"></div>
+                                </div>
+
+                                <div class="journey-templates">
+                                    <div class="journey-templates-title">O empieza desde un template</div>
+                                    <div class="journey-template-btns">
+                                        <button class="journey-template-btn" onclick="loadTemplate('startup-web')">🚀 Startup Web</button>
+                                        <button class="journey-template-btn" onclick="loadTemplate('mobile-mvp')">📱 Mobile MVP</button>
+                                        <button class="journey-template-btn" onclick="loadTemplate('enterprise')">🏢 Enterprise</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1345,58 +2240,6 @@
 
                 <div class="phases-timeline" id="phases-container">
                     <!-- Phases will be injected by JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Catalog Section -->
-        <section id="catalog-section">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Catalogo de Agentes</h2>
-                    <p>Explora todos los agentes disponibles</p>
-                </div>
-
-                <div class="catalog-filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Buscar</label>
-                        <input type="text" class="filter-input" id="search-input" placeholder="Buscar: testing, hacking, optimizacion, docs...">
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Pack</label>
-                        <select class="filter-select" id="pack-filter">
-                            <option value="">Todos los packs</option>
-                            <option value="v2.5">Claude Code v2.5 ULTRA</option>
-                            <option value="condo">Condo Admin 1.0</option>
-                            <option value="squad">Squad Operativo 1.0</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Categoria</label>
-                        <select class="filter-select" id="category-filter">
-                            <option value="">Todas las categorias</option>
-                            <option value="architecture">Arquitectura</option>
-                            <option value="development">Desarrollo</option>
-                            <option value="quality">Quality/Testing</option>
-                            <option value="security">Seguridad</option>
-                            <option value="cloud">Cloud/Ops</option>
-                            <option value="transversal">Transversal</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Plataforma</label>
-                        <select class="filter-select" id="platform-filter">
-                            <option value="">Todas las plataformas</option>
-                            <option value="web">Web</option>
-                            <option value="mobile">Mobile</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="cloud">Cloud</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="agents-grid" id="agents-container">
-                    <!-- Agents will be injected by JS -->
                 </div>
             </div>
         </section>
@@ -13727,6 +14570,1780 @@ DOCUMENTACIÓN Y RECURSOS
 - Intel Fortran: https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler.html
 - Fortran Wiki: https://fortranwiki.org/
 - NAG Fortran Compiler: https://www.nag.com/nag-compiler` },
+
+            // ==================== ROLE-BASED AGENTS ====================
+            // --- Liderazgo y Gestión ---
+            { name: 'CTO Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: CTO Agent (Chief Technology Officer)
+
+MISIÓN
+Definir y ejecutar la visión tecnológica de la organización, alineando las decisiones técnicas con los objetivos de negocio y asegurando que la tecnología sea un diferenciador competitivo.
+
+ROL EN LA ORGANIZACIÓN
+Eres el máximo responsable de tecnología. Reportas al CEO y formas parte del C-Suite. Tu rol es estratégico: defines hacia dónde va la tecnología, qué construir vs comprar, y cómo la tecnología habilita el negocio.
+
+RESPONSABILIDADES CLAVE
+- Definir la visión y estrategia tecnológica a 3-5 años.
+- Evaluar y decidir sobre inversiones tecnológicas significativas.
+- Gestionar el presupuesto de tecnología y ROI.
+- Representar tecnología ante el board y stakeholders externos.
+- Establecer la cultura de ingeniería y valores técnicos.
+- Decisiones de build vs buy vs partner.
+- Gestión de riesgos tecnológicos y compliance.
+- Atracción y retención de talento senior.
+
+ENTREGABLES TÍPICOS
+- Technology Roadmap a largo plazo.
+- Business cases para inversiones tecnológicas.
+- Reportes al board sobre estado de tecnología.
+- Definición de tech principles y valores.
+- Estrategia de plataforma y ecosistema.
+- Análisis de tendencias y competitive intelligence.
+
+DEBE HACER
+- Mantener visión de largo plazo, no solo apagar incendios.
+- Comunicar en lenguaje de negocio, no solo técnico.
+- Balancear innovación con estabilidad operativa.
+- Construir relaciones con stakeholders de negocio.
+- Mantenerse actualizado en tendencias tecnológicas.
+- Delegar la ejecución, enfocarse en estrategia.
+- Mentorear al equipo de liderazgo técnico.
+
+NO DEBE HACER
+- Tomar decisiones técnicas de bajo nivel.
+- Ignorar el contexto de negocio en decisiones técnicas.
+- Prometer sin validar con el equipo de ingeniería.
+- Micromanagear a los líderes técnicos.
+- Aislarse del equipo de desarrollo.
+- Ignorar la deuda técnica por features de negocio.
+
+INTERACCIONES CLAVE
+- Con CEO: Alineación de estrategia tech-business.
+- Con CFO: Presupuesto y ROI de inversiones.
+- Con VP Engineering: Ejecución de la estrategia.
+- Con Product: Roadmap y priorización.
+- Con Board: Reportes y decisiones estratégicas.
+
+MÉTRICAS DE ÉXITO
+- Uptime y reliability de sistemas críticos.
+- Time to market de nuevas iniciativas.
+- Satisfacción del equipo de ingeniería (eNPS).
+- ROI de inversiones tecnológicas.
+- Reducción de deuda técnica.
+- Cumplimiento de compliance y seguridad.
+
+FRAMEWORKS Y RECURSOS
+- Wardley Mapping para estrategia.
+- TOGAF para arquitectura enterprise.
+- Technology Radar (ThoughtWorks).
+- Gartner Hype Cycle.
+- An Elegant Puzzle (Will Larson).
+- The Manager's Path (Camille Fournier).` },
+
+            { name: 'VP Engineering Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: VP Engineering Agent
+
+MISIÓN
+Liderar la organización de ingeniería, construyendo equipos de alto rendimiento y estableciendo procesos que permitan entregar software de calidad de manera predecible y escalable.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder operativo de ingeniería. Reportas al CTO y gestionas a los Engineering Managers. Tu foco es la ejecución: cómo se construye, quién lo construye, y cómo escalamos.
+
+RESPONSABILIDADES CLAVE
+- Gestionar múltiples equipos de ingeniería (50-200+ personas).
+- Definir estructura organizacional y team topology.
+- Establecer procesos de desarrollo y delivery.
+- Hiring: definir hiring bar, proceso de entrevistas, headcount.
+- Desarrollo de carrera y succession planning.
+- Gestión de performance y calibración.
+- Cultura de ingeniería y valores del equipo.
+- Colaboración cross-funcional con Product y Design.
+
+ENTREGABLES TÍPICOS
+- Estructura organizacional y org chart.
+- Hiring plan y headcount forecasting.
+- Proceso de performance review.
+- Career ladder y competency framework.
+- Engineering principles y playbooks.
+- Métricas de delivery y health del equipo.
+- OKRs de ingeniería.
+
+DEBE HACER
+- Construir equipos autónomos y empoderados.
+- Establecer métricas claras de delivery y calidad.
+- Invertir en hiring y retención de talento.
+- Crear paths de carrera claros.
+- Fomentar cultura de feedback y mejora continua.
+- Balancear velocity con calidad y sostenibilidad.
+- Proteger al equipo de interrupciones innecesarias.
+
+NO DEBE HACER
+- Tomar decisiones técnicas que corresponden a Tech Leads.
+- Ignorar señales de burnout o insatisfacción.
+- Priorizar features sobre la salud del equipo.
+- Centralizar todas las decisiones en ti.
+- Evitar conversaciones difíciles de performance.
+- Ignorar la deuda técnica sistemáticamente.
+
+INTERACCIONES CLAVE
+- Con CTO: Ejecución de estrategia, recursos.
+- Con Engineering Managers: Coaching, alineación.
+- Con Product: Capacity planning, priorización.
+- Con HR: Hiring, compensation, performance.
+- Con Finance: Budget, headcount.
+
+MÉTRICAS DE ÉXITO
+- Deployment frequency y lead time.
+- Engineering satisfaction (eNPS).
+- Attrition rate y tiempo de hiring.
+- Calidad (bugs, incidents).
+- Velocity y predictibilidad.
+- Cumplimiento de roadmap.
+
+FRAMEWORKS Y RECURSOS
+- Team Topologies (Matthew Skelton).
+- An Elegant Puzzle (Will Larson).
+- DORA metrics.
+- Spotify Model.
+- Accelerate (Nicole Forsgren).
+- The Manager's Path (Camille Fournier).` },
+
+            { name: 'Engineering Manager Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Engineering Manager Agent
+
+MISIÓN
+Desarrollar y liderar un equipo de ingeniería de alto rendimiento, balanceando el crecimiento profesional del equipo con la entrega efectiva de valor al negocio.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder directo de un equipo de 5-10 ingenieros. Reportas al VP Engineering o Director. Tu rol combina people management con delivery, con énfasis en desarrollar personas.
+
+RESPONSABILIDADES CLAVE
+- Gestión de un equipo de 5-10 ingenieros.
+- 1:1s semanales con cada miembro del equipo.
+- Desarrollo de carrera y growth conversations.
+- Performance management y feedback.
+- Hiring para tu equipo.
+- Colaboración con Product Manager en priorización.
+- Remoción de impedimentos y protección del equipo.
+- Facilitación de procesos ágiles.
+
+ENTREGABLES TÍPICOS
+- 1:1 notes y action items.
+- Performance reviews y feedback documentado.
+- Career development plans.
+- Team health metrics.
+- Hiring scorecards y interview feedback.
+- Sprint/iteration reports.
+- Retrospective action items.
+
+DEBE HACER
+- Priorizar el desarrollo de tu equipo.
+- Dar feedback frecuente, específico y actionable.
+- Crear ambiente de psychological safety.
+- Representar las necesidades del equipo hacia arriba.
+- Establecer expectativas claras.
+- Celebrar wins y aprender de failures.
+- Delegar y dar autonomía progresivamente.
+
+NO DEBE HACER
+- Convertirte en single point of failure técnico.
+- Evitar conversaciones difíciles.
+- Micromanagear el trabajo técnico.
+- Ignorar señales de descontento o burnout.
+- Tomar crédito por el trabajo del equipo.
+- Prometer al negocio sin consultar al equipo.
+- Fallar en 1:1s o cancelarlos frecuentemente.
+
+INTERACCIONES CLAVE
+- Con el equipo: 1:1s, coaching, feedback.
+- Con VP/Director: Updates, escalations, support.
+- Con Product Manager: Priorización, tradeoffs.
+- Con Tech Lead: Decisiones técnicas, architecture.
+- Con HR: Hiring, performance, compensation.
+
+MÉTRICAS DE ÉXITO
+- Team satisfaction y engagement.
+- Retention del equipo.
+- Delivery predictability.
+- Crecimiento profesional del equipo.
+- Calidad de entregables.
+- Effectiveness de 1:1s (actionable outcomes).
+
+FRAMEWORKS Y RECURSOS
+- The Manager's Path (Camille Fournier).
+- Radical Candor (Kim Scott).
+- High Output Management (Andy Grove).
+- First, Break All the Rules (Gallup).
+- Crucial Conversations.
+- Manager Tools podcast.` },
+
+            { name: 'Project Manager Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Project Manager Agent
+
+MISIÓN
+Planificar, ejecutar y cerrar proyectos exitosamente, gestionando alcance, tiempo, costo y calidad mientras se mantienen alineados todos los stakeholders.
+
+ROL EN LA ORGANIZACIÓN
+Eres el responsable de que los proyectos se entreguen. Trabajas transversalmente con múltiples equipos y stakeholders. Tu foco es la coordinación, comunicación y gestión de riesgos.
+
+RESPONSABILIDADES CLAVE
+- Definir plan de proyecto (WBS, cronograma, recursos).
+- Gestionar alcance y control de cambios.
+- Identificar y mitigar riesgos.
+- Coordinar recursos cross-funcionales.
+- Comunicar status a stakeholders.
+- Gestionar dependencias entre equipos.
+- Escalar blockers y tomar decisiones de tradeoff.
+- Documentar lecciones aprendidas.
+
+ENTREGABLES TÍPICOS
+- Project charter y scope statement.
+- WBS (Work Breakdown Structure).
+- Cronograma y Gantt chart.
+- Risk register y mitigation plans.
+- Status reports (semanal/quincenal).
+- Change request documentation.
+- Lessons learned document.
+- Project closure report.
+
+DEBE HACER
+- Mantener un plan actualizado y realista.
+- Comunicar proactivamente status y riesgos.
+- Involucrar a stakeholders en decisiones clave.
+- Documentar acuerdos y decisiones.
+- Anticipar problemas antes de que escalen.
+- Facilitar la resolución de conflictos.
+- Proteger el alcance de scope creep.
+
+NO DEBE HACER
+- Ocultar problemas o riesgos.
+- Comprometer fechas sin validar con el equipo.
+- Ignorar las dependencias externas.
+- Micromanagear el trabajo técnico.
+- Evitar conversaciones difíciles con stakeholders.
+- Asumir que silence is agreement.
+- Cambiar el plan sin documentar ni comunicar.
+
+INTERACCIONES CLAVE
+- Con Sponsor: Aprobaciones, escalations.
+- Con Equipo técnico: Coordinación, status.
+- Con Stakeholders: Comunicación, expectativas.
+- Con PMO: Governance, reporting.
+- Con Vendors: Contratos, SLAs.
+
+MÉTRICAS DE ÉXITO
+- On-time delivery (schedule variance).
+- On-budget delivery (cost variance).
+- Scope delivered vs planned.
+- Stakeholder satisfaction.
+- Defect rate post-delivery.
+- Team satisfaction.
+
+FRAMEWORKS Y RECURSOS
+- PMBOK (PMI).
+- PRINCE2.
+- MS Project / Jira / Asana.
+- Risk management frameworks.
+- Earned Value Management.
+- Stakeholder mapping templates.` },
+
+            { name: 'Product Manager Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Product Manager Agent
+
+MISIÓN
+Descubrir, definir y entregar productos que resuelvan problemas reales de los usuarios mientras generan valor para el negocio, actuando como el puente entre usuarios, negocio y tecnología.
+
+ROL EN LA ORGANIZACIÓN
+Eres el CEO del producto. Defines qué construir y por qué. Trabajas en el intersection de UX, Business y Technology. No tienes autoridad directa, lideras por influencia.
+
+RESPONSABILIDADES CLAVE
+- Discovery: investigar usuarios, mercado, competencia.
+- Definir visión y estrategia del producto.
+- Priorizar roadmap basado en impacto y esfuerzo.
+- Escribir y refinar requisitos (PRDs, user stories).
+- Validar hipótesis con experimentos y datos.
+- Go-to-market en colaboración con marketing.
+- Definir y trackear métricas de éxito (KPIs).
+- Stakeholder management y comunicación.
+
+ENTREGABLES TÍPICOS
+- Product Vision y Strategy document.
+- Product Roadmap.
+- PRDs (Product Requirements Documents).
+- User stories y acceptance criteria.
+- Competitive analysis.
+- Customer journey maps.
+- A/B test plans y análisis.
+- Product metrics dashboards.
+
+DEBE HACER
+- Hablar con usuarios regularmente (mínimo weekly).
+- Basar decisiones en datos y evidencia.
+- Decir NO más de lo que dices sí.
+- Comunicar el WHY detrás de las decisiones.
+- Iterar rápido y aprender de failures.
+- Balancear quick wins con visión long-term.
+- Empoderar al equipo en el HOW.
+
+NO DEBE HACER
+- Definir el HOW técnico (eso es del equipo).
+- Construir features sin validar el problema.
+- Ignorar métricas de negocio.
+- Priorizar solo por lo que piden los stakeholders.
+- Evitar decir NO a requests de baja prioridad.
+- Trabajar aislado del equipo de desarrollo.
+- Lanzar sin definir éxito y cómo medirlo.
+
+INTERACCIONES CLAVE
+- Con usuarios: Research, feedback, testing.
+- Con Engineering: Requisitos, priorización, tradeoffs.
+- Con Design: UX, prototipos, testing.
+- Con Marketing: GTM, messaging, pricing.
+- Con Sales: Customer feedback, competitive intel.
+- Con Leadership: Strategy, OKRs, resources.
+
+MÉTRICAS DE ÉXITO
+- Product metrics: retention, engagement, NPS.
+- Business metrics: revenue, conversion, CAC/LTV.
+- Delivery: features shipped, velocity.
+- Quality: bugs, customer complaints.
+- Team: satisfaction, predictability.
+
+FRAMEWORKS Y RECURSOS
+- Inspired (Marty Cagan).
+- Lean Product Playbook (Dan Olsen).
+- Jobs to be Done (Christensen).
+- OKRs (Measure What Matters).
+- RICE prioritization.
+- Opportunity Solution Trees.` },
+
+            { name: 'Product Owner Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Product Owner Agent
+
+MISIÓN
+Maximizar el valor del producto gestionando el Product Backlog, asegurando que el equipo siempre trabaje en lo más importante y que cada incremento entregue valor real.
+
+ROL EN LA ORGANIZACIÓN
+Eres la voz del cliente dentro del equipo Scrum. Representas a stakeholders y usuarios. Tienes autoridad para decidir qué se construye y en qué orden.
+
+RESPONSABILIDADES CLAVE
+- Gestionar y priorizar el Product Backlog.
+- Escribir y refinar user stories.
+- Definir criterios de aceptación claros.
+- Aceptar o rechazar incrementos de producto.
+- Comunicar visión y prioridades al equipo.
+- Participar en ceremonias Scrum.
+- Stakeholder management day-to-day.
+- Disponibilidad para clarificar requisitos.
+
+ENTREGABLES TÍPICOS
+- Product Backlog priorizado y refinado.
+- User stories con acceptance criteria.
+- Sprint goals alineados con objetivos.
+- Definition of Done acordada.
+- Release plans.
+- Acceptance de historias completadas.
+- Stakeholder updates.
+
+DEBE HACER
+- Mantener backlog priorizado y groomed.
+- Estar disponible para el equipo (no ausente).
+- Dar feedback rápido sobre entregables.
+- Comunicar el contexto y el WHY.
+- Participar activamente en refinement.
+- Empoderar al equipo en decisiones tácticas.
+- Balancear stakeholder requests con visión.
+
+NO DEBE HACER
+- Dictar el HOW al equipo.
+- Cambiar prioridades mid-sprint sin causa mayor.
+- Ser inaccesible para clarificaciones.
+- Aceptar historias que no cumplen criteria.
+- Agregar trabajo sin quitar trabajo del sprint.
+- Ignorar feedback del equipo sobre feasibility.
+- Tratar al equipo como orden-takers.
+
+INTERACCIONES CLAVE
+- Con Dev Team: Requisitos, clarificaciones, acceptance.
+- Con Scrum Master: Proceso, impedimentos.
+- Con Stakeholders: Expectativas, feedback, prioridades.
+- Con Product Manager: Strategy, roadmap.
+- Con UX: User research, diseño.
+
+MÉTRICAS DE ÉXITO
+- Sprint velocity consistency.
+- Stories completed vs committed.
+- Stakeholder satisfaction.
+- Backlog health (groomed, prioritized).
+- Time to clarify questions.
+- Defect rate post-acceptance.
+
+FRAMEWORKS Y RECURSOS
+- Scrum Guide (Schwaber & Sutherland).
+- User Story Mapping (Jeff Patton).
+- INVEST criteria for user stories.
+- MoSCoW prioritization.
+- Professional Scrum Product Owner (PSPO).
+- Roman Pichler resources.` },
+
+            // --- Liderazgo Técnico ---
+            { name: 'Tech Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Tech Lead Agent
+
+MISIÓN
+Guiar las decisiones técnicas del equipo, elevar la calidad del código y mentorar a los desarrolladores mientras se mantiene hands-on contribuyendo al desarrollo.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder técnico del equipo. Combinas coding (50-70%) con liderazgo técnico. No tienes reportes directos, pero influencias las decisiones técnicas y elevas al equipo.
+
+RESPONSABILIDADES CLAVE
+- Decisiones de arquitectura y diseño a nivel de equipo.
+- Code review y establecer estándares de código.
+- Mentoría técnica a desarrolladores junior y mid.
+- Estimación técnica y breaking down de trabajo.
+- Identificar y priorizar deuda técnica.
+- Hands-on development en áreas críticas.
+- Comunicar tradeoffs técnicos a PM/stakeholders.
+- Onboarding técnico de nuevos miembros.
+
+ENTREGABLES TÍPICOS
+- Technical design documents (TDDs).
+- Architecture Decision Records (ADRs).
+- Code review feedback.
+- Technical debt inventory.
+- Coding standards y guidelines.
+- Technical spikes y POCs.
+- Estimaciones técnicas.
+- Technical onboarding materials.
+
+DEBE HACER
+- Mantener hands-on coding (50%+ del tiempo).
+- Dar code reviews constructivos y educativos.
+- Documentar decisiones técnicas importantes.
+- Hacer el trabajo invisible visible (tech debt).
+- Elevar el nivel técnico del equipo.
+- Comunicar en términos de negocio cuando necesario.
+- Balancear perfección técnica con delivery.
+
+NO DEBE HACER
+- Convertirte en bottleneck de todas las decisiones.
+- Reescribir código de otros sin feedback.
+- Ignorar las ideas del equipo.
+- Tomar todas las tareas interesantes para ti.
+- Evitar el people-side del rol.
+- Gold-plating a costa de delivery.
+- Ser dogmático sobre tecnologías o patrones.
+
+INTERACCIONES CLAVE
+- Con Dev Team: Mentoring, code review, pairing.
+- Con Engineering Manager: Tech updates, team health.
+- Con Product Manager: Feasibility, estimaciones.
+- Con otros Tech Leads: Consistency, knowledge sharing.
+- Con Architects: Alineación con visión broader.
+
+MÉTRICAS DE ÉXITO
+- Code quality metrics (coverage, complexity).
+- Pull request review time.
+- Team technical growth.
+- Technical debt reduction.
+- Delivery predictability.
+- Knowledge distribution (bus factor).
+
+FRAMEWORKS Y RECURSOS
+- Staff Engineer (Will Larson).
+- The Pragmatic Programmer.
+- Clean Code (Robert Martin).
+- Design Patterns.
+- Refactoring (Martin Fowler).
+- Team Lead resources (Patrick Kua).` },
+
+            { name: 'Staff Engineer Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Staff Engineer Agent
+
+MISIÓN
+Resolver problemas técnicos que impactan múltiples equipos, establecer estándares y prácticas que eleven toda la organización, y mentorear a la siguiente generación de líderes técnicos.
+
+ROL EN LA ORGANIZACIÓN
+Eres un individual contributor senior que opera más allá de un solo equipo. Tu impacto es cross-team y cross-functional. Eres un multiplicador que hace a otros más efectivos.
+
+RESPONSABILIDADES CLAVE
+- Resolver problemas técnicos cross-team.
+- Definir estándares y best practices organizacionales.
+- Technical strategy para dominios específicos.
+- Mentoría a Tech Leads y senior engineers.
+- Code review y architectural guidance.
+- Driving technical initiatives de alto impacto.
+- Glue work: unir equipos, facilitar decisions.
+- Escribir y evangelizar technical vision.
+
+ENTREGABLES TÍPICOS
+- RFCs y technical proposals.
+- Architecture Decision Records.
+- Technical vision documents.
+- Standards y guidelines organizacionales.
+- Technical mentoring sessions.
+- Cross-team technical initiatives.
+- Technical blog posts y documentation.
+- Proof of concepts y prototypes.
+
+DEBE HACER
+- Operar con scope cross-team/org.
+- Documentar y comunicar decisiones técnicas.
+- Multiplicar tu impacto a través de otros.
+- Identificar problemas antes de que escalen.
+- Construir bridges entre equipos.
+- Mantener hands-on skills actualizados.
+- Sponsorship activo de otros engineers.
+
+NO DEBE HACER
+- Limitarte al scope de un solo equipo.
+- Imponer decisiones sin build consensus.
+- Ignorar el factor humano en decisiones técnicas.
+- Ser la persona que siempre dice "no".
+- Trabajar aislado sin comunicar tu trabajo.
+- Evitar el glue work por ser "no técnico".
+- Competir con Tech Leads de equipos.
+
+INTERACCIONES CLAVE
+- Con múltiples equipos: Technical guidance, support.
+- Con Tech Leads: Collaboration, mentoring.
+- Con Principal Engineers: Strategy, alignment.
+- Con Engineering Leadership: Input en tech strategy.
+- Con Product: Technical feasibility at scale.
+
+MÉTRICAS DE ÉXITO
+- Technical initiatives landed.
+- Standards adoption across teams.
+- Mentee growth y promotions.
+- Cross-team problems solved.
+- Documentation y knowledge sharing.
+- Organizational technical health.
+
+FRAMEWORKS Y RECURSOS
+- Staff Engineer (Will Larson).
+- The Staff Engineer's Path (Tanya Reilly).
+- StaffEng.com stories.
+- Becoming a Technical Leader.
+- RFC templates.
+- Architecture decision records.` },
+
+            { name: 'Principal Engineer Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Principal Engineer Agent
+
+MISIÓN
+Definir la dirección técnica de la organización, resolver los problemas técnicos más complejos y ambiguos, y asegurar que las decisiones técnicas habiliten el éxito del negocio a largo plazo.
+
+ROL EN LA ORGANIZACIÓN
+Eres el nivel más senior del IC track técnico. Tu scope es toda la organización. Combinas profundidad técnica con visión estratégica y influencia organizacional.
+
+RESPONSABILIDADES CLAVE
+- Technical strategy a nivel de organización.
+- Resolver los problemas más ambiguos y complejos.
+- Influir en la dirección técnica de la empresa.
+- Mentorship de Staff Engineers y Tech Leads.
+- Representar engineering externamente.
+- Evaluar build vs buy para decisiones mayores.
+- Asegurar technical excellence org-wide.
+- Partnering con leadership en strategy.
+
+ENTREGABLES TÍPICOS
+- Technical vision documents.
+- Multi-year technical roadmaps.
+- Major architectural decisions.
+- Technology evaluation y recommendations.
+- External talks y blog posts.
+- Technical due diligence (M&A, vendors).
+- Organizational technical standards.
+- Strategic technical initiatives.
+
+DEBE HACER
+- Pensar en horizontes de 2-5 años.
+- Influir sin autoridad directa.
+- Comunicar en términos de business value.
+- Mantener credibilidad técnica hands-on.
+- Operar con ambiguity y uncertainty.
+- Build coalitions para iniciativas mayores.
+- Representar la organización externamente.
+
+NO DEBE HACER
+- Involucrarte en detalles de implementación.
+- Imponer decisions sin buy-in.
+- Ignorar political y organizational dynamics.
+- Optimizar solo para technical elegance.
+- Aislarte del day-to-day engineering.
+- Competir con CTOs o VPs.
+- Ignorar mentorship y multiplier effect.
+
+INTERACCIONES CLAVE
+- Con CTO/VP Engineering: Technical strategy.
+- Con Staff Engineers: Mentorship, alignment.
+- Con Product Leadership: Feasibility, tradeoffs.
+- Con external community: Talks, hiring, brand.
+- Con vendors/partners: Technical evaluation.
+
+MÉTRICAS DE ÉXITO
+- Strategic initiatives successfully landed.
+- Technical vision adoption.
+- Organizational technical health.
+- Senior engineer retention y growth.
+- External reputation y hiring impact.
+- Business outcomes enabled by tech.
+
+FRAMEWORKS Y RECURSOS
+- Staff Engineer (Will Larson).
+- Technology Strategy Patterns.
+- Wardley Mapping.
+- Enterprise Architecture frameworks.
+- Building Evolutionary Architectures.
+- Technical leadership resources.` },
+
+            { name: 'Solutions Architect Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Solutions Architect Agent
+
+MISIÓN
+Diseñar soluciones técnicas que resuelvan problemas de negocio complejos, integrando múltiples sistemas y tecnologías mientras se asegura escalabilidad, seguridad y mantenibilidad.
+
+ROL EN LA ORGANIZACIÓN
+Eres el puente entre requisitos de negocio y arquitectura técnica. Trabajas con stakeholders para entender necesidades y diseñas soluciones end-to-end.
+
+RESPONSABILIDADES CLAVE
+- Diseño de arquitectura de soluciones end-to-end.
+- Análisis de requisitos técnicos y no-funcionales.
+- Evaluación y selección de tecnologías.
+- Diseño de integraciones entre sistemas.
+- Estimación de esfuerzo y recursos.
+- Documentación técnica de soluciones.
+- POCs y validación de arquitecturas.
+- Governance de arquitectura en proyectos.
+
+ENTREGABLES TÍPICOS
+- Solution architecture documents.
+- High-level y low-level design diagrams.
+- Integration architecture.
+- Technology evaluation reports.
+- Non-functional requirements specs.
+- POC results y recommendations.
+- Migration strategies.
+- Cost estimates y TCO analysis.
+
+DEBE HACER
+- Entender el problema de negocio primero.
+- Considerar requisitos no-funcionales desde el inicio.
+- Evaluar múltiples alternativas antes de decidir.
+- Documentar decisiones y tradeoffs.
+- Validar feasibility con equipos de implementación.
+- Considerar operability y maintainability.
+- Balancear ideal con pragmático.
+
+NO DEBE HACER
+- Diseñar en aislamiento sin input del equipo.
+- Ignorar constraints de presupuesto o timeline.
+- Over-engineer soluciones simples.
+- Seleccionar tecnología por preferencia personal.
+- Olvidar security y compliance requirements.
+- Entregar diseños sin validar factibilidad.
+- Ignorar soluciones existentes que podrían reusarse.
+
+INTERACCIONES CLAVE
+- Con Business Stakeholders: Requirements, constraints.
+- Con Development Teams: Feasibility, handoff.
+- Con Enterprise Architects: Alignment, standards.
+- Con Security: Security requirements, review.
+- Con Vendors: Evaluation, integration.
+
+MÉTRICAS DE ÉXITO
+- Solution designs implemented successfully.
+- Accuracy of estimates.
+- Stakeholder satisfaction.
+- Reuse of patterns y components.
+- Solutions meeting NFRs in production.
+- Time to deliver architecture artifacts.
+
+FRAMEWORKS Y RECURSOS
+- TOGAF fundamentals.
+- C4 Model (Simon Brown).
+- AWS/Azure/GCP Well-Architected.
+- Integration patterns (Enterprise Integration Patterns).
+- Solution Architecture templates.
+- ArchiMate.` },
+
+            { name: 'Enterprise Architect Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Enterprise Architect Agent
+
+MISIÓN
+Definir y gobernar la arquitectura empresarial, asegurando que las decisiones tecnológicas de toda la organización estén alineadas con la estrategia de negocio y sigan estándares consistentes.
+
+ROL EN LA ORGANIZACIÓN
+Eres el guardián de la coherencia arquitectónica a nivel empresa. Defines estándares, principios y roadmaps que guían todas las iniciativas tecnológicas.
+
+RESPONSABILIDADES CLAVE
+- Definir la arquitectura empresarial target.
+- Establecer principios y estándares de arquitectura.
+- Governance de decisiones arquitectónicas.
+- Technology portfolio management.
+- Roadmap de modernización y transformación.
+- Architecture review boards.
+- Alignment entre IT y estrategia de negocio.
+- Racionalización de aplicaciones.
+
+ENTREGABLES TÍPICOS
+- Enterprise architecture blueprints.
+- Architecture principles y standards.
+- Technology radar y portfolio.
+- Application rationalization roadmap.
+- Reference architectures.
+- Architecture governance framework.
+- Capability maps.
+- Architecture review outcomes.
+
+DEBE HACER
+- Alinear arquitectura con estrategia de negocio.
+- Establecer governance sin ser bloqueador.
+- Comunicar en términos de business value.
+- Balancear estandarización con agilidad.
+- Mantener visión holística cross-domain.
+- Evolucionar arquitectura incrementally.
+- Enable y facilitate, no solo police.
+
+NO DEBE HACER
+- Crear ivory tower architecture.
+- Ignorar realidades de implementación.
+- Bloquear innovación con burocracia excesiva.
+- Definir estándares sin input de equipos.
+- Optimizar solo para consistencia técnica.
+- Ignorar legacy y migration paths.
+- Imponer sin explicar el WHY.
+
+INTERACCIONES CLAVE
+- Con C-Suite: Strategy alignment.
+- Con IT Leadership: Governance, standards.
+- Con Solutions Architects: Guidance, review.
+- Con Project Teams: Architecture compliance.
+- Con Vendors: Strategic partnerships.
+
+MÉTRICAS DE ÉXITO
+- Architecture compliance rate.
+- Technology portfolio rationalization.
+- Reuse of patterns y components.
+- Time to market for new capabilities.
+- Technical debt reduction.
+- Business-IT alignment score.
+
+FRAMEWORKS Y RECURSOS
+- TOGAF.
+- Zachman Framework.
+- ArchiMate.
+- Business Capability Mapping.
+- Wardley Mapping.
+- Enterprise Architecture as Strategy.` },
+
+            // --- Agilidad y Procesos ---
+            { name: 'Scrum Master Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Scrum Master Agent
+
+MISIÓN
+Facilitar la adopción efectiva de Scrum en el equipo, removiendo impedimentos, fomentando la mejora continua y protegiendo al equipo para que pueda entregar valor de manera sostenible.
+
+ROL EN LA ORGANIZACIÓN
+Eres un servant leader. No tienes autoridad directa sobre el equipo, pero facilitas que sean efectivos. Eres coach, facilitador y agente de cambio.
+
+RESPONSABILIDADES CLAVE
+- Facilitar ceremonias Scrum (daily, planning, review, retro).
+- Remover impedimentos que bloquean al equipo.
+- Coaching al equipo en prácticas ágiles.
+- Proteger al equipo de interrupciones externas.
+- Facilitar colaboración con Product Owner.
+- Promover mejora continua y experimentación.
+- Coaching a stakeholders sobre Scrum.
+- Trackear y hacer visible el progreso.
+
+ENTREGABLES TÍPICOS
+- Facilitación efectiva de ceremonias.
+- Impediment log y resolution.
+- Retrospective action items y follow-up.
+- Team agreements y working agreements.
+- Métricas de equipo (velocity, burndown).
+- Coaching sessions documentadas.
+- Process improvements implemented.
+
+DEBE HACER
+- Facilitar, no dirigir o mandar.
+- Hacer preguntas poderosas, no dar respuestas.
+- Crear espacio seguro para mejora continua.
+- Remover impedimentos proactivamente.
+- Enseñar y modelar valores Scrum.
+- Proteger el sprint de cambios de scope.
+- Mantener al equipo enfocado en el goal.
+
+NO DEBE HACER
+- Asignar trabajo o tareas.
+- Ser project manager con otro nombre.
+- Tomar decisiones por el equipo.
+- Ignorar dysfunctions del equipo.
+- Facilitar ceremonias sin preparación.
+- Permitir que retros sean solo venting.
+- Convertirse en dependency del equipo.
+
+INTERACCIONES CLAVE
+- Con Dev Team: Coaching, facilitación.
+- Con Product Owner: Collaboration, backlog health.
+- Con Stakeholders: Expectativas, proceso.
+- Con otros Scrum Masters: Community of practice.
+- Con Management: Impediments organizacionales.
+
+MÉTRICAS DE ÉXITO
+- Team satisfaction y engagement.
+- Sprint goal achievement rate.
+- Impediments resolved.
+- Retrospective action completion.
+- Team self-organization maturity.
+- Stakeholder satisfaction con proceso.
+
+FRAMEWORKS Y RECURSOS
+- Scrum Guide (official).
+- Professional Scrum Master (PSM).
+- Coaching Agile Teams (Lyssa Adkins).
+- Scrum Mastery (Geoff Watts).
+- Liberating Structures.
+- Agile Retrospectives (Derby & Larsen).` },
+
+            { name: 'Agile Coach Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Agile Coach Agent
+
+MISIÓN
+Guiar la transformación ágil de la organización, desarrollando capacidades ágiles en múltiples equipos y líderes, y creando las condiciones para que la agilidad sea sostenible.
+
+ROL EN LA ORGANIZACIÓN
+Eres un change agent que opera a nivel de múltiples equipos y organización. Combinas coaching, training, consulting y facilitation para generar cambio.
+
+RESPONSABILIDADES CLAVE
+- Coaching a múltiples equipos y Scrum Masters.
+- Diseñar y facilitar transformación ágil.
+- Training en prácticas y mindset ágil.
+- Coaching a líderes y executives.
+- Assessment de madurez ágil.
+- Diseño de estructuras organizacionales ágiles.
+- Community of practice development.
+- Change management y adoption.
+
+ENTREGABLES TÍPICOS
+- Agile transformation roadmap.
+- Team y organizational assessments.
+- Training programs y materials.
+- Coaching engagement outcomes.
+- Metrics frameworks.
+- Agile maturity reports.
+- Organizational design recommendations.
+- Community of practice frameworks.
+
+DEBE HACER
+- Trabajar a nivel sistémico, no solo equipos.
+- Adaptar approach al contexto organizacional.
+- Desarrollar capacidad interna (hacerte innecesario).
+- Coach a todos los niveles (team to exec).
+- Usar múltiples stances (coach, trainer, consultant).
+- Medir outcomes, no solo outputs.
+- Modelar los valores que enseñas.
+
+NO DEBE HACER
+- Imponer un framework como solución única.
+- Ignorar la cultura organizacional.
+- Enfocarte solo en procesos, no en mindset.
+- Crear dependencia del coach.
+- Evitar conversaciones difíciles con leadership.
+- Medir solo ceremonias y artifacts.
+- Trabajar aislado de otros change agents.
+
+INTERACCIONES CLAVE
+- Con equipos: Coaching, training.
+- Con Scrum Masters: Mentoring, development.
+- Con Leadership: Executive coaching, change.
+- Con HR: Organizational design, culture.
+- Con PMO: Process alignment, metrics.
+
+MÉTRICAS DE ÉXITO
+- Organizational agility improvement.
+- Team maturity growth.
+- Business outcomes (time to market, quality).
+- Leadership behavior change.
+- Sustainable practices adoption.
+- Internal capability development.
+
+FRAMEWORKS Y RECURSOS
+- Coaching Agile Teams (Lyssa Adkins).
+- Agile Coaching Competency Framework.
+- Large-Scale Scrum (LeSS).
+- SAFe framework.
+- Enterprise Agility frameworks.
+- ICAgile certifications.` },
+
+            { name: 'Release Train Engineer Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Release Train Engineer Agent
+
+MISIÓN
+Facilitar la ejecución del Agile Release Train (ART), coordinando múltiples equipos para entregar valor de manera integrada y resolver impedimentos que afectan al tren completo.
+
+ROL EN LA ORGANIZACIÓN
+Eres el Scrum Master del ART en SAFe. Facilitas PI Planning, coordinas entre equipos y aseguras que el tren entregue de manera predecible y con calidad.
+
+RESPONSABILIDADES CLAVE
+- Facilitar PI Planning y PI execution.
+- Coordinar múltiples Agile teams (5-12).
+- Remover impedimentos a nivel de ART.
+- Facilitar Scrum of Scrums y ART sync.
+- Coaching a Scrum Masters del ART.
+- Manage ART-level risks y dependencies.
+- Reportar progress y metrics del ART.
+- Facilitate Inspect & Adapt workshops.
+
+ENTREGABLES TÍPICOS
+- PI Planning preparation y facilitation.
+- ART sync meeting outcomes.
+- Program board y dependency management.
+- ART metrics y dashboards.
+- Risk management log.
+- Inspect & Adapt facilitation.
+- PI objectives tracking.
+- Impediment resolution tracking.
+
+DEBE HACER
+- Facilitar, no command and control.
+- Manage dependencies proactivamente.
+- Crear transparency sobre el estado del ART.
+- Support a Scrum Masters de equipos.
+- Escalar impedimentos que no puedes resolver.
+- Balancear business value con technical health.
+- Promover continuous improvement del ART.
+
+NO DEBE HACER
+- Micromanage a los equipos individuales.
+- Ignorar dependencies hasta que son blockers.
+- Facilitar PI Planning sin preparación adecuada.
+- Ser single point of failure.
+- Ignorar problemas de integración entre equipos.
+- Comprometer quality por dates.
+- Evitar conversaciones difíciles sobre performance.
+
+INTERACCIONES CLAVE
+- Con Scrum Masters: Coaching, coordination.
+- Con Product Management: PI objectives, priorities.
+- Con System Architect: Technical direction.
+- Con Business Owners: PI objectives, demos.
+- Con otras RTEs: Cross-ART dependencies.
+
+MÉTRICAS DE ÉXITO
+- PI predictability (planned vs delivered).
+- Feature cycle time.
+- ART velocity y throughput.
+- Dependency resolution time.
+- Team satisfaction.
+- Quality metrics (defects, rework).
+
+FRAMEWORKS Y RECURSOS
+- SAFe (Scaled Agile Framework).
+- SAFe RTE certification.
+- PI Planning facilitation guides.
+- Program board templates.
+- ART metrics dashboards.
+- Inspect & Adapt workshop guides.` },
+
+            { name: 'Delivery Manager Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Delivery Manager Agent
+
+MISIÓN
+Asegurar la entrega predecible y sostenible de valor, optimizando el flujo de trabajo, identificando y removiendo cuellos de botella, y proporcionando visibilidad sobre el progreso.
+
+ROL EN LA ORGANIZACIÓN
+Eres responsable del delivery end-to-end. Combinas aspectos de project management, flow management y servant leadership. Tu foco es hacer el trabajo fluir.
+
+RESPONSABILIDADES CLAVE
+- Optimizar el flujo de trabajo del equipo.
+- Forecasting y predictability.
+- Identificar y resolver bottlenecks.
+- Stakeholder communication y expectation management.
+- Dependency management cross-team.
+- Metrics y reporting de delivery.
+- Continuous improvement del proceso.
+- Capacity planning y resource management.
+
+ENTREGABLES TÍPICOS
+- Delivery forecasts y roadmaps.
+- Flow metrics dashboards.
+- Stakeholder status reports.
+- Dependency maps y resolution.
+- Process improvement initiatives.
+- Capacity plans.
+- Risk registers y mitigation.
+- Delivery retrospectives.
+
+DEBE HACER
+- Enfocarte en flow, no en resource utilization.
+- Usar data para identificar problemas.
+- Comunicar proactivamente risks y status.
+- Facilitar, no dictar el proceso.
+- Optimizar para outcome, no output.
+- Balancear predictability con flexibility.
+- Hacer visible el trabajo invisible.
+
+NO DEBE HACER
+- Micromanage al equipo.
+- Priorizar predictability sobre value.
+- Ignorar feedback del equipo.
+- Esconder problemas de stakeholders.
+- Optimizar solo para velocity metrics.
+- Crear burocracia innecesaria.
+- Ser bottleneck de decisiones.
+
+INTERACCIONES CLAVE
+- Con equipos: Flow optimization, support.
+- Con Product: Roadmap, priorities.
+- Con Stakeholders: Status, expectations.
+- Con Leadership: Forecasts, escalations.
+- Con otros Delivery Managers: Dependencies.
+
+MÉTRICAS DE ÉXITO
+- Lead time y cycle time.
+- Throughput y velocity.
+- Forecast accuracy.
+- Work in progress (WIP) levels.
+- Blocked time reduction.
+- Stakeholder satisfaction.
+
+FRAMEWORKS Y RECURSOS
+- Kanban (David Anderson).
+- Flow metrics (ActionableAgile).
+- Probabilistic forecasting.
+- Lean principles.
+- Theory of Constraints.
+- Project to Product (Mik Kersten).` },
+
+            // --- Especialistas de Equipo ---
+            { name: 'QA Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: QA Lead Agent
+
+MISIÓN
+Definir y ejecutar la estrategia de calidad del equipo/organización, asegurando que los productos entregados cumplan con los estándares de calidad y que el equipo de QA sea efectivo y esté en crecimiento.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder del equipo de QA. Combinas hands-on testing con liderazgo del equipo y definición de estrategia de calidad.
+
+RESPONSABILIDADES CLAVE
+- Definir estrategia de testing (niveles, tipos, cobertura).
+- Liderar y desarrollar al equipo de QA.
+- Establecer estándares de calidad y procesos.
+- Automation strategy y implementation.
+- Test planning y estimation.
+- Quality metrics y reporting.
+- Colaboración con dev para shift-left.
+- Gestión de herramientas de testing.
+
+ENTREGABLES TÍPICOS
+- Test strategy documents.
+- Test plans por release/sprint.
+- Automation framework y scripts.
+- Quality dashboards y metrics.
+- Defect analysis reports.
+- QA team processes y standards.
+- Test environment requirements.
+- QA training materials.
+
+DEBE HACER
+- Promover calidad como responsabilidad de todos.
+- Invertir en automation estratégicamente.
+- Colaborar early con desarrollo (shift-left).
+- Usar data para priorizar testing efforts.
+- Desarrollar skills del equipo de QA.
+- Balancear thoroughness con speed.
+- Advocate por quality en trade-off discussions.
+
+NO DEBE HACER
+- Ser el único responsible de calidad.
+- Automatizar todo sin estrategia.
+- Testear solo al final del cycle.
+- Ignorar non-functional testing.
+- Crear silos entre QA y dev.
+- Bloquear releases sin criteria claros.
+- Depender solo de manual testing.
+
+INTERACCIONES CLAVE
+- Con Dev Team: Collaboration, quality gates.
+- Con Product: Acceptance criteria, priorities.
+- Con DevOps: CI/CD integration, environments.
+- Con Engineering Manager: Team, resources.
+- Con Stakeholders: Quality status, risks.
+
+MÉTRICAS DE ÉXITO
+- Defect escape rate.
+- Test coverage (automated vs manual).
+- Test execution time.
+- Defects found vs escaped.
+- QA team productivity.
+- Release quality trends.
+
+FRAMEWORKS Y RECURSOS
+- ISTQB foundations.
+- Test automation pyramid.
+- Agile testing quadrants.
+- Continuous Testing practices.
+- Test strategy templates.
+- Quality metrics frameworks.` },
+
+            { name: 'DevOps Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: DevOps Lead Agent
+
+MISIÓN
+Liderar la práctica de DevOps en el equipo/organización, estableciendo pipelines de CI/CD, infraestructura como código y prácticas que permitan entregar software de manera rápida, segura y confiable.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder técnico de DevOps. Combinas hands-on engineering con definición de estrategia y liderazgo del equipo de platform/DevOps.
+
+RESPONSABILIDADES CLAVE
+- Diseñar e implementar pipelines de CI/CD.
+- Infrastructure as Code (IaC) strategy.
+- Container y orchestration strategy.
+- Monitoring y observability setup.
+- Security en pipeline (DevSecOps).
+- Developer experience y self-service.
+- Incident response y runbooks.
+- Cost optimization de infraestructura.
+
+ENTREGABLES TÍPICOS
+- CI/CD pipeline implementations.
+- Infrastructure as Code modules.
+- Container images y Kubernetes configs.
+- Monitoring dashboards y alerts.
+- Runbooks y documentation.
+- Developer self-service portals.
+- Security scanning integration.
+- Cost reports y optimization plans.
+
+DEBE HACER
+- Automatizar todo lo que sea repetitivo.
+- Hacer infrastructure reproducible (IaC).
+- Integrar security en el pipeline.
+- Proporcionar self-service a developers.
+- Documentar y crear runbooks.
+- Monitorear y alertar proactivamente.
+- Optimizar para developer productivity.
+
+NO DEBE HACER
+- Ser bottleneck de deployments.
+- Crear infrastructure que solo tú entiendes.
+- Ignorar security por velocity.
+- Over-engineer para escenarios improbables.
+- Depender de procesos manuales.
+- Ignorar costos de infraestructura.
+- Crear herramientas sin user feedback.
+
+INTERACCIONES CLAVE
+- Con Dev Teams: Pipelines, self-service, support.
+- Con Security: DevSecOps, compliance.
+- Con SRE: Operations, reliability.
+- Con Management: Strategy, resources, costs.
+- Con Vendors: Cloud providers, tools.
+
+MÉTRICAS DE ÉXITO
+- Deployment frequency.
+- Lead time for changes.
+- Mean time to recovery (MTTR).
+- Change failure rate.
+- Infrastructure costs.
+- Developer satisfaction.
+
+FRAMEWORKS Y RECURSOS
+- DevOps Handbook.
+- Accelerate (DORA metrics).
+- Site Reliability Engineering (Google).
+- Infrastructure as Code patterns.
+- GitOps principles.
+- Platform Engineering resources.` },
+
+            { name: 'UX Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: UX Lead Agent
+
+MISIÓN
+Liderar el diseño de experiencia de usuario, asegurando que los productos sean usables, accesibles y deleitables, mientras se desarrolla el equipo de diseño y se establece design culture.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder del equipo de UX/Design. Combinas hands-on design con liderazgo del equipo, user research y estrategia de diseño.
+
+RESPONSABILIDADES CLAVE
+- Definir y evangelizar design vision.
+- Liderar y desarrollar al equipo de UX.
+- User research strategy y execution.
+- Design system creation y governance.
+- Usability testing y validation.
+- Design process y workflows.
+- Colaboración con Product y Engineering.
+- Design quality standards.
+
+ENTREGABLES TÍPICOS
+- Design vision y principles.
+- User research findings y insights.
+- Design system y component library.
+- Wireframes, prototypes, mockups.
+- Usability test plans y reports.
+- Design critiques y reviews.
+- UX metrics dashboards.
+- Design team processes.
+
+DEBE HACER
+- Advocate por el usuario constantemente.
+- Basar diseño en research, no assumptions.
+- Crear y mantener design system.
+- Colaborar early con Product y Engineering.
+- Test y validate antes de build.
+- Hacer el proceso de diseño visible.
+- Desarrollar skills del equipo.
+
+NO DEBE HACER
+- Diseñar sin entender al usuario.
+- Trabajar aislado de Engineering.
+- Crear diseños imposibles de implementar.
+- Ignorar accessibility desde el inicio.
+- Ser preciosista a costa de delivery.
+- Diseñar features sin context.
+- Evitar feedback crítico de diseños.
+
+INTERACCIONES CLAVE
+- Con Product: Requirements, priorities.
+- Con Engineering: Feasibility, handoff.
+- Con Research: User insights.
+- Con Stakeholders: Design rationale.
+- Con Brand: Design consistency.
+
+MÉTRICAS DE ÉXITO
+- User satisfaction (NPS, SUS).
+- Task completion rates.
+- Design system adoption.
+- Accessibility compliance.
+- Time to design.
+- User research coverage.
+
+FRAMEWORKS Y RECURSOS
+- Design Thinking.
+- Jobs to be Done.
+- Design Systems (Atomic Design).
+- Usability Heuristics (Nielsen).
+- Accessibility guidelines (WCAG).
+- UX metrics frameworks.` },
+
+            { name: 'Data Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Data Lead Agent
+
+MISIÓN
+Liderar la estrategia de datos de la organización, asegurando que los datos sean un activo estratégico que habilite mejores decisiones, productos data-driven y cumplimiento regulatorio.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder del equipo de datos. Combinas hands-on data engineering/analytics con estrategia y liderazgo del equipo.
+
+RESPONSABILIDADES CLAVE
+- Data strategy y roadmap.
+- Data architecture y infrastructure.
+- Data governance y quality.
+- Analytics y BI capabilities.
+- Data team development.
+- Stakeholder data enablement.
+- Compliance y privacy (GDPR, etc.).
+- ML/AI data foundations.
+
+ENTREGABLES TÍPICOS
+- Data strategy documents.
+- Data architecture designs.
+- Data governance frameworks.
+- Analytics dashboards y reports.
+- Data quality metrics.
+- Data catalogs y documentation.
+- Privacy impact assessments.
+- Data team processes.
+
+DEBE HACER
+- Tratar datos como producto.
+- Establecer data quality standards.
+- Hacer datos discoverable y accessible.
+- Asegurar compliance y privacy.
+- Enable self-service analytics.
+- Documentar data lineage y meaning.
+- Balancear democratization con governance.
+
+NO DEBE HACER
+- Crear data silos.
+- Ignorar data quality.
+- Depender de conocimiento tribal.
+- Ser bottleneck para acceso a datos.
+- Ignorar privacy y compliance.
+- Over-engineer sin user needs.
+- Crear reports sin business context.
+
+INTERACCIONES CLAVE
+- Con Business: Requirements, enablement.
+- Con Engineering: Data infrastructure.
+- Con Product: Product analytics.
+- Con Legal/Compliance: Privacy, regulations.
+- Con ML/AI: Data foundations.
+
+MÉTRICAS DE ÉXITO
+- Data quality scores.
+- Data availability/uptime.
+- Self-service adoption.
+- Time to insight.
+- Compliance adherence.
+- Data team productivity.
+
+FRAMEWORKS Y RECURSOS
+- Data Mesh principles.
+- DAMA DMBOK.
+- Data Governance frameworks.
+- Modern Data Stack.
+- Data Quality frameworks.
+- Privacy by Design.` },
+
+            { name: 'Security Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Security Lead Agent
+
+MISIÓN
+Liderar la seguridad de los productos y servicios del equipo/organización, integrando seguridad en el SDLC y asegurando que los sistemas sean seguros sin sacrificar velocidad de entrega.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder de seguridad del equipo o producto. Combinas hands-on security engineering con estrategia, governance y enablement del equipo.
+
+RESPONSABILIDADES CLAVE
+- Security strategy y roadmap.
+- Secure SDLC implementation.
+- Threat modeling y risk assessment.
+- Security testing (SAST, DAST, pen testing).
+- Security training y awareness.
+- Incident response y forensics.
+- Compliance y audit support.
+- Security architecture review.
+
+ENTREGABLES TÍPICOS
+- Security strategy documents.
+- Threat models.
+- Security testing reports.
+- Vulnerability assessments.
+- Security training materials.
+- Incident response playbooks.
+- Compliance evidence.
+- Security metrics dashboards.
+
+DEBE HACER
+- Integrar security en el pipeline (shift-left).
+- Hacer security habilitador, no bloqueador.
+- Priorizar vulnerabilities por risk.
+- Train developers en secure coding.
+- Automatizar security testing.
+- Preparar para incidents antes de que ocurran.
+- Communicate risk en términos de negocio.
+
+NO DEBE HACER
+- Ser el "department of no".
+- Ignorar usability por security.
+- Depender solo de tools sin context.
+- Hacer security review solo al final.
+- Asumir que compliance = security.
+- Crear security theater.
+- Trabajar aislado del equipo de desarrollo.
+
+INTERACCIONES CLAVE
+- Con Dev Teams: Security review, training.
+- Con DevOps: DevSecOps, pipeline security.
+- Con Product: Security requirements.
+- Con Legal/Compliance: Regulations, audits.
+- Con Incident Response: Preparedness.
+
+MÉTRICAS DE ÉXITO
+- Mean time to remediate vulnerabilities.
+- Security defects found pre-production.
+- Security training completion.
+- Incident response time.
+- Compliance audit results.
+- Developer security satisfaction.
+
+FRAMEWORKS Y RECURSOS
+- OWASP resources.
+- NIST Cybersecurity Framework.
+- SANS resources.
+- Threat modeling (STRIDE, PASTA).
+- DevSecOps practices.
+- Security Champions programs.` },
+
+            // --- Roles Emergentes ---
+            { name: 'AI ML Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: AI/ML Lead Agent
+
+MISIÓN
+Liderar la estrategia e implementación de inteligencia artificial y machine learning, llevando modelos de concepto a producción y asegurando que AI/ML genere valor de negocio real.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder del equipo de AI/ML. Combinas hands-on ML engineering con estrategia, liderazgo del equipo y evangelización de AI en la organización.
+
+RESPONSABILIDADES CLAVE
+- AI/ML strategy y use case identification.
+- ML model development y deployment.
+- MLOps y model lifecycle management.
+- AI ethics y responsible AI.
+- ML infrastructure y platforms.
+- Team development y hiring.
+- Stakeholder education y enablement.
+- Vendor/tool evaluation.
+
+ENTREGABLES TÍPICOS
+- AI/ML strategy y roadmap.
+- ML models en producción.
+- MLOps pipelines y infrastructure.
+- Model performance dashboards.
+- AI ethics guidelines.
+- ML platform capabilities.
+- AI training y education.
+- Use case evaluations.
+
+DEBE HACER
+- Enfocarte en business value, no solo tech.
+- Invertir en MLOps desde el inicio.
+- Monitorear models en producción.
+- Considerar ethics y bias.
+- Start simple, iterate.
+- Document experiments y learnings.
+- Enable others, no solo build.
+
+NO DEBE HACER
+- Usar ML donde reglas simples funcionan.
+- Ignorar data quality.
+- Deploy sin monitoring.
+- Prometer resultados sin validación.
+- Crear modelos que solo tú entiendes.
+- Ignorar ethical implications.
+- Over-engineer para primeros use cases.
+
+INTERACCIONES CLAVE
+- Con Product: Use cases, priorities.
+- Con Data Team: Data access, quality.
+- Con Engineering: Integration, infrastructure.
+- Con Business: Value, expectations.
+- Con Legal/Ethics: Compliance, responsible AI.
+
+MÉTRICAS DE ÉXITO
+- Models en producción.
+- Model performance metrics.
+- Business impact de ML.
+- Time from concept to production.
+- Model drift y degradation.
+- Team productivity y learning.
+
+FRAMEWORKS Y RECURSOS
+- MLOps frameworks.
+- Responsible AI principles.
+- Feature stores y ML platforms.
+- Model monitoring tools.
+- ML experiment tracking.
+- Google ML Guides.` },
+
+            { name: 'Platform Engineer Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Platform Engineer Agent
+
+MISIÓN
+Diseñar y construir la Internal Developer Platform (IDP) que permita a los equipos de desarrollo entregar software de manera autónoma, rápida y segura, mejorando la developer experience.
+
+ROL EN LA ORGANIZACIÓN
+Eres un ingeniero de plataforma. Tu cliente es el desarrollador interno. Construyes productos internos que hacen a otros equipos más productivos.
+
+RESPONSABILIDADES CLAVE
+- Diseñar y construir Internal Developer Platform.
+- Self-service infrastructure y tooling.
+- Golden paths y templates.
+- Developer portal y documentation.
+- Platform product management.
+- Developer experience optimization.
+- Platform reliability y SLOs.
+- Feedback loops con usuarios.
+
+ENTREGABLES TÍPICOS
+- Self-service platform capabilities.
+- Golden path templates.
+- Developer portal.
+- Platform documentation.
+- Platform SLOs y dashboards.
+- Developer productivity tools.
+- Onboarding automation.
+- Platform roadmap.
+
+DEBE HACER
+- Tratar la plataforma como producto.
+- Hablar con tus usuarios (developers).
+- Provide golden paths, not golden cages.
+- Priorizar por developer impact.
+- Document y market la plataforma.
+- Measure developer productivity.
+- Iterate based on feedback.
+
+NO DEBE HACER
+- Construir sin user feedback.
+- Forzar adoption sin value.
+- Over-engineer para edge cases.
+- Ignorar existing developer workflows.
+- Crear tools que solo tú puedes maintain.
+- Medir solo platform metrics, no outcomes.
+- Ser invisible para tus usuarios.
+
+INTERACCIONES CLAVE
+- Con Developers: Feedback, support.
+- Con DevOps/SRE: Integration, operations.
+- Con Security: Platform security.
+- Con Engineering Leadership: Strategy, resources.
+- Con Product Teams: Requirements, adoption.
+
+MÉTRICAS DE ÉXITO
+- Developer satisfaction.
+- Time to first deploy (new projects).
+- Platform adoption rate.
+- Self-service success rate.
+- Onboarding time reduction.
+- Platform reliability.
+
+FRAMEWORKS Y RECURSOS
+- Team Topologies (Platform teams).
+- Internal Developer Platform resources.
+- Backstage (Spotify).
+- Port (internal developer portal).
+- Platform Engineering principles.
+- DevEx research.` },
+
+            { name: 'Site Reliability Lead Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Site Reliability Lead Agent
+
+MISIÓN
+Liderar la práctica de Site Reliability Engineering, asegurando que los sistemas sean confiables, escalables y eficientes, mientras se balancea reliability con velocity de desarrollo.
+
+ROL EN LA ORGANIZACIÓN
+Eres el líder del equipo de SRE. Combinas hands-on SRE work con estrategia, liderazgo del equipo y partnership con desarrollo.
+
+RESPONSABILIDADES CLAVE
+- SRE strategy y practices.
+- SLOs, SLIs, error budgets definition.
+- Incident management y response.
+- Capacity planning y scalability.
+- Reliability engineering.
+- Toil reduction y automation.
+- On-call y rotation management.
+- Collaboration con development teams.
+
+ENTREGABLES TÍPICOS
+- SLO definitions y dashboards.
+- Incident postmortems.
+- Runbooks y playbooks.
+- Capacity plans.
+- Reliability improvements.
+- Automation scripts y tools.
+- On-call schedules y processes.
+- SRE team processes.
+
+DEBE HACER
+- Define SLOs con input del negocio.
+- Use error budgets para balancear reliability/velocity.
+- Automatizar toil sistemáticamente.
+- Blameless postmortems después de incidents.
+- Partner con desarrollo, no police.
+- Invest en observability.
+- Make reliability visible.
+
+NO DEBE HACER
+- Ser el único responsible de reliability.
+- Ignorar developer experience.
+- Acumular toil sin addressing.
+- Hacer postmortems blame-focused.
+- Set SLOs sin business context.
+- Be reactive only, not proactive.
+- Create operational silos.
+
+INTERACCIONES CLAVE
+- Con Dev Teams: Reliability partnership.
+- Con DevOps: Infrastructure, automation.
+- Con Product: SLOs, feature tradeoffs.
+- Con Management: Resources, priorities.
+- Con On-call team: Support, rotation.
+
+MÉTRICAS DE ÉXITO
+- SLO achievement.
+- Incident frequency y severity.
+- Mean time to detect/resolve.
+- Error budget consumption.
+- Toil percentage.
+- On-call burden.
+
+FRAMEWORKS Y RECURSOS
+- Site Reliability Engineering (Google books).
+- SLO/SLI frameworks.
+- Incident management practices.
+- Chaos Engineering.
+- Observability engineering.
+- On-call compensation practices.` },
+
+            { name: 'Developer Advocate Agent', pack: 'v2.5', category: 'roles', platform: 'multi', config: `AGENTE: Developer Advocate Agent
+
+MISIÓN
+Ser el puente entre la organización y la comunidad de desarrolladores, mejorando la experiencia del desarrollador, creando contenido educativo y representando la voz del developer internamente.
+
+ROL EN LA ORGANIZACIÓN
+Eres la voz del developer tanto interna como externamente. Combinas technical skills con communication, education y community building.
+
+RESPONSABILIDADES CLAVE
+- Developer documentation y tutorials.
+- Technical content creation (blogs, videos).
+- Conference talks y workshops.
+- Community engagement y support.
+- Developer feedback collection.
+- Onboarding experience improvement.
+- SDK/API developer experience.
+- Internal advocacy para developer needs.
+
+ENTREGABLES TÍPICOS
+- Documentation y guides.
+- Blog posts y tutorials.
+- Video content.
+- Conference presentations.
+- Sample code y demos.
+- Community feedback reports.
+- Onboarding improvements.
+- Developer survey analysis.
+
+DEBE HACER
+- Entender deeply al developer audience.
+- Crear contenido genuinamente útil.
+- Collect y amplify developer feedback.
+- Be authentic y transparent.
+- Engage con la community genuinamente.
+- Advocate internally para devs.
+- Stay technically credible.
+
+NO DEBE HACER
+- Crear marketing disfrazado de content.
+- Ignorar feedback negativo.
+- Prometer features no confirmados.
+- Engage solo cuando quieres algo.
+- Perder technical credibility.
+- Be inauthentic o corporate.
+- Ignore internal developer needs.
+
+INTERACCIONES CLAVE
+- Con Developers (externos): Support, education.
+- Con Product: Feature feedback.
+- Con Engineering: Technical accuracy.
+- Con Marketing: Content, events.
+- Con Community: Engagement, support.
+
+MÉTRICAS DE ÉXITO
+- Documentation usage y feedback.
+- Content engagement.
+- Community growth.
+- Developer satisfaction (surveys).
+- Conference impact.
+- Feedback incorporated into product.
+
+FRAMEWORKS Y RECURSOS
+- Developer Relations practices.
+- Technical writing best practices.
+- Community building frameworks.
+- Content strategy.
+- Developer experience research.
+- DevRel resources (DevRel.co).` },
+            // Prompt Engineering
+            { name: 'Prompt Generator Agent', pack: 'v2.5', category: 'transversal', platform: 'multi', config: `AGENTE: Prompt Generator Agent
+
+MISIÓN
+Generar prompts de alta calidad para desarrollo de software, optimizados para LLMs y asistentes de código. Analiza README.md y documentación del proyecto para crear prompts contextualizados y efectivos.
+
+DEBE HACER
+- Leer y analizar README.md para entender contexto, stack tecnológico, estructura y convenciones del proyecto.
+- Generar prompts claros, específicos y accionables para tareas de desarrollo.
+- Incluir contexto relevante del proyecto en cada prompt generado.
+- Estructurar prompts con: objetivo claro, contexto necesario, restricciones, formato de salida esperado.
+- Adaptar el nivel de detalle según la complejidad de la tarea.
+- Usar técnicas de prompt engineering: chain-of-thought, few-shot examples, role-playing.
+- Incluir criterios de aceptación verificables en el prompt.
+- Referenciar archivos, funciones o módulos específicos cuando sea relevante.
+- Considerar el modelo de IA destino (Claude, GPT, Copilot) para optimizar formato.
+
+NO DEBE HACER
+- Generar prompts vagos o ambiguos sin contexto suficiente.
+- Ignorar las convenciones y patrones existentes del proyecto.
+- Crear prompts excesivamente largos que diluyan el objetivo principal.
+- Asumir conocimiento que el LLM no tiene sobre el proyecto específico.
+- Omitir restricciones importantes (lenguaje, framework, estilo de código).
+- Generar prompts sin considerar el README.md y documentación disponible.
+
+PROCESO DE GENERACIÓN
+1. ANÁLISIS INICIAL
+   - Leer README.md completo
+   - Identificar: stack tecnológico, estructura de carpetas, convenciones de código
+   - Extraer: patrones de diseño, dependencias clave, estilo de documentación
+
+2. CONTEXTUALIZACIÓN
+   - Determinar el alcance de la tarea solicitada
+   - Identificar archivos/módulos relevantes
+   - Establecer dependencias y restricciones
+
+3. ESTRUCTURACIÓN DEL PROMPT
+   - Rol: Definir el expertise necesario
+   - Contexto: Incluir información del proyecto
+   - Tarea: Describir claramente qué se necesita
+   - Restricciones: Listar limitaciones y requisitos
+   - Formato: Especificar estructura de la respuesta esperada
+   - Ejemplos: Incluir si es necesario para claridad
+
+4. VALIDACIÓN
+   - Verificar completitud del prompt
+   - Asegurar que es autocontenido
+   - Confirmar que incluye criterios de éxito
+
+PLANTILLAS BASE
+
+### Para nueva feature:
+\`\`\`
+Contexto del proyecto: [extraído de README]
+Stack: [tecnologías identificadas]
+
+Necesito implementar [descripción de feature].
+
+Requisitos:
+- [requisito 1]
+- [requisito 2]
+
+Archivos relevantes: [lista]
+Convenciones a seguir: [del README]
+
+Entrega esperada:
+- Código funcional
+- Tests unitarios
+- Documentación inline
+\`\`\`
+
+### Para bug fix:
+\`\`\`
+Proyecto: [nombre y contexto de README]
+Archivo afectado: [path]
+Comportamiento actual: [descripción]
+Comportamiento esperado: [descripción]
+
+Stack relevante: [tecnologías]
+Restricciones: [convenciones del proyecto]
+
+Necesito: diagnóstico + solución + test de regresión
+\`\`\`
+
+### Para refactoring:
+\`\`\`
+Contexto: [del README]
+Código actual: [referencia a archivo/función]
+Problema: [qué se quiere mejorar]
+
+Mantener:
+- Funcionalidad existente
+- Convenciones de [README]
+- Compatibilidad con [dependencias]
+
+Mejorar:
+- [aspecto 1]
+- [aspecto 2]
+\`\`\`
+
+MÉTRICAS DE CALIDAD DEL PROMPT
+- Especificidad: ¿El objetivo es claro y medible?
+- Contexto: ¿Incluye información suficiente del proyecto?
+- Accionabilidad: ¿Se puede ejecutar sin preguntas adicionales?
+- Verificabilidad: ¿Tiene criterios de éxito claros?
+- Eficiencia: ¿Es conciso sin perder información crítica?
+
+INTERACCIONES CLAVE
+- Con README.md: Fuente principal de contexto
+- Con Docs/: Documentación técnica adicional
+- Con package.json/requirements.txt: Dependencias y scripts
+- Con .eslintrc/.prettierrc: Convenciones de código
+- Con tests/: Patrones de testing existentes
+
+DEFINICIÓN DE DONE
+- Prompt generado con estructura completa.
+- Contexto del README.md incorporado.
+- Criterios de aceptación definidos.
+- Formato de salida especificado.
+- Prompt validado contra checklist de calidad.` },
 ];
 
         // Sistema de keywords semánticas para búsqueda inteligente
@@ -14318,6 +16935,220 @@ DOCUMENTACIÓN Y RECURSOS
             'codigo legacy': ['COBOL Maintenance Agent', 'Visual Basic 6 Maintenance Agent', 'FoxPro Maintenance Agent', 'RPG AS400 Maintenance Agent'],
             'retro': ['COBOL Maintenance Agent', 'Delphi 4-7 Maintenance Agent', 'Visual Basic 6 Maintenance Agent', 'Clipper Harbour Maintenance Agent'],
             'vintage code': ['COBOL Maintenance Agent', 'Fortran Maintenance Agent', 'PL-I Maintenance Agent'],
+
+            // ========== ROLES & LEADERSHIP AGENTS ==========
+            // Liderazgo y Gestión
+            'cto': ['CTO Agent', 'VP Engineering Agent', 'Principal Engineer Agent'],
+            'chief technology officer': ['CTO Agent'],
+            'director tecnologia': ['CTO Agent', 'VP Engineering Agent'],
+            'vision tecnologica': ['CTO Agent', 'Principal Engineer Agent'],
+            'roadmap tecnologico': ['CTO Agent', 'Product Manager Agent'],
+            'vp': ['VP Engineering Agent', 'CTO Agent'],
+            'vp engineering': ['VP Engineering Agent'],
+            'vicepresidente': ['VP Engineering Agent', 'CTO Agent'],
+            'vicepresidente ingenieria': ['VP Engineering Agent'],
+            'hiring': ['VP Engineering Agent', 'Engineering Manager Agent'],
+            'contratacion': ['VP Engineering Agent', 'Engineering Manager Agent'],
+            'cultura': ['VP Engineering Agent', 'Agile Coach Agent'],
+            'em': ['Engineering Manager Agent', 'Tech Lead Agent'],
+            'engineering manager': ['Engineering Manager Agent'],
+            'gerente ingenieria': ['Engineering Manager Agent'],
+            'gerente de ingenieria': ['Engineering Manager Agent'],
+            'one on one': ['Engineering Manager Agent', 'Tech Lead Agent'],
+            '1:1': ['Engineering Manager Agent', 'Tech Lead Agent'],
+            'desarrollo de carrera': ['Engineering Manager Agent', 'VP Engineering Agent'],
+            'career development': ['Engineering Manager Agent', 'VP Engineering Agent'],
+            'pm': ['Project Manager Agent', 'Product Manager Agent'],
+            'project manager': ['Project Manager Agent'],
+            'jefe de proyectos': ['Project Manager Agent'],
+            'jefe proyectos': ['Project Manager Agent'],
+            'gestor proyectos': ['Project Manager Agent'],
+            'planificacion': ['Project Manager Agent', 'Scrum Master Agent', 'Delivery Manager Agent'],
+            'stakeholders': ['Project Manager Agent', 'Product Manager Agent'],
+            'riesgos': ['Project Manager Agent', 'Solutions Architect Agent'],
+            'product manager': ['Product Manager Agent'],
+            'roadmap producto': ['Product Manager Agent', 'Product Owner Agent'],
+            'priorizacion': ['Product Manager Agent', 'Product Owner Agent', 'Scrum Master Agent'],
+            'metricas producto': ['Product Manager Agent', 'Data Lead Agent'],
+            'discovery producto': ['Product Manager Agent', 'UX Lead Agent'],
+            'po': ['Product Owner Agent', 'Product Manager Agent'],
+            'product owner': ['Product Owner Agent'],
+            'backlog': ['Product Owner Agent', 'Scrum Master Agent'],
+            'historias de usuario': ['Product Owner Agent', 'Product Manager Agent'],
+            'user stories': ['Product Owner Agent', 'Product Manager Agent'],
+            'criterios de aceptacion': ['Product Owner Agent', 'QA Lead Agent'],
+            'acceptance criteria': ['Product Owner Agent', 'QA Lead Agent'],
+            'refinamiento': ['Product Owner Agent', 'Scrum Master Agent'],
+            'grooming': ['Product Owner Agent', 'Scrum Master Agent'],
+
+            // Liderazgo Técnico
+            'tl': ['Tech Lead Agent', 'Staff Engineer Agent'],
+            'tech lead': ['Tech Lead Agent'],
+            'lider tecnico': ['Tech Lead Agent', 'Staff Engineer Agent'],
+            'technical lead': ['Tech Lead Agent'],
+            'code review lead': ['Tech Lead Agent', 'Staff Engineer Agent'],
+            'mentoring': ['Tech Lead Agent', 'Engineering Manager Agent', 'Staff Engineer Agent'],
+            'staff': ['Staff Engineer Agent', 'Principal Engineer Agent'],
+            'staff engineer': ['Staff Engineer Agent'],
+            'ingeniero staff': ['Staff Engineer Agent'],
+            'cross-team': ['Staff Engineer Agent', 'Principal Engineer Agent'],
+            'cross team': ['Staff Engineer Agent', 'Principal Engineer Agent'],
+            'estandares tecnicos': ['Staff Engineer Agent', 'Enterprise Architect Agent'],
+            'principal': ['Principal Engineer Agent', 'Staff Engineer Agent'],
+            'principal engineer': ['Principal Engineer Agent'],
+            'ingeniero principal': ['Principal Engineer Agent'],
+            'tech strategy': ['Principal Engineer Agent', 'CTO Agent'],
+            'estrategia tecnica': ['Principal Engineer Agent', 'CTO Agent'],
+            'org-wide': ['Principal Engineer Agent', 'Enterprise Architect Agent'],
+            'solutions architect': ['Solutions Architect Agent', 'Enterprise Architect Agent'],
+            'arquitecto de soluciones': ['Solutions Architect Agent'],
+            'arquitecto soluciones': ['Solutions Architect Agent'],
+            'integraciones': ['Solutions Architect Agent', 'API Gateway Agent'],
+            'vendors': ['Solutions Architect Agent', 'FinOps & Cost Agent'],
+            'enterprise architect': ['Enterprise Architect Agent'],
+            'arquitecto empresarial': ['Enterprise Architect Agent'],
+            'arquitectura corporativa': ['Enterprise Architect Agent', 'Solutions Architect Agent'],
+            'governance': ['Enterprise Architect Agent', 'Compliance Agent'],
+            'gobernanza': ['Enterprise Architect Agent', 'Compliance Agent'],
+
+            // Agilidad y Procesos
+            'sm': ['Scrum Master Agent', 'Agile Coach Agent'],
+            'scrum master': ['Scrum Master Agent'],
+            'facilitacion': ['Scrum Master Agent', 'Agile Coach Agent'],
+            'facilitator': ['Scrum Master Agent', 'Agile Coach Agent'],
+            'impedimentos': ['Scrum Master Agent', 'Delivery Manager Agent'],
+            'blockers': ['Scrum Master Agent', 'Delivery Manager Agent'],
+            'mejora continua': ['Scrum Master Agent', 'Agile Coach Agent'],
+            'retrospectiva': ['Scrum Master Agent', 'Agile Coach Agent'],
+            'daily': ['Scrum Master Agent'],
+            'sprint': ['Scrum Master Agent', 'Product Owner Agent', 'Delivery Manager Agent'],
+            'agile coach': ['Agile Coach Agent', 'Scrum Master Agent'],
+            'coach agil': ['Agile Coach Agent'],
+            'transformacion agil': ['Agile Coach Agent', 'Delivery Manager Agent'],
+            'agile transformation': ['Agile Coach Agent'],
+            'multiple equipos': ['Agile Coach Agent', 'VP Engineering Agent'],
+            'cultura agil': ['Agile Coach Agent', 'Scrum Master Agent'],
+            'rte': ['Release Train Engineer Agent', 'Agile Coach Agent'],
+            'release train engineer': ['Release Train Engineer Agent'],
+            'pi planning': ['Release Train Engineer Agent', 'Agile Coach Agent'],
+            'safe': ['Release Train Engineer Agent', 'Agile Coach Agent'],
+            'scaled agile': ['Release Train Engineer Agent', 'Agile Coach Agent'],
+            'art': ['Release Train Engineer Agent'],
+            'agile release train': ['Release Train Engineer Agent'],
+            'delivery manager': ['Delivery Manager Agent', 'Project Manager Agent'],
+            'gerente de entrega': ['Delivery Manager Agent'],
+            'flujo': ['Delivery Manager Agent', 'Scrum Master Agent'],
+            'flow': ['Delivery Manager Agent'],
+            'predictibilidad': ['Delivery Manager Agent', 'Project Manager Agent'],
+            'lead time': ['Delivery Manager Agent', 'Scrum Master Agent'],
+            'cycle time': ['Delivery Manager Agent'],
+            'throughput': ['Delivery Manager Agent', 'Performance & Efficiency Agent'],
+
+            // Especialistas de Equipo
+            'qa lead': ['QA Lead Agent', 'Test Strategy Agent'],
+            'lider qa': ['QA Lead Agent'],
+            'jefe de qa': ['QA Lead Agent'],
+            'estrategia de testing': ['QA Lead Agent', 'Test Strategy Agent'],
+            'test strategy': ['QA Lead Agent', 'Test Strategy Agent'],
+            'equipo qa': ['QA Lead Agent'],
+            'calidad software': ['QA Lead Agent', 'Quality Gatekeeper Agent'],
+            'devops lead': ['DevOps Lead Agent', 'Platform-DevOps Agent'],
+            'lider devops': ['DevOps Lead Agent'],
+            'jefe devops': ['DevOps Lead Agent'],
+            'infraestructura equipo': ['DevOps Lead Agent', 'Platform-DevOps Agent'],
+            'plataforma interna': ['DevOps Lead Agent', 'Platform Engineer Agent'],
+            'ux lead': ['UX Lead Agent', 'Design System Steward Agent'],
+            'lider ux': ['UX Lead Agent'],
+            'jefe de ux': ['UX Lead Agent'],
+            'user research': ['UX Lead Agent', 'Product Manager Agent'],
+            'investigacion usuarios': ['UX Lead Agent', 'Product Manager Agent'],
+            'design system lead': ['UX Lead Agent', 'Design System Steward Agent'],
+            'experiencia usuario': ['UX Lead Agent', 'Web Accessibility Agent'],
+            'data lead': ['Data Lead Agent', 'Data & Analytics Agent'],
+            'lider de datos': ['Data Lead Agent'],
+            'jefe de datos': ['Data Lead Agent'],
+            'estrategia de datos': ['Data Lead Agent', 'Data & Analytics Agent'],
+            'data strategy': ['Data Lead Agent'],
+            'data governance': ['Data Lead Agent', 'Compliance Agent'],
+            'gobernanza de datos': ['Data Lead Agent', 'Compliance Agent'],
+            'security lead': ['Security Lead Agent', 'Cloud Security Agent'],
+            'lider de seguridad': ['Security Lead Agent'],
+            'jefe de seguridad': ['Security Lead Agent'],
+            'sdlc seguro': ['Security Lead Agent', 'Security Testing Integrator Agent'],
+            'secure sdlc': ['Security Lead Agent', 'Security Testing Integrator Agent'],
+            'compliance lead': ['Security Lead Agent', 'Compliance Agent'],
+
+            // Roles Emergentes
+            'ai lead': ['AI ML Lead Agent', 'ML Ops Agent'],
+            'ml lead': ['AI ML Lead Agent', 'ML Ops Agent'],
+            'lider ia': ['AI ML Lead Agent'],
+            'lider ml': ['AI ML Lead Agent'],
+            'jefe de ia': ['AI ML Lead Agent'],
+            'estrategia ia': ['AI ML Lead Agent', 'CTO Agent'],
+            'ai strategy': ['AI ML Lead Agent', 'CTO Agent'],
+            'modelos produccion': ['AI ML Lead Agent', 'ML Ops Agent'],
+            'models in production': ['AI ML Lead Agent', 'ML Ops Agent'],
+            'platform engineer': ['Platform Engineer Agent', 'Platform-DevOps Agent'],
+            'ingeniero de plataforma': ['Platform Engineer Agent'],
+            'internal developer platform': ['Platform Engineer Agent', 'DevOps Lead Agent'],
+            'idp': ['Platform Engineer Agent', 'DevOps Lead Agent'],
+            'developer experience': ['Platform Engineer Agent', 'Developer Advocate Agent'],
+            'dx': ['Platform Engineer Agent', 'Developer Advocate Agent'],
+            'sre lead': ['Site Reliability Lead Agent', 'SRE Agent'],
+            'lider sre': ['Site Reliability Lead Agent'],
+            'jefe sre': ['Site Reliability Lead Agent'],
+            'reliability lead': ['Site Reliability Lead Agent', 'SRE Agent'],
+            'slos': ['Site Reliability Lead Agent', 'SRE Agent'],
+            'slis': ['Site Reliability Lead Agent', 'SRE Agent'],
+            'error budget': ['Site Reliability Lead Agent', 'SRE Agent'],
+            'incident management': ['Site Reliability Lead Agent', 'Incident Commander Agent'],
+            'gestion de incidentes': ['Site Reliability Lead Agent', 'Incident Commander Agent'],
+            'devrel': ['Developer Advocate Agent', 'Documentador Agent'],
+            'developer advocate': ['Developer Advocate Agent'],
+            'developer relations': ['Developer Advocate Agent'],
+            'evangelista': ['Developer Advocate Agent'],
+            'onboarding developers': ['Developer Advocate Agent', 'Docs & Knowledge Agent'],
+            'comunidad desarrolladores': ['Developer Advocate Agent'],
+            'developer community': ['Developer Advocate Agent'],
+            'technical writing': ['Developer Advocate Agent', 'Documentador Agent'],
+
+            // General Role Keywords
+            'liderazgo': ['CTO Agent', 'VP Engineering Agent', 'Engineering Manager Agent', 'Tech Lead Agent'],
+            'leadership': ['CTO Agent', 'VP Engineering Agent', 'Engineering Manager Agent', 'Tech Lead Agent'],
+            'gestion': ['Engineering Manager Agent', 'Project Manager Agent', 'Delivery Manager Agent'],
+            'management': ['Engineering Manager Agent', 'Project Manager Agent', 'Delivery Manager Agent'],
+            'equipo': ['Engineering Manager Agent', 'Tech Lead Agent', 'Scrum Master Agent'],
+            'team': ['Engineering Manager Agent', 'Tech Lead Agent', 'Scrum Master Agent'],
+            'jefe': ['Project Manager Agent', 'Engineering Manager Agent', 'QA Lead Agent', 'DevOps Lead Agent'],
+            'lider': ['Tech Lead Agent', 'QA Lead Agent', 'DevOps Lead Agent', 'UX Lead Agent', 'Data Lead Agent', 'Security Lead Agent'],
+            'lead': ['Tech Lead Agent', 'QA Lead Agent', 'DevOps Lead Agent', 'UX Lead Agent', 'Data Lead Agent', 'Security Lead Agent'],
+            'cargo': ['CTO Agent', 'VP Engineering Agent', 'Engineering Manager Agent', 'Project Manager Agent', 'Product Manager Agent'],
+            'rol': ['CTO Agent', 'VP Engineering Agent', 'Engineering Manager Agent', 'Tech Lead Agent', 'Scrum Master Agent'],
+            'role': ['CTO Agent', 'VP Engineering Agent', 'Engineering Manager Agent', 'Tech Lead Agent', 'Scrum Master Agent'],
+            'director': ['CTO Agent', 'VP Engineering Agent'],
+            'gerente': ['Engineering Manager Agent', 'Project Manager Agent', 'Delivery Manager Agent'],
+            'manager': ['Engineering Manager Agent', 'Project Manager Agent', 'Product Manager Agent', 'Delivery Manager Agent'],
+            'arquitecto': ['Solutions Architect Agent', 'Enterprise Architect Agent', 'Principal Engineer Agent'],
+            'architect': ['Solutions Architect Agent', 'Enterprise Architect Agent', 'Principal Engineer Agent'],
+            'coach': ['Agile Coach Agent', 'Scrum Master Agent'],
+            'especialista': ['Staff Engineer Agent', 'Principal Engineer Agent', 'QA Lead Agent', 'DevOps Lead Agent'],
+            'specialist': ['Staff Engineer Agent', 'Principal Engineer Agent', 'QA Lead Agent', 'DevOps Lead Agent'],
+
+            // Prompt Engineering e IA
+            'prompt': ['Prompt Generator Agent', 'Docs & Knowledge Agent'],
+            'prompts': ['Prompt Generator Agent', 'Docs & Knowledge Agent'],
+            'generador': ['Prompt Generator Agent'],
+            'generator': ['Prompt Generator Agent'],
+            'llm': ['Prompt Generator Agent', 'ML Eng & Training Agent'],
+            'gpt': ['Prompt Generator Agent', 'ML Eng & Training Agent'],
+            'claude': ['Prompt Generator Agent'],
+            'copilot': ['Prompt Generator Agent'],
+            'ia': ['Prompt Generator Agent', 'ML Eng & Training Agent', 'AI Ethics & Governance Agent'],
+            'ai': ['Prompt Generator Agent', 'ML Eng & Training Agent', 'AI Ethics & Governance Agent'],
+            'instrucciones': ['Prompt Generator Agent', 'Docs & Knowledge Agent'],
+            'contexto': ['Prompt Generator Agent', 'Docs & Knowledge Agent'],
+            'template': ['Prompt Generator Agent', 'Documentador Agent'],
+            'plantilla': ['Prompt Generator Agent', 'Documentador Agent'],
         };
 
         const kits = {
@@ -14434,7 +17265,8 @@ DOCUMENTACIÓN Y RECURSOS
             web: '🌐',
             languages: '🖥️',
             migrations: '🔄',
-            'legacy-maintenance': '🔧'
+            'legacy-maintenance': '🔧',
+            roles: '👔'
         };
 
         const packNames = {
@@ -14664,6 +17496,8 @@ DOCUMENTACIÓN Y RECURSOS
             updateWizardUI();
         }
 
+        let journeySelectedAgents = [];
+
         function showResult() {
             const workflow = workflows.find(w => w.id === wizardState.problem);
             if (!workflow) return;
@@ -14676,10 +17510,110 @@ DOCUMENTACIÓN Y RECURSOS
                 return `<span class="workflow-node">${agent}</span>${arrow}`;
             }).join('');
 
+            // Render journey agents as selectable cards
+            journeySelectedAgents = [...workflow.agents];
+            renderJourneyAgents(workflow.agents);
+
             const signalsContainer = document.getElementById('result-signals');
             signalsContainer.innerHTML = workflow.signals.map(s =>
                 `<span class="signal-tag">${s}</span>`
             ).join('');
+        }
+
+        function renderJourneyAgents(agentNames) {
+            const container = document.getElementById('journey-agents');
+            container.innerHTML = agentNames.map(agentName => {
+                const agent = agents.find(a => a.name === agentName);
+                const isSelected = journeySelectedAgents.includes(agentName);
+                const icon = agent ? (categoryIcons[agent.category] || '📦') : '📦';
+                return `
+                    <div class="journey-agent-card ${isSelected ? 'selected' : ''}" data-agent="${agentName}" onclick="toggleJourneyAgent('${agentName}')">
+                        <span class="journey-agent-icon">${icon}</span>
+                        <div class="journey-agent-info">
+                            <div class="journey-agent-name">${agentName}</div>
+                        </div>
+                        <span class="journey-agent-check">${isSelected ? '✓' : ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleJourneyAgent(agentName) {
+            const index = journeySelectedAgents.indexOf(agentName);
+            if (index > -1) {
+                journeySelectedAgents.splice(index, 1);
+            } else {
+                journeySelectedAgents.push(agentName);
+            }
+            // Update UI
+            const card = document.querySelector(`.journey-agent-card[data-agent="${agentName}"]`);
+            if (card) {
+                card.classList.toggle('selected');
+                const check = card.querySelector('.journey-agent-check');
+                check.textContent = journeySelectedAgents.includes(agentName) ? '✓' : '';
+            }
+        }
+
+        function addSelectedToStack() {
+            journeySelectedAgents.forEach(agentName => {
+                if (!agentStack.includes(agentName)) {
+                    agentStack.push(agentName);
+                }
+            });
+            saveStack();
+            updateStackUI();
+            renderAgents(getCurrentFilteredAgents());
+
+            // Show feedback
+            const btn = document.getElementById('journey-add-selected');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Agregados al Stack!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        function loadTemplate(templateId) {
+            const templates = {
+                'startup-web': [
+                    'Web Architecture Agent', 'Frontend Web Agent', 'Web BFF-Backend Agent',
+                    'Web CI-CD Agent', 'Bug Hunter Agent', 'Test Strategy Agent'
+                ],
+                'mobile-mvp': [
+                    'Mobile Architecture Agent', 'Mobile UI Agent', 'Mobile Data Agent',
+                    'Mobile CI-CD Agent', 'Bug Hunter Agent'
+                ],
+                'enterprise': [
+                    'Cloud Architecture Agent', 'Platform-DevOps Agent', 'GitOps CI-CD Agent',
+                    'Cloud Security Agent', 'Observability Agent', 'SRE Agent',
+                    'Threat Modeling Agent', 'Quality Gatekeeper Agent', 'Docs & Knowledge Agent',
+                    'Release Manager Agent', 'Data & Analytics Agent', 'Test Strategy Agent',
+                    'Performance & Efficiency Agent', 'Technology Critic & Improvement Agent'
+                ]
+            };
+
+            const templateAgents = templates[templateId];
+            if (!templateAgents) return;
+
+            // Add all template agents to stack
+            templateAgents.forEach(agentName => {
+                if (!agentStack.includes(agentName)) {
+                    agentStack.push(agentName);
+                }
+            });
+            saveStack();
+            updateStackUI();
+            renderAgents(getCurrentFilteredAgents());
+
+            // Open stack panel
+            document.getElementById('stack-panel').classList.add('open');
+        }
+
+        function setupJourneyView() {
+            document.getElementById('journey-add-selected').addEventListener('click', addSelectedToStack);
+            document.getElementById('journey-open-stack').addEventListener('click', () => {
+                document.getElementById('stack-panel').classList.add('open');
+            });
         }
 
         function resetWizard() {
@@ -14782,11 +17716,130 @@ ${workflow.agents.join(' → ')}`;
             document.getElementById('agent-modal').classList.add('show');
         }
 
+        // Category Names for Dashboard
+        const categoryNames = {
+            architecture: 'Arquitectura',
+            development: 'Desarrollo',
+            quality: 'Calidad',
+            security: 'Seguridad',
+            cloud: 'Cloud & DevOps',
+            transversal: 'Transversal',
+            data: 'Datos & Analytics',
+            mobile: 'Mobile',
+            web: 'Web',
+            languages: 'Lenguajes',
+            migrations: 'Migraciones',
+            'legacy-maintenance': 'Mantenimiento Legacy',
+            roles: 'Roles & Liderazgo'
+        };
+
+        // Render Category Dashboard
+        function renderCategoryDashboard() {
+            const container = document.getElementById('category-grid');
+
+            // Group agents by category
+            const categoryGroups = {};
+            agents.forEach(agent => {
+                if (!categoryGroups[agent.category]) {
+                    categoryGroups[agent.category] = [];
+                }
+                categoryGroups[agent.category].push(agent);
+            });
+
+            // Sort categories by count (descending)
+            const sortedCategories = Object.entries(categoryGroups)
+                .sort((a, b) => b[1].length - a[1].length);
+
+            container.innerHTML = sortedCategories.map(([category, categoryAgents]) => {
+                const preview = categoryAgents.slice(0, 3).map(a =>
+                    `<li class="category-preview-agent" data-agent="${a.name}">${a.name}</li>`
+                ).join('');
+                return `
+                    <div class="category-card" data-category="${category}">
+                        <div class="category-card-header">
+                            <span class="category-card-icon">${categoryIcons[category] || '📦'}</span>
+                            <h3 class="category-card-title">${categoryNames[category] || category}</h3>
+                            <span class="category-card-count">${categoryAgents.length}</span>
+                        </div>
+                        <ul class="category-card-preview">${preview}</ul>
+                        <div class="category-card-footer">
+                            <span class="category-card-link">Ver todos →</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers for preview agents (open modal)
+            container.querySelectorAll('.category-preview-agent').forEach(agent => {
+                agent.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const agentName = agent.dataset.agent;
+                    openAgentModal(agentName);
+                });
+            });
+
+            // Add click handlers for "Ver todos" link
+            container.querySelectorAll('.category-card-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const card = link.closest('.category-card');
+                    const category = card.dataset.category;
+
+                    // Set category filter
+                    container.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    document.getElementById('category-filter').value = category;
+
+                    // Trigger filter
+                    filterAgents();
+
+                    // Scroll to agents grid
+                    document.getElementById('agents-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+
+            // Add click handlers for category cards (toggle filter)
+            container.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Skip if clicked on agent or link
+                    if (e.target.closest('.category-preview-agent') || e.target.closest('.category-card-link')) {
+                        return;
+                    }
+
+                    const category = card.dataset.category;
+
+                    // Toggle active state
+                    const wasActive = card.classList.contains('active');
+                    container.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+
+                    if (!wasActive) {
+                        card.classList.add('active');
+                        // Set category filter
+                        document.getElementById('category-filter').value = category;
+                    } else {
+                        // Clear filter
+                        document.getElementById('category-filter').value = '';
+                    }
+
+                    // Trigger filter
+                    filterAgents();
+
+                    // Scroll to agents grid
+                    document.getElementById('agents-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+        }
+
         // Render Agents
         function renderAgents(filteredAgents = agents) {
             const container = document.getElementById('agents-container');
-            container.innerHTML = filteredAgents.map(a => `
-                <div class="agent-card fade-in" data-pack="${a.pack}" data-category="${a.category}" data-platform="${a.platform}">
+            container.innerHTML = filteredAgents.map(a => {
+                const isInStack = agentStack.includes(a.name);
+                return `
+                <div class="agent-card fade-in" data-pack="${a.pack}" data-category="${a.category}" data-platform="${a.platform}" style="position: relative;">
+                    <button class="agent-add-btn ${isInStack ? 'added' : ''}" data-agent="${a.name}" onclick="event.stopPropagation(); toggleAgentInStack('${a.name}')" title="${isInStack ? 'Quitar del stack' : 'Agregar al stack'}">
+                        ${isInStack ? '✓' : '+'}
+                    </button>
                     <div class="agent-header">
                         <div class="agent-icon cat-${a.category}">${categoryIcons[a.category]}</div>
                         <div class="agent-name">${a.name}</div>
@@ -14797,7 +17850,7 @@ ${workflow.agents.join(' → ')}`;
                         <span class="agent-tag tag-platform">${a.platform}</span>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function filterAgents() {
@@ -14908,12 +17961,422 @@ ${workflow.agents.join(' → ')}`;
 
         // Navigation
         function setupNavigation() {
-            document.querySelectorAll('.nav-links a').forEach(link => {
+            const nav = document.getElementById('main-nav');
+            const progressBar = document.getElementById('nav-progress');
+            const backToTop = document.getElementById('back-to-top');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            const sections = document.querySelectorAll('section[id]');
+
+            // Click handlers for nav links
+            navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                    navLinks.forEach(l => l.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
+
+            // Scroll handler for nav shadow, progress bar, and back-to-top
+            window.addEventListener('scroll', () => {
+                // Nav shadow
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+
+                // Progress bar
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = (window.scrollY / scrollHeight) * 100;
+                progressBar.style.width = scrollPercent + '%';
+
+                // Back to top button
+                if (window.scrollY > 300) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            });
+
+            // Back to top click
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // IntersectionObserver for active section
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.dataset.section === sectionId) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+        }
+
+        // ==================== GLOBAL SEARCH ====================
+        function setupGlobalSearch() {
+            const searchInput = document.getElementById('global-search-input');
+            const searchResults = document.getElementById('global-search-results');
+            let debounceTimer;
+
+            // Search function
+            function performGlobalSearch(query) {
+                if (!query || query.length < 2) {
+                    searchResults.classList.remove('show');
+                    return;
+                }
+
+                query = query.toLowerCase();
+                const results = {
+                    agents: [],
+                    workflows: [],
+                    kits: []
+                };
+
+                // Search agents
+                agents.forEach(agent => {
+                    const matchName = agent.name.toLowerCase().includes(query);
+                    let matchKeyword = false;
+                    for (const [keyword, agentNames] of Object.entries(searchKeywords)) {
+                        if (keyword.includes(query) && agentNames.includes(agent.name)) {
+                            matchKeyword = true;
+                            break;
+                        }
+                    }
+                    if (matchName || matchKeyword) {
+                        results.agents.push(agent);
+                    }
+                });
+
+                // Search workflows
+                workflows.forEach(workflow => {
+                    if (workflow.title.toLowerCase().includes(query) ||
+                        workflow.trigger.toLowerCase().includes(query) ||
+                        workflow.description.toLowerCase().includes(query)) {
+                        results.workflows.push(workflow);
+                    }
+                });
+
+                // Search kits
+                Object.entries(kits).forEach(([kitId, kit]) => {
+                    if (kit.title.toLowerCase().includes(query) ||
+                        kit.description.toLowerCase().includes(query)) {
+                        results.kits.push({ id: kitId, ...kit });
+                    }
+                });
+
+                // Render results
+                renderGlobalSearchResults(results, query);
+            }
+
+            function renderGlobalSearchResults(results, query) {
+                const totalResults = results.agents.length + results.workflows.length + results.kits.length;
+
+                if (totalResults === 0) {
+                    searchResults.innerHTML = `
+                        <div class="search-no-results">
+                            No se encontraron resultados para "${query}"
+                        </div>
+                    `;
+                    searchResults.classList.add('show');
+                    return;
+                }
+
+                let html = '';
+
+                // Agents
+                if (results.agents.length > 0) {
+                    html += `
+                        <div class="search-result-group">
+                            <div class="search-result-group-title">Agentes (${results.agents.length})</div>
+                            ${results.agents.slice(0, 5).map(agent => `
+                                <div class="search-result-item" data-type="agent" data-name="${agent.name}">
+                                    <span class="search-result-icon">${categoryIcons[agent.category] || '📦'}</span>
+                                    <div class="search-result-text">
+                                        <div class="search-result-name">${agent.name}</div>
+                                        <div class="search-result-meta">${categoryNames[agent.category] || agent.category}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${results.agents.length > 5 ? `<div class="search-result-item" data-type="more-agents"><span class="search-result-meta">+${results.agents.length - 5} más...</span></div>` : ''}
+                        </div>
+                    `;
+                }
+
+                // Workflows
+                if (results.workflows.length > 0) {
+                    html += `
+                        <div class="search-result-group">
+                            <div class="search-result-group-title">Workflows (${results.workflows.length})</div>
+                            ${results.workflows.slice(0, 3).map(workflow => `
+                                <div class="search-result-item" data-type="workflow" data-title="${workflow.title}">
+                                    <span class="search-result-icon">🔄</span>
+                                    <div class="search-result-text">
+                                        <div class="search-result-name">${workflow.title}</div>
+                                        <div class="search-result-meta">${workflow.trigger}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // Kits
+                if (results.kits.length > 0) {
+                    html += `
+                        <div class="search-result-group">
+                            <div class="search-result-group-title">Kits (${results.kits.length})</div>
+                            ${results.kits.map(kit => `
+                                <div class="search-result-item" data-type="kit" data-kit="${kit.id}">
+                                    <span class="search-result-icon">📦</span>
+                                    <div class="search-result-text">
+                                        <div class="search-result-name">${kit.title}</div>
+                                        <div class="search-result-meta">${kit.description.substring(0, 50)}...</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                searchResults.innerHTML = html;
+                searchResults.classList.add('show');
+
+                // Add click handlers
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const type = item.dataset.type;
+
+                        if (type === 'agent') {
+                            const agentName = item.dataset.name;
+                            const agent = agents.find(a => a.name === agentName);
+                            if (agent) {
+                                showAgentModal(agent);
+                            }
+                        } else if (type === 'workflow') {
+                            const title = item.dataset.title;
+                            const workflow = workflows.find(w => w.title === title);
+                            if (workflow) {
+                                showWorkflowModal(workflow);
+                            }
+                        } else if (type === 'kit') {
+                            document.getElementById('kits-section').scrollIntoView({ behavior: 'smooth' });
+                        } else if (type === 'more-agents') {
+                            document.getElementById('search-input').value = searchInput.value;
+                            filterAgents();
+                            document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth' });
+                        }
+
+                        searchResults.classList.remove('show');
+                        searchInput.value = '';
+                    });
+                });
+            }
+
+            // Input handler with debounce
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    performGlobalSearch(e.target.value);
+                }, 200);
+            });
+
+            // Focus handler
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value.length >= 2) {
+                    performGlobalSearch(searchInput.value);
+                }
+            });
+
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#global-search')) {
+                    searchResults.classList.remove('show');
+                }
+            });
+
+            // Keyboard shortcut Ctrl+K
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+                // Escape to close
+                if (e.key === 'Escape') {
+                    searchResults.classList.remove('show');
+                    searchInput.blur();
+                }
+            });
+        }
+
+        // ==================== STACK BUILDER ====================
+        let agentStack = JSON.parse(localStorage.getItem('agentStack') || '[]');
+
+        function toggleAgentInStack(agentName) {
+            const index = agentStack.indexOf(agentName);
+            if (index > -1) {
+                agentStack.splice(index, 1);
+            } else {
+                agentStack.push(agentName);
+            }
+            saveStack();
+            updateStackUI();
+            renderAgents(getCurrentFilteredAgents());
+        }
+
+        function getCurrentFilteredAgents() {
+            const search = document.getElementById('search-input').value.toLowerCase().trim();
+            const pack = document.getElementById('pack-filter').value;
+            const category = document.getElementById('category-filter').value;
+            const platform = document.getElementById('platform-filter').value;
+
+            return agents.filter(a => {
+                const matchName = a.name.toLowerCase().includes(search);
+                let matchKeyword = false;
+                if (search) {
+                    for (const [keyword, agentNames] of Object.entries(searchKeywords)) {
+                        if (keyword.includes(search) && agentNames.includes(a.name)) {
+                            matchKeyword = true;
+                            break;
+                        }
+                    }
+                }
+                const matchConfig = search ? a.config.toLowerCase().includes(search) : false;
+                const matchSearch = !search || matchName || matchKeyword || matchConfig;
+                const matchPack = !pack || a.pack === pack;
+                const matchCategory = !category || a.category === category;
+                const matchPlatform = !platform || a.platform === platform || a.platform === 'multi';
+                return matchSearch && matchPack && matchCategory && matchPlatform;
+            });
+        }
+
+        function saveStack() {
+            localStorage.setItem('agentStack', JSON.stringify(agentStack));
+        }
+
+        function updateStackUI() {
+            const count = agentStack.length;
+            const stackContent = document.getElementById('stack-content');
+            const stackCount = document.getElementById('stack-count');
+            const toggleCount = document.getElementById('stack-toggle-count');
+
+            stackCount.textContent = count;
+            toggleCount.textContent = count;
+            toggleCount.style.display = count > 0 ? 'flex' : 'none';
+
+            if (count === 0) {
+                stackContent.innerHTML = `
+                    <div class="stack-empty">
+                        <div class="stack-empty-icon">📭</div>
+                        <p>Tu stack está vacío</p>
+                        <p style="font-size: 0.75rem; margin-top: 0.5rem;">Haz clic en + en las tarjetas de agentes para agregarlos</p>
+                    </div>
+                `;
+            } else {
+                stackContent.innerHTML = agentStack.map(agentName => {
+                    const agent = agents.find(a => a.name === agentName);
+                    if (!agent) return '';
+                    return `
+                        <div class="stack-item">
+                            <span class="stack-item-icon">${categoryIcons[agent.category] || '📦'}</span>
+                            <div class="stack-item-info">
+                                <div class="stack-item-name">${agent.name}</div>
+                                <div class="stack-item-category">${categoryNames[agent.category] || agent.category}</div>
+                            </div>
+                            <button class="stack-item-remove" onclick="toggleAgentInStack('${agent.name}')" title="Quitar">×</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function copyAllStackConfigs() {
+            if (agentStack.length === 0) {
+                alert('El stack está vacío');
+                return;
+            }
+
+            const configs = agentStack.map(name => {
+                const agent = agents.find(a => a.name === name);
+                return agent ? agent.config : '';
+            }).filter(Boolean).join('\n\n---\n\n');
+
+            navigator.clipboard.writeText(configs).then(() => {
+                const btn = document.getElementById('stack-copy-all');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copiado!';
+                btn.style.background = 'var(--success)';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            });
+        }
+
+        function exportStackJSON() {
+            if (agentStack.length === 0) {
+                alert('El stack está vacío');
+                return;
+            }
+
+            const stackData = agentStack.map(name => {
+                const agent = agents.find(a => a.name === name);
+                return agent ? { name: agent.name, pack: agent.pack, category: agent.category, platform: agent.platform, config: agent.config } : null;
+            }).filter(Boolean);
+
+            const blob = new Blob([JSON.stringify(stackData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'agent-stack.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearStack() {
+            if (agentStack.length === 0) return;
+            if (confirm('¿Estás seguro de que quieres limpiar el stack?')) {
+                agentStack = [];
+                saveStack();
+                updateStackUI();
+                renderAgents(getCurrentFilteredAgents());
+            }
+        }
+
+        function setupStackBuilder() {
+            const stackPanel = document.getElementById('stack-panel');
+            const stackToggle = document.getElementById('stack-toggle');
+            const stackClose = document.getElementById('stack-panel-close');
+
+            stackToggle.addEventListener('click', () => {
+                stackPanel.classList.toggle('open');
+            });
+
+            stackClose.addEventListener('click', () => {
+                stackPanel.classList.remove('open');
+            });
+
+            document.getElementById('stack-copy-all').addEventListener('click', copyAllStackConfigs);
+            document.getElementById('stack-export-json').addEventListener('click', exportStackJSON);
+            document.getElementById('stack-clear').addEventListener('click', clearStack);
+
+            // Initialize UI
+            updateStackUI();
         }
 
         // ==================== STATS ====================
@@ -14936,9 +18399,13 @@ ${workflow.agents.join(' → ')}`;
             updateStats();
             renderWorkflows();
             renderPhases();
+            renderCategoryDashboard();
             renderAgents();
             renderKits();
             setupNavigation();
+            setupGlobalSearch();
+            setupStackBuilder();
+            setupJourneyView();
             updateWizardUI();
 
             // Wizard option clicks
