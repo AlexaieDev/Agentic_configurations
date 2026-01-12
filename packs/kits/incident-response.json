@@ -1,0 +1,13 @@
+{
+  "name": "Incident Response Kit",
+  "description": "Kit para respuesta rápida a incidentes en producción",
+  "target_team_size": "any",
+  "agents": [
+    "agents/platform-cloud/incident-commander.agent.txt",
+    "agents/platform-cloud/observability.agent.txt",
+    "agents/platform-cloud/sre.agent.txt",
+    "agents/operations/runbook-operations.agent.txt",
+    "agents/operations/postmortem-learning.agent.txt",
+    "agents/quality/bug-hunter.agent.txt"
+  ]
+}

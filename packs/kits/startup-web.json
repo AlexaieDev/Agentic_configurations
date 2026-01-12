@@ -1,0 +1,15 @@
+{
+  "name": "Startup Web Kit",
+  "description": "Kit esencial para startups con foco en desarrollo web (1-5 devs)",
+  "target_team_size": "1-5",
+  "agents": [
+    "agents/platform-web/web-architecture.agent.txt",
+    "agents/platform-web/frontend-web.agent.txt",
+    "agents/quality/bug-hunter.agent.txt",
+    "agents/testing/test-strategy.agent.txt",
+    "agents/security/authentication.agent.txt",
+    "agents/security/secret-management.agent.txt",
+    "agents/process/logging-strategy.agent.txt",
+    "agents/process/error-handling.agent.txt"
+  ]
+}

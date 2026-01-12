@@ -1,0 +1,181 @@
+{
+  "version": "3.0",
+  "generated_at": "2026-01-12",
+  "total_agents": 106,
+  "packs": [
+    {
+      "id": "claude-code-ultra",
+      "name": "Claude Code Pack v3.0 ULTRA",
+      "path": "packs/claude-code-ultra/manifest.json",
+      "agent_count": 106
+    },
+    {
+      "id": "squad-operativo",
+      "name": "Squad Operativo v2.6 ULTRA",
+      "path": "packs/squad-operativo/manifest.json",
+      "agent_count": 6
+    }
+  ],
+  "kits": [
+    {
+      "id": "startup-web",
+      "name": "Startup Web Kit",
+      "path": "packs/kits/startup-web.json",
+      "target": "1-5 devs"
+    },
+    {
+      "id": "incident-response",
+      "name": "Incident Response Kit",
+      "path": "packs/kits/incident-response.json",
+      "target": "any"
+    },
+    {
+      "id": "enterprise-platform",
+      "name": "Enterprise Platform Kit",
+      "path": "packs/kits/enterprise-platform.json",
+      "target": "50+ devs"
+    }
+  ],
+  "agents": {
+    "_global": [
+      {"id": "global-policy", "name": "Global Policy", "path": "agents/_global/global-policy.agent.txt"},
+      {"id": "agent-selector", "name": "Agent Selector", "path": "agents/_global/agent-selector.agent.txt"}
+    ],
+    "architecture": [
+      {"id": "clean-architecture", "name": "Clean Architecture", "path": "agents/architecture/clean-architecture.agent.txt"},
+      {"id": "domain-driven-design", "name": "Domain-Driven Design", "path": "agents/architecture/domain-driven-design.agent.txt"},
+      {"id": "event-driven-architecture", "name": "Event-Driven Architecture", "path": "agents/architecture/event-driven-architecture.agent.txt"},
+      {"id": "microservices", "name": "Microservices", "path": "agents/architecture/microservices.agent.txt"},
+      {"id": "monolith-to-microservices", "name": "Monolith to Microservices", "path": "agents/architecture/monolith-to-microservices.agent.txt"}
+    ],
+    "backend": [
+      {"id": "caching-strategy", "name": "Caching Strategy", "path": "agents/backend/caching-strategy.agent.txt"},
+      {"id": "graphql", "name": "GraphQL", "path": "agents/backend/graphql.agent.txt"},
+      {"id": "message-queue", "name": "Message Queue", "path": "agents/backend/message-queue.agent.txt"},
+      {"id": "search-engine", "name": "Search Engine", "path": "agents/backend/search-engine.agent.txt"},
+      {"id": "websocket-real-time", "name": "WebSocket & Real-time", "path": "agents/backend/websocket-real-time.agent.txt"}
+    ],
+    "data": [
+      {"id": "data-pipeline", "name": "Data Pipeline", "path": "agents/data/data-pipeline.agent.txt"},
+      {"id": "data-quality", "name": "Data Quality", "path": "agents/data/data-quality.agent.txt"},
+      {"id": "ml-ops", "name": "ML Ops", "path": "agents/data/ml-ops.agent.txt"}
+    ],
+    "devops": [
+      {"id": "cdn", "name": "CDN", "path": "agents/devops/cdn.agent.txt"},
+      {"id": "container-orchestration", "name": "Container Orchestration", "path": "agents/devops/container-orchestration.agent.txt"},
+      {"id": "infrastructure-as-code", "name": "Infrastructure as Code", "path": "agents/devops/infrastructure-as-code.agent.txt"},
+      {"id": "service-mesh", "name": "Service Mesh", "path": "agents/devops/service-mesh.agent.txt"}
+    ],
+    "docs": [
+      {"id": "adr", "name": "ADR", "path": "agents/docs/adr.agent.txt"},
+      {"id": "docs-knowledge", "name": "Docs & Knowledge", "path": "agents/docs/docs-knowledge.agent.txt"},
+      {"id": "documentador", "name": "Documentador", "path": "agents/docs/documentador.agent.txt"},
+      {"id": "onboarding", "name": "Onboarding", "path": "agents/docs/onboarding.agent.txt"}
+    ],
+    "integrations": [
+      {"id": "email-delivery", "name": "Email Delivery", "path": "agents/integrations/email-delivery.agent.txt"},
+      {"id": "file-storage", "name": "File Storage", "path": "agents/integrations/file-storage.agent.txt"},
+      {"id": "notification-hub", "name": "Notification Hub", "path": "agents/integrations/notification-hub.agent.txt"},
+      {"id": "payment-integration", "name": "Payment Integration", "path": "agents/integrations/payment-integration.agent.txt"},
+      {"id": "third-party-integration", "name": "Third-Party Integration", "path": "agents/integrations/third-party-integration.agent.txt"}
+    ],
+    "operations": [
+      {"id": "capacity-cost-governance", "name": "Capacity & Cost Governance", "path": "agents/operations/capacity-cost-governance.agent.txt"},
+      {"id": "postmortem-learning", "name": "Postmortem & Learning", "path": "agents/operations/postmortem-learning.agent.txt"},
+      {"id": "release-manager", "name": "Release Manager", "path": "agents/operations/release-manager.agent.txt"},
+      {"id": "runbook-operations", "name": "Runbook & Operations", "path": "agents/operations/runbook-operations.agent.txt"}
+    ],
+    "platform-cloud": [
+      {"id": "chaos-resilience", "name": "Chaos & Resilience", "path": "agents/platform-cloud/chaos-resilience.agent.txt"},
+      {"id": "cloud-architecture", "name": "Cloud Architecture", "path": "agents/platform-cloud/cloud-architecture.agent.txt"},
+      {"id": "cloud-security", "name": "Cloud Security", "path": "agents/platform-cloud/cloud-security.agent.txt"},
+      {"id": "database-architect", "name": "Database Architect", "path": "agents/platform-cloud/database-architect.agent.txt"},
+      {"id": "finops-cost", "name": "FinOps & Cost", "path": "agents/platform-cloud/finops-cost.agent.txt"},
+      {"id": "gitops-ci-cd-cloud", "name": "GitOps CI-CD Cloud", "path": "agents/platform-cloud/gitops-ci-cd-cloud.agent.txt"},
+      {"id": "incident-commander", "name": "Incident Commander", "path": "agents/platform-cloud/incident-commander.agent.txt"},
+      {"id": "multi-cloud", "name": "Multi-Cloud", "path": "agents/platform-cloud/multi-cloud.agent.txt"},
+      {"id": "observability", "name": "Observability", "path": "agents/platform-cloud/observability.agent.txt"},
+      {"id": "platform-devops", "name": "Platform-DevOps", "path": "agents/platform-cloud/platform-devops.agent.txt"},
+      {"id": "quality-gatekeeper", "name": "Quality Gatekeeper", "path": "agents/platform-cloud/quality-gatekeeper.agent.txt"},
+      {"id": "security-testing-integrator", "name": "Security Testing Integrator", "path": "agents/platform-cloud/security-testing-integrator.agent.txt"},
+      {"id": "serverless", "name": "Serverless", "path": "agents/platform-cloud/serverless.agent.txt"},
+      {"id": "sre", "name": "SRE", "path": "agents/platform-cloud/sre.agent.txt"}
+    ],
+    "platform-desktop": [
+      {"id": "data-analytics", "name": "Data & Analytics", "path": "agents/platform-desktop/data-analytics.agent.txt"},
+      {"id": "desktop-architecture", "name": "Desktop Architecture", "path": "agents/platform-desktop/desktop-architecture.agent.txt"},
+      {"id": "desktop-ci-cd", "name": "Desktop CI-CD", "path": "agents/platform-desktop/desktop-ci-cd.agent.txt"},
+      {"id": "desktop-integration", "name": "Desktop Integration", "path": "agents/platform-desktop/desktop-integration.agent.txt"}
+    ],
+    "platform-mobile": [
+      {"id": "app-store-optimization", "name": "App Store Optimization", "path": "agents/platform-mobile/app-store-optimization.agent.txt"},
+      {"id": "deep-linking", "name": "Deep Linking", "path": "agents/platform-mobile/deep-linking.agent.txt"},
+      {"id": "design-system-steward", "name": "Design System Steward", "path": "agents/platform-mobile/design-system-steward.agent.txt"},
+      {"id": "mobile-architecture", "name": "Mobile Architecture", "path": "agents/platform-mobile/mobile-architecture.agent.txt"},
+      {"id": "mobile-ci-cd", "name": "Mobile CI-CD", "path": "agents/platform-mobile/mobile-ci-cd.agent.txt"},
+      {"id": "mobile-data", "name": "Mobile Data", "path": "agents/platform-mobile/mobile-data.agent.txt"},
+      {"id": "mobile-qa", "name": "Mobile QA", "path": "agents/platform-mobile/mobile-qa.agent.txt"},
+      {"id": "mobile-security", "name": "Mobile Security", "path": "agents/platform-mobile/mobile-security.agent.txt"},
+      {"id": "mobile-ui", "name": "Mobile UI", "path": "agents/platform-mobile/mobile-ui.agent.txt"},
+      {"id": "offline-first", "name": "Offline-First", "path": "agents/platform-mobile/offline-first.agent.txt"},
+      {"id": "push-notification", "name": "Push Notification", "path": "agents/platform-mobile/push-notification.agent.txt"}
+    ],
+    "platform-web": [
+      {"id": "animation-motion", "name": "Animation & Motion", "path": "agents/platform-web/animation-motion.agent.txt"},
+      {"id": "css-architecture", "name": "CSS Architecture", "path": "agents/platform-web/css-architecture.agent.txt"},
+      {"id": "frontend-web", "name": "Frontend Web", "path": "agents/platform-web/frontend-web.agent.txt"},
+      {"id": "micro-frontend", "name": "Micro-Frontend", "path": "agents/platform-web/micro-frontend.agent.txt"},
+      {"id": "pwa", "name": "PWA", "path": "agents/platform-web/pwa.agent.txt"},
+      {"id": "responsive-design", "name": "Responsive Design", "path": "agents/platform-web/responsive-design.agent.txt"},
+      {"id": "state-management", "name": "State Management", "path": "agents/platform-web/state-management.agent.txt"},
+      {"id": "web-accessibility", "name": "Web Accessibility", "path": "agents/platform-web/web-accessibility.agent.txt"},
+      {"id": "web-architecture", "name": "Web Architecture", "path": "agents/platform-web/web-architecture.agent.txt"},
+      {"id": "web-bff-backend", "name": "Web BFF-Backend", "path": "agents/platform-web/web-bff-backend.agent.txt"},
+      {"id": "web-ci-cd", "name": "Web CI-CD", "path": "agents/platform-web/web-ci-cd.agent.txt"},
+      {"id": "web-dx", "name": "Web DX", "path": "agents/platform-web/web-dx.agent.txt"},
+      {"id": "web-product-discovery", "name": "Web Product-Discovery", "path": "agents/platform-web/web-product-discovery.agent.txt"},
+      {"id": "web-qa", "name": "Web QA", "path": "agents/platform-web/web-qa.agent.txt"}
+    ],
+    "process": [
+      {"id": "api-design", "name": "API Design", "path": "agents/process/api-design.agent.txt"},
+      {"id": "configuration-management", "name": "Configuration Management", "path": "agents/process/configuration-management.agent.txt"},
+      {"id": "error-handling", "name": "Error Handling", "path": "agents/process/error-handling.agent.txt"},
+      {"id": "feature-flag", "name": "Feature Flag", "path": "agents/process/feature-flag.agent.txt"},
+      {"id": "idea-improver", "name": "Idea Improver", "path": "agents/process/idea-improver.agent.txt"},
+      {"id": "logging-strategy", "name": "Logging Strategy", "path": "agents/process/logging-strategy.agent.txt"},
+      {"id": "migration", "name": "Migration", "path": "agents/process/migration.agent.txt"},
+      {"id": "technology-critic", "name": "Technology Critic", "path": "agents/process/technology-critic.agent.txt"},
+      {"id": "technology-radar", "name": "Technology Radar", "path": "agents/process/technology-radar.agent.txt"}
+    ],
+    "product": [
+      {"id": "design-system-steward", "name": "Design System Steward", "path": "agents/product/design-system-steward.agent.txt"},
+      {"id": "i18n", "name": "i18n", "path": "agents/product/i18n.agent.txt"}
+    ],
+    "quality": [
+      {"id": "bug-hunter", "name": "Bug Hunter", "path": "agents/quality/bug-hunter.agent.txt"},
+      {"id": "code-review", "name": "Code Review", "path": "agents/quality/code-review.agent.txt"},
+      {"id": "performance-efficiency", "name": "Performance & Efficiency", "path": "agents/quality/performance-efficiency.agent.txt"},
+      {"id": "refactor-code-quality", "name": "Refactor & Code Quality", "path": "agents/quality/refactor-code-quality.agent.txt"},
+      {"id": "technical-debt", "name": "Technical Debt", "path": "agents/quality/technical-debt.agent.txt"}
+    ],
+    "security": [
+      {"id": "authentication", "name": "Authentication", "path": "agents/security/authentication.agent.txt"},
+      {"id": "authorization", "name": "Authorization", "path": "agents/security/authorization.agent.txt"},
+      {"id": "compliance", "name": "Compliance", "path": "agents/security/compliance.agent.txt"},
+      {"id": "ethical-hacker-pentest-advisor", "name": "Ethical Hacker & PenTest Advisor", "path": "agents/security/ethical-hacker-pentest-advisor.agent.txt"},
+      {"id": "license-reviewer-oss-alternatives", "name": "License Reviewer & OSS Alternatives", "path": "agents/security/license-reviewer-oss-alternatives.agent.txt"},
+      {"id": "secret-management", "name": "Secret Management", "path": "agents/security/secret-management.agent.txt"},
+      {"id": "threat-modeling", "name": "Threat Modeling", "path": "agents/security/threat-modeling.agent.txt"},
+      {"id": "vulnerability-management", "name": "Vulnerability Management", "path": "agents/security/vulnerability-management.agent.txt"}
+    ],
+    "testing": [
+      {"id": "a-b-testing", "name": "A-B Testing", "path": "agents/testing/a-b-testing.agent.txt"},
+      {"id": "contract-testing", "name": "Contract Testing", "path": "agents/testing/contract-testing.agent.txt"},
+      {"id": "e2e-testing", "name": "E2E Testing", "path": "agents/testing/e2e-testing.agent.txt"},
+      {"id": "load-testing", "name": "Load Testing", "path": "agents/testing/load-testing.agent.txt"},
+      {"id": "mutation-testing", "name": "Mutation Testing", "path": "agents/testing/mutation-testing.agent.txt"},
+      {"id": "test-strategy", "name": "Test Strategy", "path": "agents/testing/test-strategy.agent.txt"},
+      {"id": "visual-regression", "name": "Visual Regression", "path": "agents/testing/visual-regression.agent.txt"}
+    ]
+  }
+}

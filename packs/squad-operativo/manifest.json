@@ -1,0 +1,86 @@
+{
+  "$schema": "../pack.schema.json",
+  "name": "Squad Operativo v2.6 ULTRA",
+  "version": "2.6",
+  "description": "Pack operativo para gestión de incidentes y resiliencia en producción",
+  "release_date": "2026-01",
+  "global_policy": "agents/_global/global-policy.agent.txt",
+  "categories": {
+    "incident-management": {
+      "description": "Respuesta y gestión de incidentes",
+      "agents": [
+        "agents/platform-cloud/incident-commander.agent.txt",
+        "agents/operations/runbook-operations.agent.txt",
+        "agents/operations/postmortem-learning.agent.txt"
+      ]
+    },
+    "resilience": {
+      "description": "Pruebas de resiliencia y chaos engineering",
+      "agents": [
+        "agents/platform-cloud/chaos-resilience.agent.txt"
+      ]
+    },
+    "cost-governance": {
+      "description": "Gobernanza de capacidad y costos",
+      "agents": [
+        "agents/operations/capacity-cost-governance.agent.txt"
+      ]
+    },
+    "documentation": {
+      "description": "Documentación operativa",
+      "agents": [
+        "agents/docs/documentador.agent.txt"
+      ]
+    }
+  },
+  "use_case_routing": {
+    "incident_active": {
+      "description": "Incidente activo en producción",
+      "workflow": [
+        "agents/platform-cloud/incident-commander.agent.txt",
+        "agents/operations/runbook-operations.agent.txt"
+      ]
+    },
+    "post_incident": {
+      "description": "Análisis post-incidente",
+      "workflow": [
+        "agents/operations/postmortem-learning.agent.txt",
+        "agents/docs/documentador.agent.txt"
+      ]
+    },
+    "resilience_testing": {
+      "description": "Pruebas de resiliencia planificadas",
+      "workflow": [
+        "agents/platform-cloud/chaos-resilience.agent.txt",
+        "agents/operations/runbook-operations.agent.txt"
+      ]
+    },
+    "cost_review": {
+      "description": "Revisión de costos y capacidad",
+      "workflow": [
+        "agents/operations/capacity-cost-governance.agent.txt"
+      ]
+    }
+  },
+  "recommended_kits": {
+    "minimal_ops": {
+      "description": "Kit mínimo para operaciones (equipos de 3-10)",
+      "agents": [
+        "agents/platform-cloud/incident-commander.agent.txt",
+        "agents/operations/runbook-operations.agent.txt",
+        "agents/operations/postmortem-learning.agent.txt"
+      ]
+    },
+    "full_ops": {
+      "description": "Kit completo de operaciones",
+      "agents": [
+        "agents/platform-cloud/incident-commander.agent.txt",
+        "agents/operations/runbook-operations.agent.txt",
+        "agents/operations/postmortem-learning.agent.txt",
+        "agents/platform-cloud/chaos-resilience.agent.txt",
+        "agents/operations/capacity-cost-governance.agent.txt",
+        "agents/docs/documentador.agent.txt"
+      ]
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "categories": {
+    "_global": {
+      "name": "Global",
+      "description": "Políticas globales y meta-agentes",
+      "icon": "globe"
+    },
+    "platform-web": {
+      "name": "Web",
+      "description": "Desarrollo frontend web, UI/UX, accesibilidad",
+      "icon": "browser"
+    },
+    "platform-mobile": {
+      "name": "Mobile",
+      "description": "iOS, Android, desarrollo cross-platform",
+      "icon": "smartphone"
+    },
+    "platform-desktop": {
+      "name": "Desktop",
+      "description": "Aplicaciones de escritorio",
+      "icon": "monitor"
+    },
+    "platform-cloud": {
+      "name": "Cloud",
+      "description": "Arquitectura cloud, DevOps, SRE",
+      "icon": "cloud"
+    },
+    "architecture": {
+      "name": "Arquitectura",
+      "description": "Patrones de arquitectura de software",
+      "icon": "layers"
+    },
+    "backend": {
+      "name": "Backend",
+      "description": "Servicios backend, APIs, mensajería",
+      "icon": "server"
+    },
+    "devops": {
+      "name": "DevOps",
+      "description": "Infraestructura y despliegue",
+      "icon": "settings"
+    },
+    "security": {
+      "name": "Seguridad",
+      "description": "Testing de seguridad y vulnerabilidades",
+      "icon": "shield"
+    },
+    "testing": {
+      "name": "Testing",
+      "description": "Estrategias y tipos de testing",
+      "icon": "check-circle"
+    },
+    "data": {
+      "name": "Data",
+      "description": "Ingeniería de datos y analytics",
+      "icon": "database"
+    },
+    "integrations": {
+      "name": "Integraciones",
+      "description": "Integraciones con terceros",
+      "icon": "link"
+    },
+    "quality": {
+      "name": "Calidad",
+      "description": "Calidad de código y deuda técnica",
+      "icon": "star"
+    },
+    "product": {
+      "name": "Producto",
+      "description": "Producto y UX",
+      "icon": "package"
+    },
+    "docs": {
+      "name": "Documentación",
+      "description": "Documentación y conocimiento",
+      "icon": "book"
+    },
+    "operations": {
+      "name": "Operaciones",
+      "description": "Operaciones y gestión de incidentes",
+      "icon": "activity"
+    },
+    "process": {
+      "name": "Proceso",
+      "description": "Proceso de desarrollo y herramientas",
+      "icon": "git-branch"
+    }
+  }
+}

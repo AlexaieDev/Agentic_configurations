@@ -1,0 +1,25 @@
+{
+  "name": "Enterprise Platform Kit",
+  "description": "Kit completo para plataformas enterprise (50+ devs)",
+  "target_team_size": "50+",
+  "agents": [
+    "agents/architecture/microservices.agent.txt",
+    "agents/architecture/event-driven-architecture.agent.txt",
+    "agents/architecture/clean-architecture.agent.txt",
+    "agents/architecture/domain-driven-design.agent.txt",
+    "agents/devops/container-orchestration.agent.txt",
+    "agents/devops/service-mesh.agent.txt",
+    "agents/devops/infrastructure-as-code.agent.txt",
+    "agents/platform-cloud/sre.agent.txt",
+    "agents/platform-cloud/incident-commander.agent.txt",
+    "agents/platform-cloud/chaos-resilience.agent.txt",
+    "agents/security/threat-modeling.agent.txt",
+    "agents/security/ethical-hacker-pentest-advisor.agent.txt",
+    "agents/security/compliance.agent.txt",
+    "agents/data/data-pipeline.agent.txt",
+    "agents/data/data-quality.agent.txt",
+    "agents/data/ml-ops.agent.txt",
+    "agents/platform-cloud/finops-cost.agent.txt",
+    "agents/platform-cloud/multi-cloud.agent.txt"
+  ]
+}
