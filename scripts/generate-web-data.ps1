@@ -3,20 +3,32 @@
 
 $ErrorActionPreference = "Stop"
 
-$basePath = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+# Get base path (one level up from scripts folder)
+$basePath = Split-Path -Parent $PSScriptRoot
 if (-not $basePath) { $basePath = (Get-Location).Path }
 $agentsPath = Join-Path $basePath "agents"
+
+Write-Host "Base path: $basePath"
+Write-Host "Agents path: $agentsPath"
 
 # Category to platform mapping
 $categoryPlatform = @{
     "_global" = "multi"
     "architecture" = "multi"
     "backend" = "cloud"
+    "business" = "multi"
     "data" = "cloud"
+    "design" = "multi"
     "devops" = "cloud"
+    "discovery" = "multi"
     "docs" = "multi"
+    "growth" = "multi"
     "integrations" = "multi"
+    "languages" = "multi"
+    "legacy-maintenance" = "multi"
+    "migrations" = "multi"
     "operations" = "cloud"
+    "planning" = "multi"
     "platform-cloud" = "cloud"
     "platform-desktop" = "desktop"
     "platform-mobile" = "mobile"

@@ -4,7 +4,11 @@
 $ErrorActionPreference = "Stop"
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-$basePath = "C:\Users\Machine\Documents\Proyect_IA\Agentic_configurations\Agentic_configurations"
+# Use relative paths from script location for portability
+$basePath = Split-Path -Parent $PSScriptRoot
+if (-not $basePath -or -not (Test-Path $basePath)) {
+    $basePath = (Get-Location).Path
+}
 $agentsPath = Join-Path $basePath "agents"
 $outputPath = Join-Path $basePath "web\index.html"
 

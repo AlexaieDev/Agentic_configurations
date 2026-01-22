@@ -1,13 +1,13 @@
 {
-  "version": "3.0",
-  "generated_at": "2026-01-12",
-  "total_agents": 106,
+  "version": "3.1",
+  "generated_at": "2026-01-22",
+  "total_agents": 179,
   "packs": [
     {
       "id": "claude-code-ultra",
       "name": "Claude Code Pack v3.0 ULTRA",
       "path": "packs/claude-code-ultra/manifest.json",
-      "agent_count": 106
+      "agent_count": 148
     },
     {
       "id": "squad-operativo",
@@ -55,10 +55,23 @@
       {"id": "search-engine", "name": "Search Engine", "path": "agents/backend/search-engine.agent.txt"},
       {"id": "websocket-real-time", "name": "WebSocket & Real-time", "path": "agents/backend/websocket-real-time.agent.txt"}
     ],
+    "business": [
+      {"id": "business-model", "name": "Business Model Agent", "path": "agents/business/business-model.agent.txt"},
+      {"id": "monetization", "name": "Monetization Agent", "path": "agents/business/monetization.agent.txt"},
+      {"id": "pricing-strategy", "name": "Pricing Strategy Agent", "path": "agents/business/pricing-strategy.agent.txt"},
+      {"id": "revenue-optimization", "name": "Revenue Optimization Agent", "path": "agents/business/revenue-optimization.agent.txt"}
+    ],
     "data": [
       {"id": "data-pipeline", "name": "Data Pipeline", "path": "agents/data/data-pipeline.agent.txt"},
       {"id": "data-quality", "name": "Data Quality", "path": "agents/data/data-quality.agent.txt"},
       {"id": "ml-ops", "name": "ML Ops", "path": "agents/data/ml-ops.agent.txt"}
+    ],
+    "design": [
+      {"id": "prototyping", "name": "Prototyping Agent", "path": "agents/design/prototyping.agent.txt"},
+      {"id": "ui-design", "name": "UI Design Agent", "path": "agents/design/ui-design.agent.txt"},
+      {"id": "usability-testing", "name": "Usability Testing Agent", "path": "agents/design/usability-testing.agent.txt"},
+      {"id": "user-journey", "name": "User Journey Agent", "path": "agents/design/user-journey.agent.txt"},
+      {"id": "ux-research", "name": "UX Research Agent", "path": "agents/design/ux-research.agent.txt"}
     ],
     "devops": [
       {"id": "cdn", "name": "CDN", "path": "agents/devops/cdn.agent.txt"},
@@ -66,11 +79,28 @@
       {"id": "infrastructure-as-code", "name": "Infrastructure as Code", "path": "agents/devops/infrastructure-as-code.agent.txt"},
       {"id": "service-mesh", "name": "Service Mesh", "path": "agents/devops/service-mesh.agent.txt"}
     ],
+    "discovery": [
+      {"id": "competitor-analysis", "name": "Competitor Analysis Agent", "path": "agents/discovery/competitor-analysis.agent.txt"},
+      {"id": "market-research", "name": "Market Research Agent", "path": "agents/discovery/market-research.agent.txt"},
+      {"id": "mvp-definition", "name": "MVP Definition Agent", "path": "agents/discovery/mvp-definition.agent.txt"},
+      {"id": "product-vision", "name": "Product Vision Agent", "path": "agents/discovery/product-vision.agent.txt"},
+      {"id": "user-research", "name": "User Research Agent", "path": "agents/discovery/user-research.agent.txt"}
+    ],
     "docs": [
       {"id": "adr", "name": "ADR", "path": "agents/docs/adr.agent.txt"},
       {"id": "docs-knowledge", "name": "Docs & Knowledge", "path": "agents/docs/docs-knowledge.agent.txt"},
       {"id": "documentador", "name": "Documentador", "path": "agents/docs/documentador.agent.txt"},
       {"id": "onboarding", "name": "Onboarding", "path": "agents/docs/onboarding.agent.txt"}
+    ],
+    "growth": [
+      {"id": "analytics", "name": "Analytics Agent", "path": "agents/growth/analytics.agent.txt"},
+      {"id": "content-marketing", "name": "Content Marketing Agent", "path": "agents/growth/content-marketing.agent.txt"},
+      {"id": "conversion-optimization", "name": "Conversion Optimization Agent", "path": "agents/growth/conversion-optimization.agent.txt"},
+      {"id": "email-marketing", "name": "Email Marketing Agent", "path": "agents/growth/email-marketing.agent.txt"},
+      {"id": "growth-hacking", "name": "Growth Hacking Agent", "path": "agents/growth/growth-hacking.agent.txt"},
+      {"id": "seo", "name": "SEO Agent", "path": "agents/growth/seo.agent.txt"},
+      {"id": "social-media", "name": "Social Media Agent", "path": "agents/growth/social-media.agent.txt"},
+      {"id": "user-retention", "name": "User Retention Agent", "path": "agents/growth/user-retention.agent.txt"}
     ],
     "integrations": [
       {"id": "email-delivery", "name": "Email Delivery", "path": "agents/integrations/email-delivery.agent.txt"},
@@ -79,11 +109,67 @@
       {"id": "payment-integration", "name": "Payment Integration", "path": "agents/integrations/payment-integration.agent.txt"},
       {"id": "third-party-integration", "name": "Third-Party Integration", "path": "agents/integrations/third-party-integration.agent.txt"}
     ],
+    "languages": [
+      {"id": "c-cpp", "name": "C/C++ Agent", "path": "agents/languages/c-cpp.agent.txt"},
+      {"id": "csharp-dotnet", "name": "C# .NET Agent", "path": "agents/languages/csharp-dotnet.agent.txt"},
+      {"id": "delphi", "name": "Delphi Agent", "path": "agents/languages/delphi.agent.txt"},
+      {"id": "go", "name": "Go Agent", "path": "agents/languages/go.agent.txt"},
+      {"id": "java", "name": "Java Agent", "path": "agents/languages/java.agent.txt"},
+      {"id": "kotlin", "name": "Kotlin Agent", "path": "agents/languages/kotlin.agent.txt"},
+      {"id": "php", "name": "PHP Agent", "path": "agents/languages/php.agent.txt"},
+      {"id": "python", "name": "Python Agent", "path": "agents/languages/python.agent.txt"},
+      {"id": "ruby", "name": "Ruby Agent", "path": "agents/languages/ruby.agent.txt"},
+      {"id": "rust", "name": "Rust Agent", "path": "agents/languages/rust.agent.txt"},
+      {"id": "swift", "name": "Swift Agent", "path": "agents/languages/swift.agent.txt"},
+      {"id": "typescript-nodejs", "name": "TypeScript Node.js Agent", "path": "agents/languages/typescript-node-js.agent.txt"}
+    ],
+    "legacy-maintenance": [
+      {"id": "classic-asp-maintenance", "name": "Classic ASP Maintenance Agent", "path": "agents/legacy-maintenance/classic-asp-maintenance.agent.txt"},
+      {"id": "clipper-harbour-maintenance", "name": "Clipper/Harbour Maintenance Agent", "path": "agents/legacy-maintenance/clipper-harbour-maintenance.agent.txt"},
+      {"id": "cobol-maintenance", "name": "COBOL Maintenance Agent", "path": "agents/legacy-maintenance/cobol-maintenance.agent.txt"},
+      {"id": "delphi-4-7-maintenance", "name": "Delphi 4-7 Maintenance Agent", "path": "agents/legacy-maintenance/delphi-4-7-maintenance.agent.txt"},
+      {"id": "fortran-maintenance", "name": "Fortran Maintenance Agent", "path": "agents/legacy-maintenance/fortran-maintenance.agent.txt"},
+      {"id": "foxpro-maintenance", "name": "FoxPro Maintenance Agent", "path": "agents/legacy-maintenance/foxpro-maintenance.agent.txt"},
+      {"id": "informix-4gl-maintenance", "name": "Informix 4GL Maintenance Agent", "path": "agents/legacy-maintenance/informix-4gl-maintenance.agent.txt"},
+      {"id": "mumps-m-maintenance", "name": "MUMPS/M Maintenance Agent", "path": "agents/legacy-maintenance/mumps-m-maintenance.agent.txt"},
+      {"id": "natural-adabas-maintenance", "name": "Natural/ADABAS Maintenance Agent", "path": "agents/legacy-maintenance/natural-adabas-maintenance.agent.txt"},
+      {"id": "oracle-forms-maintenance", "name": "Oracle Forms Maintenance Agent", "path": "agents/legacy-maintenance/oracle-forms-maintenance.agent.txt"},
+      {"id": "pli-maintenance", "name": "PL/I Maintenance Agent", "path": "agents/legacy-maintenance/pli-maintenance.agent.txt"},
+      {"id": "powerbuilder-maintenance", "name": "PowerBuilder Maintenance Agent", "path": "agents/legacy-maintenance/powerbuilder-maintenance.agent.txt"},
+      {"id": "progress-4gl-maintenance", "name": "Progress 4GL Maintenance Agent", "path": "agents/legacy-maintenance/progress-4gl-maintenance.agent.txt"},
+      {"id": "rpg-as400-maintenance", "name": "RPG AS400 Maintenance Agent", "path": "agents/legacy-maintenance/rpg-as400-maintenance.agent.txt"},
+      {"id": "visual-basic-6-maintenance", "name": "Visual Basic 6 Maintenance Agent", "path": "agents/legacy-maintenance/visual-basic-6-maintenance.agent.txt"}
+    ],
+    "migrations": [
+      {"id": "classic-asp-migration", "name": "Classic ASP Migration Agent", "path": "agents/migrations/classic-asp-migration.agent.txt"},
+      {"id": "clipper-migration", "name": "Clipper Migration Agent", "path": "agents/migrations/clipper-migration.agent.txt"},
+      {"id": "cobol-migration", "name": "COBOL Migration Agent", "path": "agents/migrations/cobol-migration.agent.txt"},
+      {"id": "delphi-legacy-migration", "name": "Delphi Legacy Migration Agent", "path": "agents/migrations/delphi-legacy-migration.agent.txt"},
+      {"id": "fortran-migration", "name": "Fortran Migration Agent", "path": "agents/migrations/fortran-migration.agent.txt"},
+      {"id": "foxpro-migration", "name": "FoxPro Migration Agent", "path": "agents/migrations/foxpro-migration.agent.txt"},
+      {"id": "informix-4gl-migration", "name": "Informix 4GL Migration Agent", "path": "agents/migrations/informix-4gl-migration.agent.txt"},
+      {"id": "lotus-notes-migration", "name": "Lotus Notes Migration Agent", "path": "agents/migrations/lotus-notes-migration.agent.txt"},
+      {"id": "mumps-migration", "name": "MUMPS Migration Agent", "path": "agents/migrations/mumps-migration.agent.txt"},
+      {"id": "natural-adabas-migration", "name": "Natural/ADABAS Migration Agent", "path": "agents/migrations/natural-adabas-migration.agent.txt"},
+      {"id": "oracle-forms-migration", "name": "Oracle Forms Migration Agent", "path": "agents/migrations/oracle-forms-migration.agent.txt"},
+      {"id": "pli-migration", "name": "PL/I Migration Agent", "path": "agents/migrations/pl-i-migration.agent.txt"},
+      {"id": "powerbuilder-migration", "name": "PowerBuilder Migration Agent", "path": "agents/migrations/powerbuilder-migration.agent.txt"},
+      {"id": "progress-4gl-migration", "name": "Progress 4GL Migration Agent", "path": "agents/migrations/progress-4gl-migration.agent.txt"},
+      {"id": "rpg-as400-migration", "name": "RPG AS400 Migration Agent", "path": "agents/migrations/rpg-as400-migration.agent.txt"},
+      {"id": "visual-basic-6-migration", "name": "Visual Basic 6 Migration Agent", "path": "agents/migrations/visual-basic-6-migration.agent.txt"}
+    ],
     "operations": [
       {"id": "capacity-cost-governance", "name": "Capacity & Cost Governance", "path": "agents/operations/capacity-cost-governance.agent.txt"},
       {"id": "postmortem-learning", "name": "Postmortem & Learning", "path": "agents/operations/postmortem-learning.agent.txt"},
       {"id": "release-manager", "name": "Release Manager", "path": "agents/operations/release-manager.agent.txt"},
       {"id": "runbook-operations", "name": "Runbook & Operations", "path": "agents/operations/runbook-operations.agent.txt"}
+    ],
+    "planning": [
+      {"id": "backlog-management", "name": "Backlog Management Agent", "path": "agents/planning/backlog-management.agent.txt"},
+      {"id": "estimation", "name": "Estimation Agent", "path": "agents/planning/estimation.agent.txt"},
+      {"id": "roadmap", "name": "Roadmap Agent", "path": "agents/planning/roadmap.agent.txt"},
+      {"id": "sprint-planning", "name": "Sprint Planning Agent", "path": "agents/planning/sprint-planning.agent.txt"},
+      {"id": "stakeholder-management", "name": "Stakeholder Management Agent", "path": "agents/planning/stakeholder-management.agent.txt"}
     ],
     "platform-cloud": [
       {"id": "chaos-resilience", "name": "Chaos & Resilience", "path": "agents/platform-cloud/chaos-resilience.agent.txt"},
@@ -110,7 +196,6 @@
     "platform-mobile": [
       {"id": "app-store-optimization", "name": "App Store Optimization", "path": "agents/platform-mobile/app-store-optimization.agent.txt"},
       {"id": "deep-linking", "name": "Deep Linking", "path": "agents/platform-mobile/deep-linking.agent.txt"},
-      {"id": "design-system-steward", "name": "Design System Steward", "path": "agents/platform-mobile/design-system-steward.agent.txt"},
       {"id": "mobile-architecture", "name": "Mobile Architecture", "path": "agents/platform-mobile/mobile-architecture.agent.txt"},
       {"id": "mobile-ci-cd", "name": "Mobile CI-CD", "path": "agents/platform-mobile/mobile-ci-cd.agent.txt"},
       {"id": "mobile-data", "name": "Mobile Data", "path": "agents/platform-mobile/mobile-data.agent.txt"},
@@ -122,6 +207,7 @@
     ],
     "platform-web": [
       {"id": "animation-motion", "name": "Animation & Motion", "path": "agents/platform-web/animation-motion.agent.txt"},
+      {"id": "backend-web", "name": "Backend Web", "path": "agents/platform-web/backend-web.agent.txt"},
       {"id": "css-architecture", "name": "CSS Architecture", "path": "agents/platform-web/css-architecture.agent.txt"},
       {"id": "frontend-web", "name": "Frontend Web", "path": "agents/platform-web/frontend-web.agent.txt"},
       {"id": "micro-frontend", "name": "Micro-Frontend", "path": "agents/platform-web/micro-frontend.agent.txt"},
@@ -138,12 +224,15 @@
     ],
     "process": [
       {"id": "api-design", "name": "API Design", "path": "agents/process/api-design.agent.txt"},
+      {"id": "code-generator", "name": "Code Generator Agent", "path": "agents/process/code-generator.agent.txt"},
       {"id": "configuration-management", "name": "Configuration Management", "path": "agents/process/configuration-management.agent.txt"},
+      {"id": "dependency-management", "name": "Dependency Management Agent", "path": "agents/process/dependency-management.agent.txt"},
       {"id": "error-handling", "name": "Error Handling", "path": "agents/process/error-handling.agent.txt"},
       {"id": "feature-flag", "name": "Feature Flag", "path": "agents/process/feature-flag.agent.txt"},
       {"id": "idea-improver", "name": "Idea Improver", "path": "agents/process/idea-improver.agent.txt"},
       {"id": "logging-strategy", "name": "Logging Strategy", "path": "agents/process/logging-strategy.agent.txt"},
       {"id": "migration", "name": "Migration", "path": "agents/process/migration.agent.txt"},
+      {"id": "pair-programming", "name": "Pair Programming Agent", "path": "agents/process/pair-programming.agent.txt"},
       {"id": "technology-critic", "name": "Technology Critic", "path": "agents/process/technology-critic.agent.txt"},
       {"id": "technology-radar", "name": "Technology Radar", "path": "agents/process/technology-radar.agent.txt"}
     ],
