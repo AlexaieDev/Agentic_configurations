@@ -1,240 +1,297 @@
-# Agentic Configurations
+# 🤖 Agentic Configurations
 
-Repositorio centralizado de agentes especializados para desarrollo de software asistido por IA. Contiene 106 agentes únicos organizados en una estructura modular, diseñados para usar con Claude Code.
+<div align="center">
 
-**Repositorio GitHub:** https://github.com/AlexaieDev/Agentic_configurations
+**179 agentes especializados para desarrollo de software con IA**
+
+Cubre el ciclo completo: Discovery → Planning → Design → Development → Testing → Deploy → Growth
+
+[![Agentes](https://img.shields.io/badge/Agentes-179-blue)](./agents)
+[![Categorías](https://img.shields.io/badge/Categorías-25-green)](./catalog)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-yellow)](./LICENSE)
+
+[Demo Web](./web/index.html) • [Catálogo](./catalog/index.json) • [Guía Rápida](#-guía-rápida)
+
+</div>
 
 ---
 
-## Estructura del Repositorio (v3.0)
+## ✨ ¿Qué es esto?
+
+Una colección curada de **System Prompts** para potenciar Claude Code y otros asistentes de IA. Cada agente es un especialista en un área específica del desarrollo de software.
 
 ```
-agentic-configurations/
-├── agents/                    # FUENTE ÚNICA - Todos los agentes
-│   ├── _global/               # Políticas globales
-│   ├── platform-web/          # Web (14 agentes)
-│   ├── platform-mobile/       # Mobile (11 agentes)
-│   ├── platform-desktop/      # Desktop (4 agentes)
-│   ├── platform-cloud/        # Cloud/Infra (14 agentes)
-│   ├── architecture/          # Arquitectura (5 agentes)
-│   ├── backend/               # Backend (5 agentes)
-│   ├── devops/                # DevOps (4 agentes)
-│   ├── security/              # Seguridad (8 agentes)
-│   ├── testing/               # Testing (7 agentes)
-│   ├── data/                  # Data (3 agentes)
-│   ├── integrations/          # Integraciones (5 agentes)
-│   ├── quality/               # Calidad (5 agentes)
-│   ├── product/               # Producto (2 agentes)
-│   ├── docs/                  # Documentación (4 agentes)
-│   ├── operations/            # Operaciones (4 agentes)
-│   └── process/               # Proceso (9 agentes)
-│
-├── packs/                     # Manifiestos de packs
-│   ├── pack.schema.json       # Schema de validación
-│   ├── claude-code-ultra/     # Pack principal (manifest.json)
-│   ├── squad-operativo/       # Pack operativo (manifest.json)
-│   └── kits/                  # Kits por caso de uso
-│       ├── startup-web.json
-│       ├── incident-response.json
-│       └── enterprise-platform.json
-│
-├── catalog/                   # Índice centralizado
-│   ├── index.json             # Catálogo maestro
-│   └── categories.json        # Definición de categorías
-│
-├── docs/                      # Documentación
-├── web/                       # UI interactiva
-│   └── index.html
-├── scripts/                   # Herramientas de migración
-└── README.md
+💡 Idea → 🔍 Research → 📋 Planning → 🎨 Design → 💻 Code → 🧪 Test → 🚀 Deploy → 📈 Growth
 ```
 
----
-
-## Packs Disponibles
-
-### Claude Code Pack v3.0 ULTRA
-**Manifiesto:** `packs/claude-code-ultra/manifest.json`
-
-Pack principal con 106 agentes para desarrollo full-stack enterprise.
-
-**Categorías:**
-| Categoría | Agentes | Descripción |
-|-----------|---------|-------------|
-| platform-web | 14 | Frontend, accesibilidad, PWA, micro-frontends |
-| platform-mobile | 11 | iOS, Android, cross-platform |
-| platform-cloud | 14 | Cloud, DevOps, SRE, observabilidad |
-| architecture | 5 | DDD, microservicios, event-driven |
-| security | 8 | PenTest, threat modeling, auth |
-| testing | 7 | E2E, load, contract, visual regression |
-| quality | 5 | Bug hunting, code review, tech debt |
-
-### Squad Operativo v2.6 ULTRA
-**Manifiesto:** `packs/squad-operativo/manifest.json`
-
-Pack operativo para gestión de incidentes (6 agentes clave).
-
-**Agentes:**
-- Incident Commander
-- Runbook & Operations
-- Postmortem & Learning
-- Chaos & Resilience
-- Capacity & Cost Governance
-- Documentador
+**Un agente para cada fase. Un equipo completo de IA.**
 
 ---
 
-## Kits Predefinidos
+## 🎯 Capacidades
 
-| Kit | Target | Agentes |
-|-----|--------|---------|
-| startup-web | 1-5 devs | 8 agentes esenciales para startups web |
-| incident-response | any | 6 agentes para respuesta a incidentes |
-| enterprise-platform | 50+ devs | 18 agentes para plataformas enterprise |
+### 🔍 Discovery & Research
+| Agente | Función |
+|--------|---------|
+| Market Research | Análisis de mercado y oportunidades |
+| Competitor Analysis | Benchmarking competitivo |
+| User Research | Investigación de usuarios y necesidades |
+| Product Vision | Definición de visión de producto |
+| MVP Definition | Alcance mínimo viable |
+
+### 📋 Planning & Strategy
+| Agente | Función |
+|--------|---------|
+| Estimation | Estimación de esfuerzo y recursos |
+| Roadmap | Planificación de roadmap |
+| Sprint Planning | Organización de sprints |
+| Backlog Management | Gestión de backlog |
+| Stakeholder Management | Comunicación con stakeholders |
+
+### 🎨 Design & UX
+| Agente | Función |
+|--------|---------|
+| UX Research | Investigación de experiencia de usuario |
+| UI Design | Diseño de interfaces |
+| Prototyping | Creación de prototipos |
+| User Journey | Mapeo de journeys |
+| Usability Testing | Testing de usabilidad |
+
+### 💻 Development
+| Categoría | Agentes | Incluye |
+|-----------|---------|---------|
+| **Platform Web** | 15 | Frontend, Backend, PWA, Micro-frontends, BFF |
+| **Platform Mobile** | 10 | iOS, Android, React Native, Flutter |
+| **Platform Desktop** | 4 | Electron, Cross-platform |
+| **Platform Cloud** | 14 | AWS, Azure, GCP, Serverless |
+| **Architecture** | 5 | DDD, Microservices, Event-Driven |
+| **Backend** | 5 | GraphQL, Message Queue, Caching |
+| **Languages** | 12 | Python, Java, Go, Rust, C#, TypeScript... |
+
+### 🧪 Quality & Testing
+| Agente | Función |
+|--------|---------|
+| Bug Hunter | Detección proactiva de bugs |
+| Test Strategy | Estrategia de testing |
+| E2E Testing | Tests end-to-end |
+| Load Testing | Tests de carga |
+| Security Testing | Tests de seguridad |
+
+### 🔒 Security
+| Agente | Función |
+|--------|---------|
+| Threat Modeling | Modelado de amenazas |
+| Ethical Hacker | Pentesting y vulnerabilidades |
+| Cloud Security | Seguridad en cloud |
+| Auth & Secrets | Autenticación y secretos |
+
+### 🚀 DevOps & Operations
+| Agente | Función |
+|--------|---------|
+| CI/CD | Pipelines de integración continua |
+| GitOps | Operaciones basadas en Git |
+| SRE | Site Reliability Engineering |
+| Incident Commander | Gestión de incidentes |
+| Observability | Monitoreo y trazabilidad |
+
+### 📈 Growth & Marketing
+| Agente | Función |
+|--------|---------|
+| SEO | Optimización para buscadores |
+| Content Marketing | Estrategia de contenidos |
+| Analytics | Análisis de métricas |
+| Conversion Optimization | Optimización de conversión |
+| Growth Hacking | Estrategias de crecimiento |
+| User Retention | Retención de usuarios |
+
+### 💼 Business
+| Agente | Función |
+|--------|---------|
+| Business Model | Modelado de negocio |
+| Pricing Strategy | Estrategia de precios |
+| Monetization | Estrategias de monetización |
+| Revenue Optimization | Optimización de ingresos |
+
+### 🔄 Legacy & Migrations
+| Tipo | Lenguajes Soportados |
+|------|---------------------|
+| **Mantenimiento** | COBOL, Delphi, VB6, FoxPro, RPG/AS400, Oracle Forms, PowerBuilder... |
+| **Migración** | Rutas de migración a tecnologías modernas para cada legacy |
 
 ---
 
-## Cómo Usar
+## 🚀 Guía Rápida
 
-### 1. Navegación por Web UI (Recomendado)
-1. Abre `web/index.html` en tu navegador
-2. Busca agentes por nombre o concepto
-3. Copia el contenido con "Copy to Clipboard"
-4. Pega en el System Prompt de Claude Code
+### Opción 1: Web UI (Recomendado)
 
-### 2. Acceso Directo
+1. Abre [`web/index.html`](./web/index.html) en tu navegador
+2. Busca agentes por nombre o keyword
+3. Agrega a **Mi Stack** los que necesites
+4. Copia todo con un click
+5. Pega en Claude Code como System Prompt
+
+### Opción 2: Directo desde archivos
+
 ```bash
-# Ver un agente específico
+# Clonar repositorio
+git clone https://github.com/AlexaieDev/Agentic_configurations.git
+
+# Ver un agente
 cat agents/quality/bug-hunter.agent.txt
 
-# Listar agentes por categoría
-ls agents/platform-web/
-```
-
-### 3. Usar un Pack Completo
-1. Lee el manifiesto: `packs/claude-code-ultra/manifest.json`
-2. El manifiesto lista todos los agentes con rutas relativas
-3. Copia los agentes que necesites según el `use_case_routing`
-
----
-
-## Convenciones de Nombrado
-
-| Tipo | Formato | Ejemplo |
-|------|---------|---------|
-| Archivos de agentes | `kebab-case.agent.txt` | `bug-hunter.agent.txt` |
-| Carpetas de categoría | `kebab-case` | `platform-web/` |
-| Carpetas especiales | Prefijo `_` | `_global/` |
-
----
-
-## Adopción por Madurez
-
-### Startup (1-5 devs)
-Kit: `packs/kits/startup-web.json`
-- Web Architecture + Frontend
-- Bug Hunter + Test Strategy
-- Auth + Secrets
-- Logging + Error Handling
-
-### Scale-up (6-20 devs)
-Agregar:
-- API Design + Code Review
-- Database Architect + Observability
-- Feature Flags + Contract Testing
-- ADR + Onboarding
-
-### Enterprise (50+ devs)
-Kit: `packs/kits/enterprise-platform.json`
-- Microservices + Event-Driven + DDD
-- Container Orchestration + Service Mesh
-- SRE + Chaos Engineering
-- Threat Modeling + Compliance
-- Data Pipeline + MLOps
-
----
-
-## Orquestación por Caso de Uso
-
-### Bug en Producción
-```
-1. bug-hunter.agent.txt
-2. observability.agent.txt
-3. incident-commander.agent.txt
-4. logging-strategy.agent.txt
-```
-
-### Nueva Feature de Alto Riesgo
-```
-1. web-product-discovery.agent.txt
-2. threat-modeling.agent.txt
-3. api-design.agent.txt
-4. test-strategy.agent.txt
-5. feature-flag.agent.txt
-```
-
-### Migración a Microservicios
-```
-1. monolith-to-microservices.agent.txt
-2. microservices.agent.txt
-3. event-driven-architecture.agent.txt
-4. service-mesh.agent.txt
+# Listar categoría
+ls agents/growth/
 ```
 
 ---
 
-## Global Policy
+## 🎮 Web UI Features
 
-**Archivo:** `agents/_global/global-policy.agent.txt`
+<table>
+<tr>
+<td width="50%">
 
-9 principios obligatorios que aplican a todos los agentes:
-1. Reutilización por defecto
-2. Modularidad y límites claros
-3. Contratos y versionado
-4. Calidad proporcional al riesgo
-5. Seguridad por defecto
-6. Observabilidad mínima
-7. Simplicidad y evolución
-8. Documentación viva y breve
-9. Estándar de herramientas
+### 🔍 Búsqueda Inteligente
+- Por nombre de agente
+- Por keywords semánticas
+- Por contenido del prompt
+
+</td>
+<td width="50%">
+
+### 📦 Mi Stack
+- Guarda tu selección de agentes
+- Persiste entre sesiones
+- Exporta todo con un click
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔄 Workflows
+- Flujos predefinidos por problema
+- Secuencias optimizadas
+- Signals de cuándo usar cada uno
+
+</td>
+<td>
+
+### 🏢 Kits por Madurez
+- Startup (1-5 devs)
+- Scale-up (6-20 devs)
+- Enterprise (80+ devs)
+
+</td>
+</tr>
+</table>
 
 ---
 
-## Instalación
+## 📂 Estructura
 
-```bash
-git clone https://github.com/AlexaieDev/Agentic_configurations.git
-cd Agentic_configurations
+```
+📦 agentic-configurations
+├── 🤖 agents/           # 179 agentes organizados por categoría
+├── 📋 catalog/          # Índice JSON centralizado
+├── 🌐 web/              # UI interactiva
+├── 📜 scripts/          # Herramientas de generación
+└── 📦 packs/            # Manifiestos y kits predefinidos
 ```
 
 ---
 
-## Notas de Versión
+## 🎯 Casos de Uso
 
-### v3.0 (Enero 2026)
-- **Reestructuración completa**: 243 archivos → 106 agentes únicos
-- **Centralización**: Eliminada duplicación entre packs
-- **Nuevo formato**: `kebab-case.agent.txt`
-- **Manifiestos JSON**: Packs como referencias, no copias
-- **Catálogo centralizado**: `catalog/index.json`
-- **Kits predefinidos**: startup-web, incident-response, enterprise-platform
+<details>
+<summary><b>🐛 Bug en Producción</b></summary>
 
-### v2.5 ULTRA
-- Ethical Hacker & PenTest Advisor
-- Threat Modeling
-- Security Testing Integrator
+```
+1. Bug Hunter Agent
+2. Observability Agent
+3. Incident Commander Agent
+4. Postmortem Agent
+```
+</details>
 
-### v2.4
-- License Reviewer & OSS Alternatives
+<details>
+<summary><b>🚀 Nueva Feature (Idea a Producción)</b></summary>
+
+```
+1. Market Research Agent
+2. Product Vision Agent
+3. UX Research Agent
+4. UI Design Agent
+5. Sprint Planning Agent
+6. Code Generator Agent
+7. Test Strategy Agent
+8. Growth Hacking Agent
+```
+</details>
+
+<details>
+<summary><b>📈 Optimizar Conversión</b></summary>
+
+```
+1. Analytics Agent
+2. Conversion Optimization Agent
+3. User Retention Agent
+4. Growth Hacking Agent
+```
+</details>
+
+<details>
+<summary><b>🔄 Migrar Sistema Legacy</b></summary>
+
+```
+1. [Legacy]-Migration Agent (COBOL, VB6, etc.)
+2. Database Architect Agent
+3. Test Strategy Agent
+4. Observability Agent
+```
+</details>
 
 ---
 
-## Recursos
+## 🏷️ Todas las Categorías
 
-- **Catálogo:** `catalog/index.json`
-- **Web UI:** `web/index.html`
-- **Schema de packs:** `packs/pack.schema.json`
+| Categoría | # | Categoría | # |
+|-----------|---|-----------|---|
+| `_global` | 2 | `languages` | 12 |
+| `architecture` | 5 | `legacy-maintenance` | 15 |
+| `backend` | 5 | `migrations` | 16 |
+| `business` | 4 | `operations` | 4 |
+| `data` | 3 | `planning` | 5 |
+| `design` | 5 | `platform-cloud` | 14 |
+| `devops` | 4 | `platform-desktop` | 4 |
+| `discovery` | 5 | `platform-mobile` | 10 |
+| `docs` | 4 | `platform-web` | 15 |
+| `growth` | 8 | `process` | 12 |
+| `integrations` | 5 | `product` | 2 |
+| `quality` | 5 | `security` | 8 |
+| `testing` | 7 | | |
 
 ---
 
-**Última actualización:** Enero 2026
+## 🤝 Contribuir
+
+1. Fork del repositorio
+2. Crea tu agente en `agents/[categoria]/[nombre].agent.txt`
+3. Ejecuta `./scripts/generate-web-data.ps1`
+4. Pull Request
+
+---
+
+## 📄 Licencia
+
+MIT © 2026
+
+---
+
+<div align="center">
+
+**[⬆ Volver arriba](#-agentic-configurations)**
+
+Made with 🤖 for developers who love AI
+
+</div>
