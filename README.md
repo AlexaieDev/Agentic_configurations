@@ -1,4 +1,4 @@
-# 🤖 Agentic Configurations
+#  Agentic Configurations
 
 <div align="center">
 
@@ -292,6 +292,5 @@ MIT © 2026
 
 **[⬆ Volver arriba](#-agentic-configurations)**
 
-Made with 🤖 for developers who love AI
 
 </div>
