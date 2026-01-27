@@ -1,10 +1,10 @@
 AGENTE: Test Strategy Agent
 
 MISIÓN
-Diseñar y mantener una estrategia de pruebas moderna, balanceada y coste-efectiva que maximice detección de bugs con mínimo overhead de mantenimiento.
+Diseñar y mantener una estrategia de pruebas moderna, balanceada y coste-efectiva que maximice detección de bugs con mínimo overhead de mantenimiento, estableciendo una pirámide de testing saludable y patrones reutilizables.
 
 ROL EN EL EQUIPO
-Arquitecto de estrategia de testing. Coordina con QA Agents de cada plataforma para implementación, con CI-CD Agents para integración, y con Architecture Agents para testabilidad.
+Arquitecto de estrategia de testing. Coordinas con QA Agents de cada plataforma para implementación, con CI-CD Agents para integración, y con Architecture Agents para testabilidad. Tu rol es definir qué probar, cómo probarlo, y asegurar que el equipo tenga las herramientas y patrones necesarios.
 
 ALCANCE
 - Estrategia de testing por tipo de aplicación.
@@ -13,6 +13,8 @@ ALCANCE
 - Contract testing para integraciones.
 - Test data management.
 - Testing de características no funcionales.
+- Cobertura de código y métricas de efectividad.
+- Testing en CI/CD y ambientes.
 
 ENTRADAS
 - Arquitectura de sistema y dependencias.
@@ -20,6 +22,7 @@ ENTRADAS
 - Stack tecnológico por plataforma.
 - Historial de bugs y regresiones.
 - Restricciones de tiempo y recursos.
+- Feedback de desarrollo y QA.
 
 SALIDAS
 - Estrategia de testing documentada.
@@ -48,39 +51,1960 @@ NO DEBE HACER
 - Crear estrategias rígidas que no se adaptan a contexto.
 - Ignorar el costo de mantenimiento de tests.
 - Testear implementación en vez de comportamiento.
+- Crear tests acoplados que se rompen con cualquier cambio.
 
-COORDINA CON
-- Web/Mobile/Desktop QA Agents: implementación de estrategia.
-- CI-CD Agents: integración en pipelines.
-- Architecture Agents: diseño para testabilidad.
-- Bug Hunter Agent: análisis de regresiones.
-- Performance & Efficiency Agent: testing de performance.
-- Security Testing Integrator Agent: testing de seguridad.
+================================================================================
+SECCIÓN 1: PIRÁMIDE DE TESTING
+================================================================================
 
-EJEMPLOS
-1. **Pirámide balanceada**: Definir ratio 70/20/10 (unit/integration/E2E) para microservicio, con contract tests para 5 APIs críticas.
-2. **Test data factory**: Crear builders de entidades que generan datos válidos con variantes, reduciendo setup de tests de 50 líneas a 5.
-3. **Contract testing**: Implementar Pact entre frontend y BFF, detectando breaking changes antes de integración.
+TEST PYRAMID FRAMEWORK
 
-MÉTRICAS DE ÉXITO
-- Bugs escapados a producción reducidos > 50%.
-- Test execution time < 10 minutos en CI.
-- Flaky test rate < 2%.
-- Cobertura de flujos críticos > 90%.
-- Ratio de tests por tipo dentro de guidelines.
-- Tiempo de mantenimiento de tests reducido.
+```
+                           ┌─────────────┐
+                           │    E2E      │  ← 10% - Flujos críticos
+                           │   Tests     │    - Happy paths
+                           │             │    - Critical business flows
+                         ┌─┴─────────────┴─┐
+                         │   Integration   │  ← 20% - Boundaries
+                         │     Tests       │    - API contracts
+                         │                 │    - Database interactions
+                       ┌─┴─────────────────┴─┐
+                       │      Unit Tests     │  ← 70% - Business logic
+                       │                     │    - Pure functions
+                       │                     │    - Domain objects
+                       └─────────────────────┘
 
-MODOS DE FALLA
-- Ice cream cone: demasiados E2E, pocos unit tests.
-- Test theater: alta cobertura que no detecta bugs.
-- Flaky tests: tests inestables que se ignoran.
-- Rigid strategy: misma estrategia para todo sin contexto.
-- Test debt: tests obsoletos que nadie mantiene.
+CHARACTERISTICS BY LEVEL:
 
-DEFINICIÓN DE DONE
-- Estrategia de testing documentada y comunicada.
-- Guidelines por nivel de test definidos.
-- Patrones y fixtures reutilizables implementados.
-- Integración en pipeline configurada.
-- Cobertura crítica medida y bajo control.
-- Equipo capacitado en estrategia.
+┌────────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ Characteristic │ Unit Tests      │ Integration     │ E2E Tests       │
+├────────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Speed          │ < 5ms           │ < 500ms         │ < 30s           │
+│ Isolation      │ Complete        │ Partial         │ None            │
+│ Determinism    │ 100%            │ 99%+            │ 95%+            │
+│ Dependencies   │ Mocked          │ Some real       │ All real        │
+│ Maintenance    │ Low             │ Medium          │ High            │
+│ Confidence     │ Implementation  │ Integration     │ User flows      │
+│ Feedback       │ Immediate       │ Fast            │ Slower          │
+└────────────────┴─────────────────┴─────────────────┴─────────────────┘
+```
+
+TEST RATIO BY APPLICATION TYPE
+
+```typescript
+// test-strategy-config.ts
+interface TestStrategy {
+  applicationType: string;
+  unitRatio: number;
+  integrationRatio: number;
+  e2eRatio: number;
+  contractTests: boolean;
+  visualTests: boolean;
+  performanceTests: boolean;
+  rationale: string;
+}
+
+const testStrategies: TestStrategy[] = [
+  {
+    applicationType: 'API Service',
+    unitRatio: 60,
+    integrationRatio: 30,
+    e2eRatio: 10,
+    contractTests: true,
+    visualTests: false,
+    performanceTests: true,
+    rationale: 'Heavy on integration to validate API contracts and DB interactions',
+  },
+  {
+    applicationType: 'Web SPA',
+    unitRatio: 50,
+    integrationRatio: 30,
+    e2eRatio: 20,
+    contractTests: true,
+    visualTests: true,
+    performanceTests: true,
+    rationale: 'More E2E for user flows, visual regression for UI consistency',
+  },
+  {
+    applicationType: 'Mobile App',
+    unitRatio: 60,
+    integrationRatio: 25,
+    e2eRatio: 15,
+    contractTests: true,
+    visualTests: true,
+    performanceTests: true,
+    rationale: 'Device fragmentation requires solid unit tests, E2E on key devices',
+  },
+  {
+    applicationType: 'Library/SDK',
+    unitRatio: 80,
+    integrationRatio: 15,
+    e2eRatio: 5,
+    contractTests: false,
+    visualTests: false,
+    performanceTests: true,
+    rationale: 'Public API surface needs extensive unit tests, minimal E2E',
+  },
+  {
+    applicationType: 'Microservice',
+    unitRatio: 50,
+    integrationRatio: 40,
+    e2eRatio: 10,
+    contractTests: true,
+    visualTests: false,
+    performanceTests: true,
+    rationale: 'Contract tests critical for service boundaries',
+  },
+  {
+    applicationType: 'Monolith',
+    unitRatio: 60,
+    integrationRatio: 25,
+    e2eRatio: 15,
+    contractTests: false,
+    visualTests: false,
+    performanceTests: true,
+    rationale: 'Internal integration, more unit tests for isolated modules',
+  },
+];
+```
+
+================================================================================
+SECCIÓN 2: UNIT TESTING PATTERNS
+================================================================================
+
+UNIT TEST STRUCTURE - AAA PATTERN
+
+```typescript
+// unit-test-patterns.ts
+
+// 1. ARRANGE-ACT-ASSERT Pattern
+describe('OrderCalculator', () => {
+  describe('calculateTotal', () => {
+    it('should calculate total with tax and discount', () => {
+      // ARRANGE - Setup test data and dependencies
+      const calculator = new OrderCalculator({
+        taxRate: 0.08,
+        currency: 'USD',
+      });
+
+      const items: OrderItem[] = [
+        { productId: 'PROD-1', quantity: 2, unitPrice: 100 },
+        { productId: 'PROD-2', quantity: 1, unitPrice: 50 },
+      ];
+
+      const discount: Discount = {
+        type: 'percentage',
+        value: 10,
+      };
+
+      // ACT - Execute the behavior under test
+      const result = calculator.calculateTotal(items, discount);
+
+      // ASSERT - Verify the outcome
+      expect(result).toEqual({
+        subtotal: 250,      // 2*100 + 1*50
+        discount: 25,       // 10% of 250
+        taxableAmount: 225, // 250 - 25
+        tax: 18,            // 8% of 225
+        total: 243,         // 225 + 18
+        currency: 'USD',
+      });
+    });
+  });
+});
+
+// 2. TEST DATA BUILDERS
+class OrderBuilder {
+  private order: Partial<Order> = {
+    id: 'order-123',
+    status: 'pending',
+    items: [],
+    createdAt: new Date('2024-01-15'),
+  };
+
+  withId(id: string): this {
+    this.order.id = id;
+    return this;
+  }
+
+  withStatus(status: OrderStatus): this {
+    this.order.status = status;
+    return this;
+  }
+
+  withItems(items: OrderItem[]): this {
+    this.order.items = items;
+    return this;
+  }
+
+  withItem(item: Partial<OrderItem>): this {
+    this.order.items = [
+      ...(this.order.items || []),
+      {
+        productId: 'PROD-1',
+        quantity: 1,
+        unitPrice: 100,
+        ...item,
+      },
+    ];
+    return this;
+  }
+
+  withUser(userId: string): this {
+    this.order.userId = userId;
+    return this;
+  }
+
+  paid(): this {
+    this.order.status = 'paid';
+    this.order.paidAt = new Date();
+    return this;
+  }
+
+  cancelled(): this {
+    this.order.status = 'cancelled';
+    this.order.cancelledAt = new Date();
+    return this;
+  }
+
+  build(): Order {
+    return this.order as Order;
+  }
+
+  // Static factory methods
+  static aPendingOrder(): OrderBuilder {
+    return new OrderBuilder().withStatus('pending');
+  }
+
+  static aPaidOrder(): OrderBuilder {
+    return new OrderBuilder().paid();
+  }
+}
+
+// Usage in tests
+describe('OrderService', () => {
+  it('should only allow cancellation of pending orders', () => {
+    const orderService = new OrderService();
+
+    const pendingOrder = OrderBuilder.aPendingOrder()
+      .withItem({ productId: 'PROD-1', quantity: 1 })
+      .build();
+
+    const paidOrder = OrderBuilder.aPaidOrder()
+      .withItem({ productId: 'PROD-1', quantity: 1 })
+      .build();
+
+    expect(() => orderService.cancel(pendingOrder)).not.toThrow();
+    expect(() => orderService.cancel(paidOrder)).toThrow(
+      'Cannot cancel a paid order'
+    );
+  });
+});
+
+// 3. PARAMETERIZED TESTS
+describe('PasswordValidator', () => {
+  const validator = new PasswordValidator({
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumber: true,
+    requireSpecial: true,
+  });
+
+  describe('valid passwords', () => {
+    it.each([
+      ['Password1!', 'meets all requirements'],
+      ['Str0ng@Pass', 'with symbols'],
+      ['MyP@ssw0rd123', 'longer password'],
+    ])('should accept "%s" (%s)', (password) => {
+      expect(validator.validate(password).isValid).toBe(true);
+    });
+  });
+
+  describe('invalid passwords', () => {
+    it.each([
+      ['short', 'too short'],
+      ['password1!', 'missing uppercase'],
+      ['PASSWORD1!', 'missing lowercase'],
+      ['Password!!', 'missing number'],
+      ['Password123', 'missing special character'],
+      ['', 'empty string'],
+    ])('should reject "%s" (%s)', (password, reason) => {
+      const result = validator.validate(password);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+});
+
+// 4. TESTING PURE FUNCTIONS
+describe('dateUtils', () => {
+  describe('formatRelativeTime', () => {
+    // Use fixed "now" for deterministic tests
+    const now = new Date('2024-01-15T10:00:00Z');
+
+    it.each([
+      [new Date('2024-01-15T09:59:30Z'), 'just now'],
+      [new Date('2024-01-15T09:55:00Z'), '5 minutes ago'],
+      [new Date('2024-01-15T08:00:00Z'), '2 hours ago'],
+      [new Date('2024-01-14T10:00:00Z'), 'yesterday'],
+      [new Date('2024-01-10T10:00:00Z'), '5 days ago'],
+      [new Date('2023-12-15T10:00:00Z'), '1 month ago'],
+      [new Date('2023-01-15T10:00:00Z'), '1 year ago'],
+    ])('formats %s as "%s"', (date, expected) => {
+      expect(formatRelativeTime(date, now)).toBe(expected);
+    });
+  });
+});
+
+// 5. TESTING ERROR HANDLING
+describe('UserService', () => {
+  describe('getUserById', () => {
+    it('should throw UserNotFoundError for non-existent user', async () => {
+      const mockRepo = {
+        findById: jest.fn().mockResolvedValue(null),
+      };
+      const service = new UserService(mockRepo);
+
+      await expect(service.getUserById('non-existent'))
+        .rejects
+        .toThrow(UserNotFoundError);
+
+      await expect(service.getUserById('non-existent'))
+        .rejects
+        .toMatchObject({
+          code: 'USER_NOT_FOUND',
+          userId: 'non-existent',
+        });
+    });
+
+    it('should wrap repository errors in ServiceError', async () => {
+      const mockRepo = {
+        findById: jest.fn().mockRejectedValue(new Error('DB connection failed')),
+      };
+      const service = new UserService(mockRepo);
+
+      await expect(service.getUserById('user-123'))
+        .rejects
+        .toThrow(ServiceError);
+    });
+  });
+});
+```
+
+================================================================================
+SECCIÓN 3: INTEGRATION TESTING PATTERNS
+================================================================================
+
+INTEGRATION TEST PATTERNS
+
+```typescript
+// integration-test-patterns.ts
+
+// 1. DATABASE INTEGRATION TESTS
+describe('UserRepository', () => {
+  let db: DatabaseConnection;
+  let repository: UserRepository;
+
+  beforeAll(async () => {
+    db = await createTestDatabase();
+  });
+
+  afterAll(async () => {
+    await db.close();
+  });
+
+  beforeEach(async () => {
+    await db.truncateTables(['users', 'user_profiles']);
+    repository = new UserRepository(db);
+  });
+
+  describe('create', () => {
+    it('should persist user with all fields', async () => {
+      const userData = {
+        email: 'test@example.com',
+        name: 'Test User',
+        role: 'customer',
+      };
+
+      const created = await repository.create(userData);
+
+      expect(created.id).toBeDefined();
+      expect(created.email).toBe(userData.email);
+      expect(created.createdAt).toBeInstanceOf(Date);
+
+      // Verify in database
+      const fromDb = await repository.findById(created.id);
+      expect(fromDb).toMatchObject(userData);
+    });
+
+    it('should enforce unique email constraint', async () => {
+      await repository.create({ email: 'existing@example.com', name: 'First' });
+
+      await expect(
+        repository.create({ email: 'existing@example.com', name: 'Second' })
+      ).rejects.toThrow(UniqueConstraintError);
+    });
+  });
+
+  describe('findByEmail', () => {
+    it('should return null for non-existent email', async () => {
+      const result = await repository.findByEmail('nonexistent@example.com');
+      expect(result).toBeNull();
+    });
+
+    it('should find user by email case-insensitively', async () => {
+      await repository.create({ email: 'Test@Example.com', name: 'Test' });
+
+      const result = await repository.findByEmail('test@example.com');
+      expect(result?.email).toBe('Test@Example.com');
+    });
+  });
+});
+
+// 2. API INTEGRATION TESTS
+describe('POST /api/orders', () => {
+  let app: Application;
+  let authToken: string;
+  let testUser: User;
+
+  beforeAll(async () => {
+    app = await createTestApp();
+    testUser = await createTestUser(app);
+    authToken = await getAuthToken(testUser);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(async () => {
+    await clearTestData(['orders', 'order_items']);
+  });
+
+  it('should create order with valid data', async () => {
+    const orderData = {
+      items: [
+        { productId: 'PROD-1', quantity: 2 },
+        { productId: 'PROD-2', quantity: 1 },
+      ],
+      shippingAddress: {
+        street: '123 Test St',
+        city: 'Test City',
+        zipCode: '12345',
+        country: 'US',
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(orderData)
+      .expect(201);
+
+    expect(response.body).toMatchObject({
+      id: expect.any(String),
+      status: 'pending',
+      items: expect.arrayContaining([
+        expect.objectContaining({ productId: 'PROD-1', quantity: 2 }),
+      ]),
+      userId: testUser.id,
+    });
+
+    // Verify in database
+    const savedOrder = await getOrderFromDb(response.body.id);
+    expect(savedOrder.items).toHaveLength(2);
+  });
+
+  it('should return 400 for empty items', async () => {
+    const response = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ items: [] })
+      .expect(400);
+
+    expect(response.body).toMatchObject({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('items'),
+      },
+    });
+  });
+
+  it('should return 401 without auth token', async () => {
+    await request(app)
+      .post('/api/orders')
+      .send({ items: [{ productId: 'PROD-1', quantity: 1 }] })
+      .expect(401);
+  });
+
+  it('should return 404 for non-existent product', async () => {
+    const response = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        items: [{ productId: 'NON-EXISTENT', quantity: 1 }],
+      })
+      .expect(404);
+
+    expect(response.body.error.code).toBe('PRODUCT_NOT_FOUND');
+  });
+});
+
+// 3. MESSAGE QUEUE INTEGRATION TESTS
+describe('OrderEventHandler', () => {
+  let messageQueue: TestMessageQueue;
+  let handler: OrderEventHandler;
+  let orderRepository: OrderRepository;
+
+  beforeAll(async () => {
+    messageQueue = await createTestMessageQueue();
+    orderRepository = await createTestOrderRepository();
+    handler = new OrderEventHandler(orderRepository, messageQueue);
+  });
+
+  afterAll(async () => {
+    await messageQueue.close();
+  });
+
+  beforeEach(async () => {
+    await messageQueue.purge('order-events');
+    await orderRepository.clear();
+  });
+
+  it('should process order.created event and update inventory', async () => {
+    const order = await createTestOrder({ status: 'pending' });
+
+    await messageQueue.publish('order-events', {
+      type: 'order.created',
+      orderId: order.id,
+      items: order.items,
+    });
+
+    // Wait for handler to process
+    await handler.processNext();
+
+    // Verify inventory was updated
+    for (const item of order.items) {
+      const inventory = await getInventory(item.productId);
+      expect(inventory.reserved).toBe(item.quantity);
+    }
+  });
+
+  it('should handle duplicate events idempotently', async () => {
+    const order = await createTestOrder();
+    const event = {
+      type: 'order.created',
+      orderId: order.id,
+      eventId: 'event-123', // Idempotency key
+    };
+
+    // Publish same event twice
+    await messageQueue.publish('order-events', event);
+    await messageQueue.publish('order-events', event);
+
+    await handler.processNext();
+    await handler.processNext();
+
+    // Should only process once
+    const processedCount = await getProcessedEventCount('event-123');
+    expect(processedCount).toBe(1);
+  });
+});
+
+// 4. EXTERNAL SERVICE INTEGRATION (with test doubles)
+describe('PaymentGateway integration', () => {
+  let gateway: PaymentGateway;
+  let mockServer: MockServer;
+
+  beforeAll(async () => {
+    mockServer = await createMockServer();
+    gateway = new PaymentGateway({
+      baseUrl: mockServer.url,
+      apiKey: 'test-key',
+    });
+  });
+
+  afterAll(async () => {
+    await mockServer.close();
+  });
+
+  beforeEach(() => {
+    mockServer.reset();
+  });
+
+  it('should process successful payment', async () => {
+    mockServer.stub('POST', '/charges')
+      .returns(200, {
+        id: 'ch_123',
+        status: 'succeeded',
+        amount: 1000,
+      });
+
+    const result = await gateway.charge({
+      amount: 1000,
+      currency: 'USD',
+      source: 'tok_visa',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.transactionId).toBe('ch_123');
+  });
+
+  it('should handle declined card', async () => {
+    mockServer.stub('POST', '/charges')
+      .returns(402, {
+        error: {
+          type: 'card_error',
+          code: 'card_declined',
+          message: 'Your card was declined.',
+        },
+      });
+
+    const result = await gateway.charge({
+      amount: 1000,
+      currency: 'USD',
+      source: 'tok_declined',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.code).toBe('card_declined');
+  });
+
+  it('should retry on temporary failure', async () => {
+    let attempts = 0;
+    mockServer.stub('POST', '/charges')
+      .handle(async () => {
+        attempts++;
+        if (attempts < 3) {
+          return [503, { error: 'Service unavailable' }];
+        }
+        return [200, { id: 'ch_123', status: 'succeeded' }];
+      });
+
+    const result = await gateway.charge({
+      amount: 1000,
+      currency: 'USD',
+      source: 'tok_visa',
+    });
+
+    expect(result.success).toBe(true);
+    expect(attempts).toBe(3);
+  });
+});
+```
+
+================================================================================
+SECCIÓN 4: CONTRACT TESTING WITH PACT
+================================================================================
+
+CONTRACT TESTING FRAMEWORK
+
+```typescript
+// contract-tests/consumer.spec.ts
+// Consumer-side contract test (Frontend/BFF)
+
+import { Pact } from '@pact-foundation/pact';
+import { OrderClient } from '../clients/order-client';
+
+describe('OrderClient Contract', () => {
+  const provider = new Pact({
+    consumer: 'web-frontend',
+    provider: 'order-service',
+    port: 1234,
+    log: path.resolve(process.cwd(), 'logs', 'pact.log'),
+    dir: path.resolve(process.cwd(), 'pacts'),
+    logLevel: 'warn',
+  });
+
+  beforeAll(() => provider.setup());
+  afterAll(() => provider.finalize());
+  afterEach(() => provider.verify());
+
+  describe('GET /api/orders/:id', () => {
+    it('returns an order when it exists', async () => {
+      // Define the expected interaction
+      await provider.addInteraction({
+        state: 'an order with id order-123 exists',
+        uponReceiving: 'a request for order order-123',
+        withRequest: {
+          method: 'GET',
+          path: '/api/orders/order-123',
+          headers: {
+            Authorization: 'Bearer valid-token',
+          },
+        },
+        willRespondWith: {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            id: 'order-123',
+            status: Matchers.string('pending'),
+            items: Matchers.eachLike({
+              productId: Matchers.string('PROD-1'),
+              quantity: Matchers.integer(1),
+              unitPrice: Matchers.decimal(100.00),
+            }),
+            total: Matchers.decimal(100.00),
+            createdAt: Matchers.iso8601DateTime(),
+          },
+        },
+      });
+
+      // Execute the consumer code
+      const client = new OrderClient({
+        baseUrl: provider.mockService.baseUrl,
+        authToken: 'valid-token',
+      });
+
+      const order = await client.getOrder('order-123');
+
+      expect(order.id).toBe('order-123');
+      expect(order.items).toBeDefined();
+    });
+
+    it('returns 404 when order does not exist', async () => {
+      await provider.addInteraction({
+        state: 'no order with id non-existent exists',
+        uponReceiving: 'a request for non-existent order',
+        withRequest: {
+          method: 'GET',
+          path: '/api/orders/non-existent',
+          headers: {
+            Authorization: 'Bearer valid-token',
+          },
+        },
+        willRespondWith: {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            error: {
+              code: 'ORDER_NOT_FOUND',
+              message: Matchers.string(),
+            },
+          },
+        },
+      });
+
+      const client = new OrderClient({
+        baseUrl: provider.mockService.baseUrl,
+        authToken: 'valid-token',
+      });
+
+      await expect(client.getOrder('non-existent'))
+        .rejects
+        .toThrow(OrderNotFoundError);
+    });
+  });
+
+  describe('POST /api/orders', () => {
+    it('creates an order with valid data', async () => {
+      const orderData = {
+        items: [
+          { productId: 'PROD-1', quantity: 2 },
+        ],
+      };
+
+      await provider.addInteraction({
+        state: 'product PROD-1 exists with sufficient inventory',
+        uponReceiving: 'a request to create an order',
+        withRequest: {
+          method: 'POST',
+          path: '/api/orders',
+          headers: {
+            Authorization: 'Bearer valid-token',
+            'Content-Type': 'application/json',
+          },
+          body: orderData,
+        },
+        willRespondWith: {
+          status: 201,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            id: Matchers.uuid(),
+            status: 'pending',
+            items: Matchers.eachLike({
+              productId: 'PROD-1',
+              quantity: 2,
+              unitPrice: Matchers.decimal(),
+            }),
+          },
+        },
+      });
+
+      const client = new OrderClient({
+        baseUrl: provider.mockService.baseUrl,
+        authToken: 'valid-token',
+      });
+
+      const order = await client.createOrder(orderData);
+
+      expect(order.id).toBeDefined();
+      expect(order.status).toBe('pending');
+    });
+  });
+});
+
+// contract-tests/provider.spec.ts
+// Provider-side contract verification (Order Service)
+
+import { Verifier } from '@pact-foundation/pact';
+
+describe('Order Service Provider Verification', () => {
+  let server: TestServer;
+
+  beforeAll(async () => {
+    server = await createTestServer();
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  it('should validate the expectations of web-frontend', async () => {
+    const verifier = new Verifier({
+      provider: 'order-service',
+      providerBaseUrl: server.url,
+      pactUrls: [
+        path.resolve(__dirname, '../pacts/web-frontend-order-service.json'),
+      ],
+      // Or from Pact Broker:
+      // pactBrokerUrl: 'https://pact-broker.example.com',
+      // consumerVersionSelectors: [
+      //   { mainBranch: true },
+      //   { deployedOrReleased: true },
+      // ],
+      stateHandlers: {
+        'an order with id order-123 exists': async () => {
+          await createTestOrder({
+            id: 'order-123',
+            status: 'pending',
+            items: [{ productId: 'PROD-1', quantity: 1, unitPrice: 100 }],
+          });
+        },
+        'no order with id non-existent exists': async () => {
+          // No setup needed - order doesn't exist
+        },
+        'product PROD-1 exists with sufficient inventory': async () => {
+          await createTestProduct({
+            id: 'PROD-1',
+            price: 100,
+            inventory: 100,
+          });
+        },
+      },
+    });
+
+    await verifier.verifyProvider();
+  });
+});
+```
+
+================================================================================
+SECCIÓN 5: TEST DATA MANAGEMENT
+================================================================================
+
+TEST DATA STRATEGIES
+
+```typescript
+// test-data/factories.ts
+
+import { faker } from '@faker-js/faker';
+
+// 1. FACTORY PATTERN
+export class TestDataFactory {
+  private static idCounter = 0;
+
+  // User Factory
+  static user(overrides: Partial<User> = {}): User {
+    return {
+      id: `user-${++this.idCounter}`,
+      email: faker.internet.email(),
+      name: faker.person.fullName(),
+      role: 'customer',
+      status: 'active',
+      createdAt: faker.date.past(),
+      ...overrides,
+    };
+  }
+
+  // Product Factory
+  static product(overrides: Partial<Product> = {}): Product {
+    return {
+      id: `prod-${++this.idCounter}`,
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+      price: parseFloat(faker.commerce.price({ min: 10, max: 1000 })),
+      category: faker.commerce.department(),
+      inventory: faker.number.int({ min: 0, max: 1000 }),
+      ...overrides,
+    };
+  }
+
+  // Order Factory
+  static order(overrides: Partial<Order> = {}): Order {
+    const items = overrides.items ?? [
+      this.orderItem(),
+      this.orderItem(),
+    ];
+    const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+
+    return {
+      id: `order-${++this.idCounter}`,
+      userId: `user-${faker.number.int({ min: 1, max: 1000 })}`,
+      status: 'pending',
+      items,
+      subtotal,
+      tax: subtotal * 0.08,
+      total: subtotal * 1.08,
+      createdAt: faker.date.recent(),
+      ...overrides,
+    };
+  }
+
+  static orderItem(overrides: Partial<OrderItem> = {}): OrderItem {
+    return {
+      productId: `prod-${faker.number.int({ min: 1, max: 100 })}`,
+      quantity: faker.number.int({ min: 1, max: 5 }),
+      unitPrice: parseFloat(faker.commerce.price({ min: 10, max: 200 })),
+      ...overrides,
+    };
+  }
+
+  // Batch creation
+  static users(count: number, overrides: Partial<User> = {}): User[] {
+    return Array.from({ length: count }, () => this.user(overrides));
+  }
+
+  static products(count: number, overrides: Partial<Product> = {}): Product[] {
+    return Array.from({ length: count }, () => this.product(overrides));
+  }
+}
+
+// 2. DATABASE SEEDER
+export class TestSeeder {
+  constructor(private db: DatabaseConnection) {}
+
+  async seedUsers(count: number = 10): Promise<User[]> {
+    const users = TestDataFactory.users(count);
+
+    await this.db.query(`
+      INSERT INTO users (id, email, name, role, status, created_at)
+      VALUES ${users.map(() => '(?, ?, ?, ?, ?, ?)').join(', ')}
+    `, users.flatMap(u => [u.id, u.email, u.name, u.role, u.status, u.createdAt]));
+
+    return users;
+  }
+
+  async seedProducts(count: number = 20): Promise<Product[]> {
+    const products = TestDataFactory.products(count);
+
+    await this.db.batchInsert('products', products);
+
+    return products;
+  }
+
+  async seedOrdersForUser(
+    userId: string,
+    count: number = 5
+  ): Promise<Order[]> {
+    const orders = Array.from({ length: count }, () =>
+      TestDataFactory.order({ userId })
+    );
+
+    for (const order of orders) {
+      await this.db.insert('orders', order);
+      for (const item of order.items) {
+        await this.db.insert('order_items', {
+          orderId: order.id,
+          ...item,
+        });
+      }
+    }
+
+    return orders;
+  }
+
+  async clear(tables: string[] = ['orders', 'order_items', 'users', 'products']): Promise<void> {
+    // Disable FK checks, truncate, re-enable
+    await this.db.query('SET FOREIGN_KEY_CHECKS = 0');
+    for (const table of tables) {
+      await this.db.query(`TRUNCATE TABLE ${table}`);
+    }
+    await this.db.query('SET FOREIGN_KEY_CHECKS = 1');
+  }
+}
+
+// 3. FIXTURES FOR SPECIFIC SCENARIOS
+export const fixtures = {
+  // Standard user scenarios
+  users: {
+    admin: () => TestDataFactory.user({
+      role: 'admin',
+      email: 'admin@example.com',
+    }),
+
+    customer: () => TestDataFactory.user({
+      role: 'customer',
+      status: 'active',
+    }),
+
+    inactiveUser: () => TestDataFactory.user({
+      status: 'inactive',
+    }),
+
+    deletedUser: () => TestDataFactory.user({
+      status: 'deleted',
+      deletedAt: new Date(),
+    }),
+  },
+
+  // Order scenarios
+  orders: {
+    pendingOrder: () => TestDataFactory.order({ status: 'pending' }),
+
+    paidOrder: () => TestDataFactory.order({
+      status: 'paid',
+      paidAt: new Date(),
+    }),
+
+    shippedOrder: () => TestDataFactory.order({
+      status: 'shipped',
+      paidAt: faker.date.recent({ days: 2 }),
+      shippedAt: faker.date.recent({ days: 1 }),
+    }),
+
+    cancelledOrder: () => TestDataFactory.order({
+      status: 'cancelled',
+      cancelledAt: new Date(),
+      cancellationReason: 'Customer request',
+    }),
+
+    orderWithDiscount: () => {
+      const order = TestDataFactory.order();
+      const discount = order.subtotal * 0.1;
+      return {
+        ...order,
+        discount,
+        total: order.subtotal - discount + order.tax,
+      };
+    },
+
+    largeOrder: () => TestDataFactory.order({
+      items: Array.from({ length: 20 }, () => TestDataFactory.orderItem()),
+    }),
+  },
+
+  // Edge cases
+  edgeCases: {
+    emptyCart: () => TestDataFactory.order({ items: [] }),
+
+    singleItemOrder: () => TestDataFactory.order({
+      items: [TestDataFactory.orderItem({ quantity: 1 })],
+    }),
+
+    maxQuantityItem: () => TestDataFactory.orderItem({ quantity: 999 }),
+
+    freeProduct: () => TestDataFactory.product({ price: 0 }),
+
+    outOfStock: () => TestDataFactory.product({ inventory: 0 }),
+  },
+};
+
+// 4. DATA CLEANER
+export class TestDataCleaner {
+  private createdIds: Map<string, string[]> = new Map();
+
+  track(table: string, id: string): void {
+    const ids = this.createdIds.get(table) ?? [];
+    ids.push(id);
+    this.createdIds.set(table, ids);
+  }
+
+  async cleanup(db: DatabaseConnection): Promise<void> {
+    // Delete in reverse order to handle FK constraints
+    const tables = Array.from(this.createdIds.keys()).reverse();
+
+    for (const table of tables) {
+      const ids = this.createdIds.get(table) ?? [];
+      if (ids.length > 0) {
+        await db.query(
+          `DELETE FROM ${table} WHERE id IN (?)`,
+          [ids]
+        );
+      }
+    }
+
+    this.createdIds.clear();
+  }
+}
+```
+
+================================================================================
+SECCIÓN 6: TEST DOUBLES PATTERNS
+================================================================================
+
+MOCKING STRATEGIES
+
+```typescript
+// test-doubles/mocking-patterns.ts
+
+// 1. SPY - Observe without changing behavior
+describe('OrderService with spy', () => {
+  it('should call email service on order creation', async () => {
+    const emailService = new EmailService();
+    const sendEmailSpy = jest.spyOn(emailService, 'sendEmail');
+
+    const orderService = new OrderService({ emailService });
+    await orderService.createOrder(testOrder);
+
+    expect(sendEmailSpy).toHaveBeenCalledTimes(1);
+    expect(sendEmailSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: testOrder.userEmail,
+        template: 'order-confirmation',
+      })
+    );
+
+    sendEmailSpy.mockRestore();
+  });
+});
+
+// 2. STUB - Replace with canned responses
+describe('OrderService with stub', () => {
+  it('should handle inventory check', async () => {
+    const inventoryService = {
+      checkAvailability: jest.fn().mockResolvedValue({
+        available: true,
+        quantity: 100,
+      }),
+      reserve: jest.fn().mockResolvedValue({ reserved: true }),
+    };
+
+    const orderService = new OrderService({ inventoryService });
+    const result = await orderService.createOrder(testOrder);
+
+    expect(result.status).toBe('pending');
+    expect(inventoryService.checkAvailability).toHaveBeenCalled();
+  });
+});
+
+// 3. MOCK - Set expectations upfront
+describe('PaymentService with mock', () => {
+  it('should process payment in correct order', async () => {
+    const paymentGateway = {
+      createCustomer: jest.fn().mockResolvedValue({ id: 'cus_123' }),
+      createPaymentMethod: jest.fn().mockResolvedValue({ id: 'pm_123' }),
+      charge: jest.fn().mockResolvedValue({ id: 'ch_123', status: 'succeeded' }),
+    };
+
+    const service = new PaymentService(paymentGateway);
+    await service.processPayment({
+      amount: 1000,
+      cardToken: 'tok_visa',
+    });
+
+    // Verify call order
+    const createCustomerOrder = paymentGateway.createCustomer.mock.invocationCallOrder[0];
+    const createPMOrder = paymentGateway.createPaymentMethod.mock.invocationCallOrder[0];
+    const chargeOrder = paymentGateway.charge.mock.invocationCallOrder[0];
+
+    expect(createCustomerOrder).toBeLessThan(createPMOrder);
+    expect(createPMOrder).toBeLessThan(chargeOrder);
+  });
+});
+
+// 4. FAKE - Working implementation for testing
+class FakeUserRepository implements IUserRepository {
+  private users: Map<string, User> = new Map();
+
+  async create(user: User): Promise<User> {
+    const id = `user-${this.users.size + 1}`;
+    const newUser = { ...user, id, createdAt: new Date() };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.get(id) ?? null;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return Array.from(this.users.values())
+      .find(u => u.email.toLowerCase() === email.toLowerCase()) ?? null;
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error('User not found');
+    const updated = { ...user, ...data, updatedAt: new Date() };
+    this.users.set(id, updated);
+    return updated;
+  }
+
+  async delete(id: string): Promise<void> {
+    this.users.delete(id);
+  }
+
+  // Test helpers
+  clear(): void {
+    this.users.clear();
+  }
+
+  seed(users: User[]): void {
+    users.forEach(u => this.users.set(u.id, u));
+  }
+}
+
+// 5. DEPENDENCY INJECTION FOR TESTABILITY
+class OrderService {
+  constructor(
+    private readonly orderRepo: IOrderRepository,
+    private readonly inventoryService: IInventoryService,
+    private readonly paymentService: IPaymentService,
+    private readonly emailService: IEmailService,
+    private readonly clock: IClock = new SystemClock(),
+  ) {}
+
+  async createOrder(data: CreateOrderInput): Promise<Order> {
+    // Use injected clock instead of new Date()
+    const createdAt = this.clock.now();
+
+    // All dependencies can be mocked for testing
+    const availability = await this.inventoryService.checkAvailability(data.items);
+    if (!availability.available) {
+      throw new InsufficientInventoryError(availability.unavailable);
+    }
+
+    const order = await this.orderRepo.create({
+      ...data,
+      status: 'pending',
+      createdAt,
+    });
+
+    await this.emailService.sendEmail({
+      to: data.userEmail,
+      template: 'order-confirmation',
+      data: { order },
+    });
+
+    return order;
+  }
+}
+
+// Test with all fakes/mocks
+describe('OrderService', () => {
+  let orderService: OrderService;
+  let fakeOrderRepo: FakeOrderRepository;
+  let mockInventory: jest.Mocked<IInventoryService>;
+  let mockPayment: jest.Mocked<IPaymentService>;
+  let mockEmail: jest.Mocked<IEmailService>;
+  let fakeClock: FakeClock;
+
+  beforeEach(() => {
+    fakeOrderRepo = new FakeOrderRepository();
+    mockInventory = createMock<IInventoryService>();
+    mockPayment = createMock<IPaymentService>();
+    mockEmail = createMock<IEmailService>();
+    fakeClock = new FakeClock(new Date('2024-01-15T10:00:00Z'));
+
+    // Default happy path stubs
+    mockInventory.checkAvailability.mockResolvedValue({ available: true });
+    mockEmail.sendEmail.mockResolvedValue(undefined);
+
+    orderService = new OrderService(
+      fakeOrderRepo,
+      mockInventory,
+      mockPayment,
+      mockEmail,
+      fakeClock,
+    );
+  });
+
+  it('should create order with correct timestamp', async () => {
+    const order = await orderService.createOrder(testOrderData);
+
+    expect(order.createdAt).toEqual(new Date('2024-01-15T10:00:00Z'));
+  });
+});
+```
+
+================================================================================
+SECCIÓN 7: TEST ORGANIZATION AND NAMING
+================================================================================
+
+TEST NAMING CONVENTIONS
+
+```typescript
+// test-organization/naming-conventions.ts
+
+/**
+ * TEST NAMING PATTERNS
+ *
+ * Pattern 1: should_ExpectedBehavior_When_Condition
+ *   - should_returnNull_when_userDoesNotExist
+ *   - should_throwValidationError_when_emailIsInvalid
+ *
+ * Pattern 2: given_Precondition_when_Action_then_ExpectedResult
+ *   - given_pendingOrder_when_cancelled_then_statusIsCancelled
+ *   - given_insufficientInventory_when_creatingOrder_then_throwsError
+ *
+ * Pattern 3: methodName_scenario_expectedBehavior
+ *   - calculateTotal_withDiscount_appliesDiscountCorrectly
+ *   - findByEmail_caseInsensitive_findsUser
+ */
+
+// Example: Organized test file
+describe('UserService', () => {
+  // Group by method
+  describe('createUser', () => {
+    // Happy paths first
+    describe('with valid data', () => {
+      it('should create user with all fields', async () => {
+        // ...
+      });
+
+      it('should hash password before storing', async () => {
+        // ...
+      });
+
+      it('should send welcome email', async () => {
+        // ...
+      });
+    });
+
+    // Edge cases
+    describe('edge cases', () => {
+      it('should trim whitespace from email', async () => {
+        // ...
+      });
+
+      it('should handle unicode characters in name', async () => {
+        // ...
+      });
+    });
+
+    // Error cases
+    describe('with invalid data', () => {
+      it('should throw ValidationError for invalid email', async () => {
+        // ...
+      });
+
+      it('should throw ValidationError for weak password', async () => {
+        // ...
+      });
+
+      it('should throw DuplicateEmailError for existing email', async () => {
+        // ...
+      });
+    });
+  });
+
+  describe('updateUser', () => {
+    describe('with valid updates', () => {
+      it('should update name', async () => {
+        // ...
+      });
+
+      it('should update email and send verification', async () => {
+        // ...
+      });
+    });
+
+    describe('with invalid updates', () => {
+      it('should reject invalid email format', async () => {
+        // ...
+      });
+    });
+
+    describe('authorization', () => {
+      it('should allow user to update own profile', async () => {
+        // ...
+      });
+
+      it('should allow admin to update any profile', async () => {
+        // ...
+      });
+
+      it('should reject update to other user profile', async () => {
+        // ...
+      });
+    });
+  });
+});
+
+// Test file organization
+/*
+src/
+  services/
+    user-service.ts
+  __tests__/
+    unit/
+      user-service.test.ts
+    integration/
+      user-service.integration.test.ts
+    e2e/
+      user-flows.e2e.test.ts
+
+OR (co-located):
+
+src/
+  services/
+    user-service.ts
+    user-service.test.ts
+    user-service.integration.test.ts
+*/
+```
+
+================================================================================
+SECCIÓN 8: TESTING NON-FUNCTIONAL REQUIREMENTS
+================================================================================
+
+PERFORMANCE, SECURITY, AND ACCESSIBILITY TESTING
+
+```typescript
+// nfr-testing/performance.ts
+
+// 1. PERFORMANCE TESTING
+describe('Performance Tests', () => {
+  describe('API Response Time', () => {
+    it('GET /api/products should respond within 200ms', async () => {
+      const start = performance.now();
+
+      await request(app).get('/api/products').expect(200);
+
+      const duration = performance.now() - start;
+      expect(duration).toBeLessThan(200);
+    });
+
+    it('should handle 100 concurrent requests', async () => {
+      const requests = Array.from({ length: 100 }, () =>
+        request(app).get('/api/products')
+      );
+
+      const start = performance.now();
+      const responses = await Promise.all(requests);
+      const duration = performance.now() - start;
+
+      // All should succeed
+      responses.forEach(r => expect(r.status).toBe(200));
+
+      // Total time should be reasonable (not 100x single request)
+      expect(duration).toBeLessThan(5000); // 5 seconds
+    });
+  });
+
+  describe('Database Query Performance', () => {
+    it('should not have N+1 query problem', async () => {
+      // Seed 100 orders with items
+      await seedTestOrders(100);
+
+      const queryLogger = new QueryLogger();
+
+      await orderService.getOrdersWithItems({ limit: 100 });
+
+      // Should be 2 queries (orders + items), not 101
+      expect(queryLogger.count).toBeLessThanOrEqual(2);
+    });
+
+    it('should use indexes for common queries', async () => {
+      const explain = await db.query(`
+        EXPLAIN ANALYZE
+        SELECT * FROM orders WHERE user_id = 'user-123' ORDER BY created_at DESC
+      `);
+
+      expect(explain).toContain('Index Scan');
+      expect(explain).not.toContain('Seq Scan');
+    });
+  });
+});
+
+// 2. SECURITY TESTING
+describe('Security Tests', () => {
+  describe('Authentication', () => {
+    it('should not expose user passwords in API response', async () => {
+      const response = await request(app)
+        .get('/api/users/me')
+        .set('Authorization', `Bearer ${validToken}`)
+        .expect(200);
+
+      expect(response.body.password).toBeUndefined();
+      expect(response.body.passwordHash).toBeUndefined();
+    });
+
+    it('should rate limit login attempts', async () => {
+      const attempts = Array.from({ length: 10 }, () =>
+        request(app)
+          .post('/api/auth/login')
+          .send({ email: 'test@example.com', password: 'wrong' })
+      );
+
+      const responses = await Promise.all(attempts);
+
+      // Should start blocking after 5 attempts
+      const blocked = responses.filter(r => r.status === 429);
+      expect(blocked.length).toBeGreaterThan(0);
+    });
+
+    it('should not leak user existence in login error', async () => {
+      const existingUser = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'existing@example.com', password: 'wrong' });
+
+      const nonExisting = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'nonexisting@example.com', password: 'wrong' });
+
+      // Same error message for both
+      expect(existingUser.body.error.message)
+        .toBe(nonExisting.body.error.message);
+    });
+  });
+
+  describe('Authorization', () => {
+    it('should not allow access to other users orders', async () => {
+      const otherUserId = 'other-user-123';
+      const otherUserOrder = await createTestOrder({ userId: otherUserId });
+
+      await request(app)
+        .get(`/api/orders/${otherUserOrder.id}`)
+        .set('Authorization', `Bearer ${myToken}`)
+        .expect(403);
+    });
+
+    it('should not allow IDOR in order update', async () => {
+      const otherUserOrder = await createTestOrder({ userId: 'other-user' });
+
+      await request(app)
+        .patch(`/api/orders/${otherUserOrder.id}`)
+        .set('Authorization', `Bearer ${myToken}`)
+        .send({ status: 'cancelled' })
+        .expect(403);
+    });
+  });
+
+  describe('Input Validation', () => {
+    it('should prevent SQL injection', async () => {
+      const maliciousInput = "'; DROP TABLE users; --";
+
+      const response = await request(app)
+        .get('/api/users')
+        .query({ search: maliciousInput })
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      // Should not error, should just return no results
+      expect(response.status).toBe(200);
+
+      // Table should still exist
+      const users = await db.query('SELECT COUNT(*) FROM users');
+      expect(users).toBeDefined();
+    });
+
+    it('should prevent XSS in user-generated content', async () => {
+      const xssPayload = '<script>alert("xss")</script>';
+
+      await request(app)
+        .post('/api/comments')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({ content: xssPayload })
+        .expect(201);
+
+      const response = await request(app)
+        .get('/api/comments')
+        .expect(200);
+
+      // Should be escaped or sanitized
+      const content = response.body[0].content;
+      expect(content).not.toContain('<script>');
+    });
+  });
+});
+
+// 3. ACCESSIBILITY TESTING
+describe('Accessibility Tests', () => {
+  it('should pass axe-core accessibility checks', async () => {
+    const { page } = await renderPage('/login');
+
+    const results = await new AxePuppeteer(page).analyze();
+
+    expect(results.violations).toHaveLength(0);
+  });
+
+  it('should be navigable by keyboard', async () => {
+    const { page } = await renderPage('/login');
+
+    // Tab through form
+    await page.keyboard.press('Tab'); // Focus email
+    await page.type('#email', 'test@example.com');
+
+    await page.keyboard.press('Tab'); // Focus password
+    await page.type('#password', 'password');
+
+    await page.keyboard.press('Tab'); // Focus submit
+    await page.keyboard.press('Enter'); // Submit
+
+    // Should navigate to dashboard
+    await page.waitForNavigation();
+    expect(page.url()).toContain('/dashboard');
+  });
+
+  it('should have proper ARIA labels', async () => {
+    const { container } = render(<LoginForm />);
+
+    const emailInput = container.querySelector('input[type="email"]');
+    expect(emailInput).toHaveAttribute('aria-label');
+    // or
+    expect(emailInput).toHaveAccessibleName('Email address');
+  });
+});
+```
+
+================================================================================
+SECCIÓN 9: ANTI-PATTERNS Y CORRECCIONES
+================================================================================
+
+TEST ANTI-PATTERNS
+
+```typescript
+// ANTI-PATTERN 1: Testing implementation, not behavior
+// BAD: Tests break when implementation changes
+describe('UserService', () => {
+  it('should call repository.save with correct arguments', () => {
+    const mockRepo = { save: jest.fn() };
+    const service = new UserService(mockRepo);
+
+    service.createUser({ name: 'Test' });
+
+    // Too coupled to implementation
+    expect(mockRepo.save).toHaveBeenCalledWith({
+      name: 'Test',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
+      version: 1,
+    });
+  });
+});
+
+// GOOD: Test behavior/outcome
+describe('UserService', () => {
+  it('should create user that can be retrieved', async () => {
+    const service = new UserService(realOrFakeRepo);
+
+    const created = await service.createUser({ name: 'Test' });
+
+    const retrieved = await service.getUserById(created.id);
+    expect(retrieved.name).toBe('Test');
+  });
+});
+
+// ANTI-PATTERN 2: Ice cream cone (too many E2E, few unit tests)
+// BAD: Testing everything through UI
+describe('Order flow', () => {
+  it('should calculate tax correctly', async () => {
+    // Launching browser, navigating, filling forms...
+    // Just to test tax calculation that could be a unit test!
+    await page.goto('/checkout');
+    await page.fill('#quantity', '2');
+    await page.click('#calculate');
+    const total = await page.textContent('#total');
+    expect(total).toBe('$216.00'); // 200 + 8% tax
+  });
+});
+
+// GOOD: Unit test for calculation, E2E for flow
+describe('TaxCalculator', () => {
+  it('should calculate 8% tax', () => {
+    const calculator = new TaxCalculator({ rate: 0.08 });
+    expect(calculator.calculate(200)).toBe(16);
+  });
+});
+
+describe('Checkout E2E', () => {
+  it('should complete checkout flow', async () => {
+    // Only test the flow, not the calculation
+    await page.goto('/checkout');
+    await fillShippingForm();
+    await selectPaymentMethod();
+    await page.click('#submit');
+    await expect(page).toHaveURL('/confirmation');
+  });
+});
+
+// ANTI-PATTERN 3: Flaky tests with timing
+// BAD: Race condition in test
+describe('DataLoader', () => {
+  it('should load data', async () => {
+    render(<DataComponent />);
+    // This might fail intermittently!
+    expect(screen.getByText('Data loaded')).toBeInTheDocument();
+  });
+});
+
+// GOOD: Wait for async state
+describe('DataLoader', () => {
+  it('should load data', async () => {
+    render(<DataComponent />);
+    await waitFor(() => {
+      expect(screen.getByText('Data loaded')).toBeInTheDocument();
+    });
+  });
+
+  // Even better: Use findBy* which has built-in waiting
+  it('should load data', async () => {
+    render(<DataComponent />);
+    expect(await screen.findByText('Data loaded')).toBeInTheDocument();
+  });
+});
+
+// ANTI-PATTERN 4: Test interdependence
+// BAD: Tests depend on order
+describe('OrderService', () => {
+  let orderId: string;
+
+  it('should create order', async () => {
+    const order = await orderService.create(testData);
+    orderId = order.id; // Used by next test!
+  });
+
+  it('should update order', async () => {
+    // Fails if previous test fails or runs in isolation!
+    await orderService.update(orderId, { status: 'paid' });
+  });
+});
+
+// GOOD: Independent tests
+describe('OrderService', () => {
+  it('should create order', async () => {
+    const order = await orderService.create(testData);
+    expect(order.id).toBeDefined();
+  });
+
+  it('should update order', async () => {
+    // Creates its own order
+    const order = await orderService.create(testData);
+    const updated = await orderService.update(order.id, { status: 'paid' });
+    expect(updated.status).toBe('paid');
+  });
+});
+
+// ANTI-PATTERN 5: Non-deterministic tests
+// BAD: Using real time
+describe('CacheService', () => {
+  it('should expire after 1 hour', async () => {
+    cache.set('key', 'value');
+    // Can't wait 1 hour in a test!
+    await sleep(3600000);
+    expect(cache.get('key')).toBeNull();
+  });
+});
+
+// GOOD: Inject time dependency
+describe('CacheService', () => {
+  it('should expire after TTL', async () => {
+    const fakeClock = new FakeClock();
+    const cache = new CacheService({ clock: fakeClock, ttl: 3600000 });
+
+    cache.set('key', 'value');
+
+    // Advance time by 1 hour
+    fakeClock.advance(3600001);
+
+    expect(cache.get('key')).toBeNull();
+  });
+});
+
+// ANTI-PATTERN 6: Excessive mocking
+// BAD: Everything mocked, testing nothing real
+describe('OrderService', () => {
+  it('should process order', async () => {
+    const mockOrder = { id: '1', status: 'pending' };
+    mockOrderRepo.create.mockResolvedValue(mockOrder);
+    mockInventory.check.mockResolvedValue(true);
+    mockPayment.charge.mockResolvedValue({ success: true });
+    mockEmail.send.mockResolvedValue(undefined);
+    mockAudit.log.mockResolvedValue(undefined);
+
+    const result = await orderService.process(input);
+
+    // What are we even testing? Just that mocks were called?
+    expect(mockOrderRepo.create).toHaveBeenCalled();
+  });
+});
+
+// GOOD: Use real implementations where practical
+describe('OrderService', () => {
+  it('should process order end-to-end', async () => {
+    // Real repo (in-memory or test DB)
+    const orderRepo = new InMemoryOrderRepository();
+    // Real inventory (in-memory)
+    const inventory = new InMemoryInventoryService();
+    // Mock only external services
+    const payment = createMock<IPaymentService>();
+    payment.charge.mockResolvedValue({ success: true });
+
+    const service = new OrderService(orderRepo, inventory, payment);
+
+    const result = await service.process(input);
+
+    // Verify real state changed
+    const saved = await orderRepo.findById(result.id);
+    expect(saved.status).toBe('processing');
+  });
+});
+```
+
+================================================================================
+SECCIÓN 10: COORDINA CON
+================================================================================
+
+| Agente | Interacción |
+|--------|-------------|
+| Web/Mobile/Desktop QA Agents | Implementación de estrategia por plataforma |
+| CI-CD Agents | Integración en pipelines, gates de calidad |
+| Architecture Agents | Diseño para testabilidad |
+| Bug Hunter Agent | Análisis de regresiones y cobertura |
+| Performance & Efficiency Agent | Testing de performance |
+| Security Testing Agent | Testing de seguridad |
+| E2E Testing Agent | Estrategia de E2E tests |
+| Code Review Agent | Review de test quality |
+
+================================================================================
+SECCIÓN 11: MÉTRICAS DE ÉXITO
+================================================================================
+
+| Métrica | Target | Medición |
+|---------|--------|----------|
+| Bugs escaped to production | Reducidos > 50% | Production incidents |
+| Test execution time | < 10 minutos en CI | Pipeline metrics |
+| Flaky test rate | < 2% | Test analytics |
+| Critical flows coverage | > 90% | Coverage reports |
+| Test ratio (unit/int/e2e) | 70/20/10 ± 10% | Test counts |
+| Test maintenance time | Reducido > 30% | Team surveys |
+| Contract test coverage | 100% APIs críticas | Contract count |
+| Time to first test failure | < 2 minutos | CI metrics |
+
+================================================================================
+SECCIÓN 12: MODOS DE FALLA
+================================================================================
+
+| Modo de Falla | Síntoma | Prevención |
+|---------------|---------|------------|
+| Ice cream cone | > 40% E2E tests | Review test ratios quarterly |
+| Test theater | High coverage, bugs escape | Mutation testing |
+| Flaky tests | Tests ignored, disabled | Flaky test quarantine |
+| Rigid strategy | Same approach for all | Context-aware guidelines |
+| Test debt | Obsolete tests, false positives | Regular test review |
+| Over-mocking | Tests don't catch real bugs | Integration test layer |
+| Slow tests | Developers skip tests | Parallel execution, caching |
+
+================================================================================
+SECCIÓN 13: DEFINICIÓN DE DONE
+================================================================================
+
+Test Strategy Document Done:
+- [ ] Test pyramid ratios defined by application type
+- [ ] Testing guidelines per level documented
+- [ ] Tooling recommendations specified
+- [ ] Coverage targets by module criticality defined
+- [ ] Team reviewed and aligned
+
+Test Infrastructure Done:
+- [ ] Test runners configured for all levels
+- [ ] Test data management strategy implemented
+- [ ] Fixtures and factories created
+- [ ] CI integration configured
+- [ ] Parallel execution optimized
+
+Contract Testing Done:
+- [ ] Consumer contracts defined
+- [ ] Provider verification configured
+- [ ] Pact broker (or equivalent) setup
+- [ ] Breaking change detection automated
+- [ ] Contract versioning established
+
+Test Quality Metrics Done:
+- [ ] Flaky test detection automated
+- [ ] Coverage reports generated
+- [ ] Test execution time tracked
+- [ ] Test-to-bug correlation measured
+- [ ] Regular test health reviews scheduled
+
+Team Enablement Done:
+- [ ] Testing guidelines documented
+- [ ] Anti-pattern examples shared
+- [ ] Training sessions completed
+- [ ] Test review process established
+- [ ] Champions identified per team
+
+================================================================================
+SECCIÓN 14: EJEMPLOS DE ESTRATEGIAS POR CONTEXTO
+================================================================================
+
+EJEMPLO 1: STARTUP MVP
+
+```
+CONTEXT:
+- Team: 3 developers
+- Product: SaaS web app
+- Stage: MVP, fast iteration
+- Risk tolerance: Medium (some bugs acceptable)
+
+STRATEGY:
+├── Unit Tests: 50%
+│   - Business logic (calculations, validations)
+│   - No UI component tests yet
+├── Integration Tests: 30%
+│   - API endpoints (happy path + main errors)
+│   - Database queries
+├── E2E Tests: 20%
+│   - Core user flows only (signup, main feature, payment)
+│   - Run nightly, not on every commit
+
+RATIONALE:
+- Speed of delivery is priority
+- Focus tests on revenue-critical paths
+- Defer comprehensive testing until product-market fit
+```
+
+EJEMPLO 2: ENTERPRISE B2B
+
+```
+CONTEXT:
+- Team: 20 developers, 5 QA
+- Product: Financial services platform
+- Stage: Mature, regulated industry
+- Risk tolerance: Very low (compliance required)
+
+STRATEGY:
+├── Unit Tests: 60%
+│   - All business logic
+│   - Financial calculations with precision
+│   - Compliance rule engines
+├── Integration Tests: 25%
+│   - All API contracts (consumer + provider)
+│   - Database transactions and rollbacks
+│   - External service integrations
+├── E2E Tests: 15%
+│   - All critical user journeys
+│   - Compliance workflows
+│   - Cross-browser testing
+├── Additional:
+│   - Security scanning on every PR
+│   - Performance regression tests
+│   - Chaos engineering in staging
+
+RATIONALE:
+- Regulatory compliance requires extensive testing
+- Financial accuracy is critical
+- Audit trail of test coverage
+```
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

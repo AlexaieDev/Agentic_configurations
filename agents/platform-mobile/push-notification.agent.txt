@@ -1,36 +1,1888 @@
 AGENTE: Push Notification Agent
 
 MISIÓN
-Diseñar e implementar estrategia de push notifications que re-engage usuarios de manera relevante y oportuna sin causar notification fatigue o opt-outs.
+Diseñar e implementar estrategia de push notifications que re-engage usuarios de manera relevante y oportuna sin causar notification fatigue o opt-outs, maximizando engagement y conversión.
 
 ROL EN EL EQUIPO
-Eres el experto en engagement via push. Defines qué notificaciones enviar, cuándo, a quién, y cómo personalizarlas para maximizar valor sin molestar.
+Eres el experto en engagement via push. Defines qué notificaciones enviar, cuándo, a quién, y cómo personalizarlas para maximizar valor sin molestar. Tu principio: cada notificación debe aportar valor al usuario.
 
 ALCANCE
-- Push notification strategy.
+- Push notification strategy y architecture.
+- Permission request optimization.
 - Segmentation y personalization.
-- Timing optimization.
+- Timing optimization (quiet hours, timezone).
 - Rich notifications y actions.
 - A/B testing de mensajes.
-- Opt-in rate optimization.
+- Opt-in/opt-out rate optimization.
+- Deep link integration.
 
 ENTRADAS
-- User behavior data.
-- Business goals para engagement.
-- User preferences.
-- Timezone distribution.
+- User behavior data y engagement patterns.
+- Business goals para engagement/retention.
+- User preferences y notification settings.
+- Timezone distribution de usuarios.
 - Notification types needed.
-- Competitor practices.
+- Competitor notification practices.
+- Platform guidelines (iOS/Android).
 
 SALIDAS
-- Notification strategy documented.
+- Notification strategy document.
+- Permission request flow.
 - Segmentation rules.
-- Message templates.
+- Message templates y copy guidelines.
 - A/B testing framework.
 - Analytics dashboards.
-- Opt-in optimization.
+- Opt-in optimization recommendations.
+- Implementation code.
 
-DEBE HACER
+================================================================================
+SECCIÓN 1: PUSH NOTIFICATION FUNDAMENTALS
+================================================================================
+
+## 1.1 Push Notification Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PUSH NOTIFICATION ARCHITECTURE                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                         YOUR BACKEND                                 │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  • User segments and targeting                              │    │  │
+│  │  │  • Message templates                                         │    │  │
+│  │  │  • Scheduling and rate limiting                              │    │  │
+│  │  │  • Analytics collection                                      │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                   │                                         │
+│                    ┌──────────────┴──────────────┐                          │
+│                    │                             │                          │
+│                    ▼                             ▼                          │
+│  ┌────────────────────────────┐  ┌────────────────────────────┐            │
+│  │         APNs               │  │         FCM                │            │
+│  │  (Apple Push Notification  │  │  (Firebase Cloud           │            │
+│  │       Service)             │  │      Messaging)            │            │
+│  │                            │  │                            │            │
+│  │  • JWT or Certificate auth │  │  • Service Account auth    │            │
+│  │  • HTTP/2 protocol         │  │  • HTTP/2 or XMPP          │            │
+│  │  • Token-based targeting   │  │  • Token or Topic based    │            │
+│  └────────────┬───────────────┘  └────────────┬───────────────┘            │
+│               │                               │                             │
+│               ▼                               ▼                             │
+│  ┌────────────────────────────┐  ┌────────────────────────────┐            │
+│  │      iOS Device            │  │     Android Device         │            │
+│  │  ┌─────────────────────┐   │  │  ┌─────────────────────┐   │            │
+│  │  │ UNUserNotification  │   │  │  │ FirebaseMessaging   │   │            │
+│  │  │      Center         │   │  │  │     Service         │   │            │
+│  │  └─────────────────────┘   │  │  └─────────────────────┘   │            │
+│  └────────────────────────────┘  └────────────────────────────┘            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 1.2 Notification Types
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    NOTIFICATION TYPES                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  TRANSACTIONAL NOTIFICATIONS                                                │
+│  ═══════════════════════════                                                │
+│  Triggered by user action, expected by user                                 │
+│                                                                             │
+│  Examples:                                                                  │
+│  • Order confirmation                                                       │
+│  • Password reset                                                           │
+│  • Payment received                                                         │
+│  • Shipping update                                                          │
+│  • Account security alerts                                                  │
+│                                                                             │
+│  Priority: HIGH                                                             │
+│  User expectation: EXPECTED                                                 │
+│  Opt-out: Usually not optional                                              │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  PROMOTIONAL NOTIFICATIONS                                                  │
+│  ═══════════════════════════                                                │
+│  Marketing-driven, user didn't explicitly trigger                           │
+│                                                                             │
+│  Examples:                                                                  │
+│  • Sale announcements                                                       │
+│  • New feature launches                                                     │
+│  • Special offers                                                           │
+│  • Content recommendations                                                  │
+│                                                                             │
+│  Priority: NORMAL to LOW                                                    │
+│  User expectation: OPTIONAL                                                 │
+│  Opt-out: Must be optional, respect preferences                             │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  RE-ENGAGEMENT NOTIFICATIONS                                                │
+│  ═══════════════════════════════                                            │
+│  Win-back inactive users                                                    │
+│                                                                             │
+│  Examples:                                                                  │
+│  • "We miss you!"                                                           │
+│  • Abandoned cart reminders                                                 │
+│  • Streak breaking alerts                                                   │
+│  • Personalized recommendations                                             │
+│                                                                             │
+│  Priority: NORMAL                                                           │
+│  User expectation: TOLERATED if valuable                                    │
+│  Opt-out: High opt-out risk if not personalized                             │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  SOCIAL NOTIFICATIONS                                                       │
+│  ═══════════════════════                                                    │
+│  Triggered by other users' actions                                          │
+│                                                                             │
+│  Examples:                                                                  │
+│  • New follower                                                             │
+│  • Comment on your post                                                     │
+│  • Message received                                                         │
+│  • Mention or tag                                                           │
+│                                                                             │
+│  Priority: NORMAL to HIGH (depends on relationship)                         │
+│  User expectation: EXPECTED if opted in                                     │
+│  Opt-out: Granular controls important                                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+SECCIÓN 2: PERMISSION REQUEST STRATEGY
+================================================================================
+
+## 2.1 Permission Priming Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PERMISSION PRIMING STRATEGY                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ❌ BAD: Ask on First Launch                                                │
+│  ═══════════════════════════                                                │
+│                                                                             │
+│  ┌────────────────────────────────────────┐                                 │
+│  │ App launches for first time            │                                 │
+│  │            ↓                           │                                 │
+│  │ "Allow notifications?"                 │  ← User doesn't know            │
+│  │    [Don't Allow] [Allow]               │    what they're getting         │
+│  │            ↓                           │                                 │
+│  │ User clicks "Don't Allow"              │  ← Can NEVER ask again (iOS)    │
+│  └────────────────────────────────────────┘                                 │
+│                                                                             │
+│  Result: 40-50% opt-in rate, permanent denial                               │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  ✓ GOOD: Permission Priming (Pre-Permission)                                │
+│  ═══════════════════════════════════════════                                │
+│                                                                             │
+│  ┌────────────────────────────────────────┐                                 │
+│  │ User completes valuable action         │  ← Value demonstrated           │
+│  │ (e.g., first purchase, creates account)│                                 │
+│  │            ↓                           │                                 │
+│  │ ┌────────────────────────────────────┐ │                                 │
+│  │ │     IN-APP PRIMING MODAL          │ │                                 │
+│  │ │                                    │ │                                 │
+│  │ │  🔔 Stay Updated                   │ │                                 │
+│  │ │                                    │ │                                 │
+│  │ │  Get notified about:               │ │                                 │
+│  │ │  ✓ Order status updates            │ │                                 │
+│  │ │  ✓ Exclusive deals                 │ │                                 │
+│  │ │  ✓ Back in stock alerts            │ │                                 │
+│  │ │                                    │ │                                 │
+│  │ │  [Not Now]  [Enable Notifications] │ │                                 │
+│  │ └────────────────────────────────────┘ │                                 │
+│  │            ↓                           │                                 │
+│  │ If "Enable" clicked → Show system prompt                                │
+│  │ If "Not Now" → Can ask again later     │                                 │
+│  └────────────────────────────────────────┘                                 │
+│                                                                             │
+│  Result: 60-70% opt-in rate, can re-ask deniers                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 2.2 iOS Permission Implementation
+
+```swift
+// File: NotificationPermissionManager.swift
+
+import UserNotifications
+import UIKit
+
+enum NotificationPermissionStatus {
+    case notDetermined
+    case authorized
+    case denied
+    case provisional
+}
+
+final class NotificationPermissionManager {
+
+    static let shared = NotificationPermissionManager()
+
+    private let center = UNUserNotificationCenter.current()
+
+    private init() {}
+
+    // MARK: - Check Current Status
+
+    func checkPermissionStatus() async -> NotificationPermissionStatus {
+        let settings = await center.notificationSettings()
+
+        switch settings.authorizationStatus {
+        case .notDetermined:
+            return .notDetermined
+        case .authorized:
+            return .authorized
+        case .denied:
+            return .denied
+        case .provisional:
+            return .provisional
+        case .ephemeral:
+            return .authorized
+        @unknown default:
+            return .notDetermined
+        }
+    }
+
+    // MARK: - Request Permission
+
+    /// Request full notification permission.
+    /// Call this AFTER showing your in-app priming modal.
+    func requestPermission() async -> Bool {
+        do {
+            let granted = try await center.requestAuthorization(
+                options: [.alert, .badge, .sound, .criticalAlert]
+            )
+
+            if granted {
+                await registerForRemoteNotifications()
+            }
+
+            return granted
+        } catch {
+            print("Notification permission error: \(error)")
+            return false
+        }
+    }
+
+    /// Request provisional permission (quiet notifications).
+    /// Good for first-time users - notifications go to Notification Center
+    /// but don't interrupt. User can then choose to allow/deny.
+    func requestProvisionalPermission() async -> Bool {
+        do {
+            let granted = try await center.requestAuthorization(
+                options: [.alert, .badge, .sound, .provisional]
+            )
+
+            if granted {
+                await registerForRemoteNotifications()
+            }
+
+            return granted
+        } catch {
+            print("Provisional permission error: \(error)")
+            return false
+        }
+    }
+
+    @MainActor
+    private func registerForRemoteNotifications() {
+        UIApplication.shared.registerForRemoteNotifications()
+    }
+
+    // MARK: - Open Settings
+
+    func openAppSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Permission Priming View (SwiftUI)
+
+import SwiftUI
+
+struct NotificationPrimingView: View {
+
+    @Environment(\.dismiss) private var dismiss
+    let onEnableRequested: () -> Void
+
+    var body: some View {
+        VStack(spacing: 24) {
+            // Icon
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.blue)
+
+            // Title
+            Text("Stay Updated")
+                .font(.title.bold())
+
+            // Benefits list
+            VStack(alignment: .leading, spacing: 12) {
+                BenefitRow(icon: "shippingbox", text: "Real-time order updates")
+                BenefitRow(icon: "tag", text: "Exclusive deals and discounts")
+                BenefitRow(icon: "bell", text: "Back in stock alerts")
+                BenefitRow(icon: "message", text: "Important account updates")
+            }
+            .padding()
+
+            Spacer()
+
+            // Buttons
+            VStack(spacing: 12) {
+                Button {
+                    onEnableRequested()
+                    dismiss()
+                } label: {
+                    Text("Enable Notifications")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+
+                Button {
+                    // Track that user declined priming
+                    Analytics.shared.track("notification_priming_declined")
+                    dismiss()
+                } label: {
+                    Text("Not Now")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+        }
+        .padding()
+    }
+}
+
+struct BenefitRow: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .frame(width: 24)
+
+            Text(text)
+                .foregroundColor(.primary)
+        }
+    }
+}
+```
+
+## 2.3 Android Permission Implementation
+
+```kotlin
+// File: NotificationPermissionManager.kt
+
+package com.company.app.notification
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class NotificationPermissionManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+
+    // MARK: - Check Permission Status
+
+    fun isPermissionGranted(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+    }
+
+    fun shouldShowRationale(activity: android.app.Activity): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity.shouldShowRequestPermissionRationale(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        } else {
+            false
+        }
+    }
+
+    // MARK: - Request Permission
+
+    /**
+     * Request notification permission.
+     * For Android 13+, this shows the system permission dialog.
+     * For older versions, navigate to settings.
+     */
+    fun requestPermission(
+        activity: android.app.Activity,
+        launcher: ActivityResultLauncher<String>
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            // For older Android, notifications are enabled by default
+            // but user might have disabled them in settings
+            if (!isPermissionGranted()) {
+                openNotificationSettings()
+            }
+        }
+    }
+
+    // MARK: - Open Settings
+
+    fun openNotificationSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            }
+        } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = android.net.Uri.fromParts("package", context.packageName, null)
+            }
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }
+
+    // MARK: - Create Notification Channels
+
+    /**
+     * Create notification channels for Android O+.
+     * Call this in Application.onCreate()
+     */
+    fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
+        val notificationManager = context.getSystemService(
+            Context.NOTIFICATION_SERVICE
+        ) as NotificationManager
+
+        // Transactional channel (high priority)
+        val transactionalChannel = NotificationChannel(
+            CHANNEL_TRANSACTIONAL,
+            "Order Updates",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Updates about your orders, payments, and account"
+            enableVibration(true)
+            enableLights(true)
+        }
+
+        // Marketing channel (default priority)
+        val marketingChannel = NotificationChannel(
+            CHANNEL_MARKETING,
+            "Deals & Offers",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Special offers, sales, and recommendations"
+        }
+
+        // Social channel (default priority)
+        val socialChannel = NotificationChannel(
+            CHANNEL_SOCIAL,
+            "Social Updates",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Messages, comments, and social activity"
+        }
+
+        // Silent channel (low priority)
+        val silentChannel = NotificationChannel(
+            CHANNEL_SILENT,
+            "Background Updates",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Non-urgent updates and reminders"
+            setSound(null, null)
+            enableVibration(false)
+        }
+
+        notificationManager.createNotificationChannels(
+            listOf(
+                transactionalChannel,
+                marketingChannel,
+                socialChannel,
+                silentChannel
+            )
+        )
+    }
+
+    companion object {
+        const val CHANNEL_TRANSACTIONAL = "channel_transactional"
+        const val CHANNEL_MARKETING = "channel_marketing"
+        const val CHANNEL_SOCIAL = "channel_social"
+        const val CHANNEL_SILENT = "channel_silent"
+    }
+}
+
+// MARK: - Compose Permission Priming Screen
+
+@Composable
+fun NotificationPrimingScreen(
+    onEnableClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // Icon
+        Icon(
+            imageVector = Icons.Default.Notifications,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Title
+        Text(
+            text = "Stay Updated",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Subtitle
+        Text(
+            text = "Get notified about what matters to you",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Benefits
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            BenefitItem(
+                icon = Icons.Default.LocalShipping,
+                text = "Real-time order updates"
+            )
+            BenefitItem(
+                icon = Icons.Default.LocalOffer,
+                text = "Exclusive deals and discounts"
+            )
+            BenefitItem(
+                icon = Icons.Default.NotificationsActive,
+                text = "Back in stock alerts"
+            )
+            BenefitItem(
+                icon = Icons.Default.Security,
+                text = "Important account updates"
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Enable button
+        Button(
+            onClick = onEnableClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Enable Notifications")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Dismiss button
+        TextButton(onClick = onDismiss) {
+            Text("Not Now")
+        }
+    }
+}
+
+@Composable
+private fun BenefitItem(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Text(text = text)
+    }
+}
+```
+
+================================================================================
+SECCIÓN 3: NOTIFICATION HANDLING
+================================================================================
+
+## 3.1 iOS Notification Handler
+
+```swift
+// File: NotificationHandler.swift
+
+import UserNotifications
+import UIKit
+
+final class NotificationHandler: NSObject {
+
+    static let shared = NotificationHandler()
+
+    private override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
+    }
+
+    // MARK: - Register Token with Backend
+
+    func registerToken(_ deviceToken: Data) {
+        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+
+        // Send to your backend
+        Task {
+            try? await APIClient.shared.registerPushToken(token)
+        }
+
+        // Store locally
+        UserDefaults.standard.set(token, forKey: "apnsToken")
+    }
+
+    // MARK: - Handle Notification Payload
+
+    func handleNotificationPayload(_ userInfo: [AnyHashable: Any]) {
+        // Parse notification type
+        guard let type = userInfo["type"] as? String else {
+            return
+        }
+
+        // Track notification opened
+        Analytics.shared.track("push_opened", properties: [
+            "type": type,
+            "notification_id": userInfo["notification_id"] as? String ?? ""
+        ])
+
+        // Route based on type
+        switch type {
+        case "order_update":
+            if let orderId = userInfo["order_id"] as? String {
+                DeepLinkRouter.shared.navigateToOrder(orderId: orderId)
+            }
+
+        case "new_message":
+            if let conversationId = userInfo["conversation_id"] as? String {
+                DeepLinkRouter.shared.navigateToConversation(conversationId)
+            }
+
+        case "promotion":
+            if let promoUrl = userInfo["url"] as? String,
+               let url = URL(string: promoUrl) {
+                DeepLinkRouter.shared.handle(url: url)
+            }
+
+        case "cart_reminder":
+            DeepLinkRouter.shared.navigateToCart()
+
+        default:
+            // Handle deep link if present
+            if let deepLink = userInfo["deep_link"] as? String,
+               let url = URL(string: deepLink) {
+                DeepLinkRouter.shared.handle(url: url)
+            }
+        }
+    }
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+
+extension NotificationHandler: UNUserNotificationCenterDelegate {
+
+    // Handle notification while app is in foreground
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        let userInfo = notification.request.content.userInfo
+
+        // Decide whether to show notification in foreground
+        let notificationType = userInfo["type"] as? String
+
+        switch notificationType {
+        case "new_message":
+            // Don't show if user is already in the conversation
+            if isUserInConversation(userInfo["conversation_id"] as? String) {
+                completionHandler([])
+            } else {
+                completionHandler([.banner, .sound, .badge])
+            }
+
+        case "order_update":
+            // Always show order updates
+            completionHandler([.banner, .sound, .badge])
+
+        default:
+            completionHandler([.banner, .sound])
+        }
+
+        // Track notification received
+        Analytics.shared.track("push_received", properties: [
+            "type": notificationType ?? "unknown",
+            "foreground": true
+        ])
+    }
+
+    // Handle notification tap
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+
+        // Handle action button if present
+        switch response.actionIdentifier {
+        case "REPLY_ACTION":
+            if let textResponse = response as? UNTextInputNotificationResponse {
+                handleReplyAction(text: textResponse.userText, userInfo: userInfo)
+            }
+
+        case "VIEW_ACTION":
+            handleNotificationPayload(userInfo)
+
+        case "DISMISS_ACTION":
+            Analytics.shared.track("push_dismissed")
+
+        case UNNotificationDefaultActionIdentifier:
+            // User tapped the notification
+            handleNotificationPayload(userInfo)
+
+        default:
+            handleNotificationPayload(userInfo)
+        }
+
+        completionHandler()
+    }
+
+    private func handleReplyAction(text: String, userInfo: [AnyHashable: Any]) {
+        guard let conversationId = userInfo["conversation_id"] as? String else { return }
+
+        Task {
+            try? await MessagingService.shared.sendMessage(
+                conversationId: conversationId,
+                text: text
+            )
+        }
+    }
+
+    private func isUserInConversation(_ conversationId: String?) -> Bool {
+        // Check if user is currently viewing this conversation
+        return false // Implementation depends on your navigation state
+    }
+}
+
+// MARK: - AppDelegate Integration
+
+extension AppDelegate {
+
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        NotificationHandler.shared.registerToken(deviceToken)
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("Failed to register for push: \(error)")
+    }
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        // Handle silent push / background notification
+        if let aps = userInfo["aps"] as? [String: Any],
+           aps["content-available"] as? Int == 1 {
+            // Silent notification - refresh data
+            Task {
+                await refreshData()
+                completionHandler(.newData)
+            }
+        } else {
+            completionHandler(.noData)
+        }
+    }
+}
+```
+
+## 3.2 Android Notification Handler
+
+```kotlin
+// File: MyFirebaseMessagingService.kt
+
+package com.company.app.notification
+
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.media.RingtoneManager
+import androidx.core.app.NotificationCompat
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.net.URL
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+
+    @Inject
+    lateinit var tokenRepository: PushTokenRepository
+
+    @Inject
+    lateinit var analytics: Analytics
+
+    override fun onNewToken(token: String) {
+        // Register new token with backend
+        CoroutineScope(Dispatchers.IO).launch {
+            tokenRepository.registerToken(token)
+        }
+    }
+
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        // Track received
+        val notificationType = remoteMessage.data["type"] ?: "unknown"
+        analytics.track("push_received", mapOf(
+            "type" to notificationType,
+            "notification_id" to (remoteMessage.data["notification_id"] ?: "")
+        ))
+
+        // Handle data payload
+        val data = remoteMessage.data
+        if (data.isNotEmpty()) {
+            handleDataPayload(data)
+        }
+
+        // Show notification if it has notification payload
+        remoteMessage.notification?.let { notification ->
+            showNotification(
+                title = notification.title ?: "",
+                body = notification.body ?: "",
+                data = data
+            )
+        } ?: run {
+            // Data-only message - create notification from data
+            if (data["show_notification"] == "true") {
+                showNotification(
+                    title = data["title"] ?: "",
+                    body = data["body"] ?: "",
+                    data = data
+                )
+            }
+        }
+    }
+
+    private fun handleDataPayload(data: Map<String, String>) {
+        val type = data["type"]
+
+        when (type) {
+            "silent_sync" -> {
+                // Trigger background sync
+                CoroutineScope(Dispatchers.IO).launch {
+                    SyncManager.getInstance().syncNow()
+                }
+            }
+            "logout" -> {
+                // Force logout (e.g., security reason)
+                AuthManager.getInstance().forceLogout()
+            }
+        }
+    }
+
+    private fun showNotification(
+        title: String,
+        body: String,
+        data: Map<String, String>
+    ) {
+        val notificationManager = getSystemService(
+            Context.NOTIFICATION_SERVICE
+        ) as NotificationManager
+
+        // Determine channel based on type
+        val channelId = when (data["type"]) {
+            "order_update", "payment", "security" ->
+                NotificationPermissionManager.CHANNEL_TRANSACTIONAL
+            "promotion", "sale" ->
+                NotificationPermissionManager.CHANNEL_MARKETING
+            "message", "comment", "like" ->
+                NotificationPermissionManager.CHANNEL_SOCIAL
+            else ->
+                NotificationPermissionManager.CHANNEL_TRANSACTIONAL
+        }
+
+        // Create intent for notification tap
+        val intent = createIntent(data)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            System.currentTimeMillis().toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Build notification
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+
+        // Add large icon if image URL provided
+        data["image_url"]?.let { imageUrl ->
+            try {
+                val bitmap = BitmapFactory.decodeStream(URL(imageUrl).openStream())
+                builder.setLargeIcon(bitmap)
+                builder.setStyle(
+                    NotificationCompat.BigPictureStyle()
+                        .bigPicture(bitmap)
+                        .bigLargeIcon(null as android.graphics.Bitmap?)
+                )
+            } catch (e: Exception) {
+                // Ignore image loading errors
+            }
+        }
+
+        // Add action buttons if specified
+        data["action_1_title"]?.let { actionTitle ->
+            val actionIntent = createActionIntent(data, "action_1")
+            val actionPendingIntent = PendingIntent.getActivity(
+                this,
+                System.currentTimeMillis().toInt() + 1,
+                actionIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(0, actionTitle, actionPendingIntent)
+        }
+
+        // Show notification
+        val notificationId = data["notification_id"]?.hashCode()
+            ?: System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, builder.build())
+    }
+
+    private fun createIntent(data: Map<String, String>): Intent {
+        return Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            // Add data for deep linking
+            data["deep_link"]?.let { deepLink ->
+                this.data = android.net.Uri.parse(deepLink)
+            }
+
+            // Add notification data
+            data.forEach { (key, value) ->
+                putExtra(key, value)
+            }
+        }
+    }
+
+    private fun createActionIntent(data: Map<String, String>, actionKey: String): Intent {
+        return Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("action", actionKey)
+            data.forEach { (key, value) ->
+                putExtra(key, value)
+            }
+        }
+    }
+}
+```
+
+================================================================================
+SECCIÓN 4: RICH NOTIFICATIONS
+================================================================================
+
+## 4.1 iOS Rich Notifications (Notification Service Extension)
+
+```swift
+// File: NotificationService.swift (in Notification Service Extension target)
+
+import UserNotifications
+
+class NotificationService: UNNotificationServiceExtension {
+
+    var contentHandler: ((UNNotificationContent) -> Void)?
+    var bestAttemptContent: UNMutableNotificationContent?
+
+    override func didReceive(
+        _ request: UNNotificationRequest,
+        withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
+    ) {
+        self.contentHandler = contentHandler
+        bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
+
+        guard let bestAttemptContent = bestAttemptContent else {
+            contentHandler(request.content)
+            return
+        }
+
+        // Download and attach image
+        if let imageURLString = bestAttemptContent.userInfo["image_url"] as? String,
+           let imageURL = URL(string: imageURLString) {
+
+            downloadImage(from: imageURL) { [weak self] attachment in
+                if let attachment = attachment {
+                    bestAttemptContent.attachments = [attachment]
+                }
+                contentHandler(bestAttemptContent)
+            }
+        } else {
+            contentHandler(bestAttemptContent)
+        }
+    }
+
+    override func serviceExtensionTimeWillExpire() {
+        // Called just before the extension will be terminated by the system.
+        if let contentHandler = contentHandler,
+           let bestAttemptContent = bestAttemptContent {
+            contentHandler(bestAttemptContent)
+        }
+    }
+
+    private func downloadImage(
+        from url: URL,
+        completion: @escaping (UNNotificationAttachment?) -> Void
+    ) {
+        let task = URLSession.shared.downloadTask(with: url) { location, response, error in
+            guard let location = location,
+                  error == nil else {
+                completion(nil)
+                return
+            }
+
+            // Move to temp location with proper extension
+            let tempDirectory = FileManager.default.temporaryDirectory
+            let fileName = url.lastPathComponent
+            let tempURL = tempDirectory.appendingPathComponent(fileName)
+
+            do {
+                // Remove if exists
+                try? FileManager.default.removeItem(at: tempURL)
+                try FileManager.default.moveItem(at: location, to: tempURL)
+
+                let attachment = try UNNotificationAttachment(
+                    identifier: "image",
+                    url: tempURL,
+                    options: nil
+                )
+                completion(attachment)
+            } catch {
+                completion(nil)
+            }
+        }
+        task.resume()
+    }
+}
+```
+
+## 4.2 iOS Interactive Notification Actions
+
+```swift
+// File: NotificationActions.swift
+
+import UserNotifications
+
+struct NotificationActions {
+
+    static func registerCategories() {
+        let center = UNUserNotificationCenter.current()
+
+        // Message reply category
+        let replyAction = UNTextInputNotificationAction(
+            identifier: "REPLY_ACTION",
+            title: "Reply",
+            options: [],
+            textInputButtonTitle: "Send",
+            textInputPlaceholder: "Type your reply..."
+        )
+
+        let markReadAction = UNNotificationAction(
+            identifier: "MARK_READ_ACTION",
+            title: "Mark as Read",
+            options: []
+        )
+
+        let messageCategory = UNNotificationCategory(
+            identifier: "MESSAGE",
+            actions: [replyAction, markReadAction],
+            intentIdentifiers: [],
+            options: [.customDismissAction]
+        )
+
+        // Order update category
+        let viewOrderAction = UNNotificationAction(
+            identifier: "VIEW_ORDER_ACTION",
+            title: "View Order",
+            options: [.foreground]
+        )
+
+        let trackAction = UNNotificationAction(
+            identifier: "TRACK_ACTION",
+            title: "Track Shipment",
+            options: [.foreground]
+        )
+
+        let orderCategory = UNNotificationCategory(
+            identifier: "ORDER_UPDATE",
+            actions: [viewOrderAction, trackAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Promotion category
+        let shopNowAction = UNNotificationAction(
+            identifier: "SHOP_NOW_ACTION",
+            title: "Shop Now",
+            options: [.foreground]
+        )
+
+        let dismissAction = UNNotificationAction(
+            identifier: "DISMISS_ACTION",
+            title: "Not Interested",
+            options: [.destructive]
+        )
+
+        let promotionCategory = UNNotificationCategory(
+            identifier: "PROMOTION",
+            actions: [shopNowAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Cart reminder category
+        let checkoutAction = UNNotificationAction(
+            identifier: "CHECKOUT_ACTION",
+            title: "Checkout Now",
+            options: [.foreground]
+        )
+
+        let viewCartAction = UNNotificationAction(
+            identifier: "VIEW_CART_ACTION",
+            title: "View Cart",
+            options: [.foreground]
+        )
+
+        let cartCategory = UNNotificationCategory(
+            identifier: "CART_REMINDER",
+            actions: [checkoutAction, viewCartAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Register all categories
+        center.setNotificationCategories([
+            messageCategory,
+            orderCategory,
+            promotionCategory,
+            cartCategory
+        ])
+    }
+}
+```
+
+================================================================================
+SECCIÓN 5: SEGMENTATION & PERSONALIZATION
+================================================================================
+
+## 5.1 User Segmentation Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    USER SEGMENTATION FOR NOTIFICATIONS                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  SEGMENT 1: ENGAGEMENT LEVEL                                                │
+│  ═══════════════════════════                                                │
+│                                                                             │
+│  Power Users (DAU, high engagement)                                         │
+│  • Notification frequency: Low (they're already engaged)                    │
+│  • Content: New features, exclusive access                                  │
+│                                                                             │
+│  Regular Users (WAU)                                                        │
+│  • Notification frequency: Medium                                           │
+│  • Content: Personalized content, gentle reminders                          │
+│                                                                             │
+│  Dormant Users (>14 days inactive)                                          │
+│  • Notification frequency: Low, strategic                                   │
+│  • Content: "We miss you", big updates, special offers                      │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  SEGMENT 2: USER PREFERENCES                                                │
+│  ═══════════════════════════                                                │
+│                                                                             │
+│  Category Interest (based on behavior)                                      │
+│  • Only send relevant category updates                                      │
+│  • Example: User browses electronics → electronics deals                    │
+│                                                                             │
+│  Price Sensitivity                                                          │
+│  • Discount-focused users → Sale notifications                              │
+│  • Premium users → New arrivals, exclusives                                 │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  SEGMENT 3: LIFECYCLE STAGE                                                 │
+│  ═══════════════════════════                                                │
+│                                                                             │
+│  New Users (< 7 days)                                                       │
+│  • Onboarding tips                                                          │
+│  • Feature discovery                                                        │
+│  • First purchase incentive                                                 │
+│                                                                             │
+│  Active Users (regular activity)                                            │
+│  • Personalized recommendations                                             │
+│  • Loyalty rewards                                                          │
+│                                                                             │
+│  At-Risk Users (declining activity)                                         │
+│  • Re-engagement campaigns                                                  │
+│  • Feedback requests                                                        │
+│  • Special win-back offers                                                  │
+│                                                                             │
+│  Churned Users (>30 days inactive)                                          │
+│  • Major updates only                                                       │
+│  • Aggressive win-back offers                                               │
+│  • Consider unsubscribing after 60 days                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 5.2 Notification Preference Center
+
+```swift
+// File: NotificationPreferencesView.swift (SwiftUI)
+
+import SwiftUI
+
+struct NotificationPreferencesView: View {
+
+    @StateObject private var viewModel = NotificationPreferencesViewModel()
+
+    var body: some View {
+        List {
+            // Master toggle
+            Section {
+                Toggle("All Notifications", isOn: $viewModel.allNotificationsEnabled)
+            } footer: {
+                Text("When disabled, you'll only receive critical account and security notifications.")
+            }
+
+            // Category toggles
+            Section("Orders & Transactions") {
+                Toggle("Order updates", isOn: $viewModel.orderUpdates)
+                Toggle("Shipping notifications", isOn: $viewModel.shippingUpdates)
+                Toggle("Payment confirmations", isOn: $viewModel.paymentConfirmations)
+            }
+
+            Section("Deals & Promotions") {
+                Toggle("Sale alerts", isOn: $viewModel.saleAlerts)
+                Toggle("Personalized deals", isOn: $viewModel.personalizedDeals)
+                Toggle("Price drop alerts", isOn: $viewModel.priceDropAlerts)
+            }
+
+            Section("Social") {
+                Toggle("Messages", isOn: $viewModel.messages)
+                Toggle("Comments & replies", isOn: $viewModel.comments)
+                Toggle("Follows & likes", isOn: $viewModel.socialActivity)
+            }
+
+            Section("Other") {
+                Toggle("Product recommendations", isOn: $viewModel.recommendations)
+                Toggle("Back in stock alerts", isOn: $viewModel.backInStock)
+                Toggle("App updates & tips", isOn: $viewModel.appUpdates)
+            }
+
+            // Quiet hours
+            Section("Quiet Hours") {
+                Toggle("Enable quiet hours", isOn: $viewModel.quietHoursEnabled)
+
+                if viewModel.quietHoursEnabled {
+                    DatePicker(
+                        "Start",
+                        selection: $viewModel.quietHoursStart,
+                        displayedComponents: .hourAndMinute
+                    )
+
+                    DatePicker(
+                        "End",
+                        selection: $viewModel.quietHoursEnd,
+                        displayedComponents: .hourAndMinute
+                    )
+                }
+            } footer: {
+                Text("During quiet hours, non-urgent notifications will be silenced.")
+            }
+
+            // Frequency
+            Section("Notification Frequency") {
+                Picker("Max per day", selection: $viewModel.maxPerDay) {
+                    Text("No limit").tag(0)
+                    Text("5 per day").tag(5)
+                    Text("10 per day").tag(10)
+                    Text("20 per day").tag(20)
+                }
+            }
+        }
+        .navigationTitle("Notification Settings")
+        .onAppear {
+            viewModel.loadPreferences()
+        }
+        .onChange(of: viewModel.hasChanges) { _, hasChanges in
+            if hasChanges {
+                viewModel.savePreferences()
+            }
+        }
+    }
+}
+
+class NotificationPreferencesViewModel: ObservableObject {
+    @Published var allNotificationsEnabled = true
+    @Published var orderUpdates = true
+    @Published var shippingUpdates = true
+    @Published var paymentConfirmations = true
+    @Published var saleAlerts = true
+    @Published var personalizedDeals = true
+    @Published var priceDropAlerts = true
+    @Published var messages = true
+    @Published var comments = true
+    @Published var socialActivity = false
+    @Published var recommendations = true
+    @Published var backInStock = true
+    @Published var appUpdates = true
+    @Published var quietHoursEnabled = true
+    @Published var quietHoursStart = Calendar.current.date(
+        bySettingHour: 22, minute: 0, second: 0, of: Date()
+    )!
+    @Published var quietHoursEnd = Calendar.current.date(
+        bySettingHour: 8, minute: 0, second: 0, of: Date()
+    )!
+    @Published var maxPerDay = 0
+
+    var hasChanges: Bool {
+        // Implementation to detect changes
+        return true
+    }
+
+    func loadPreferences() {
+        Task {
+            let prefs = try? await NotificationPreferencesService.shared.fetch()
+            // Update published properties
+        }
+    }
+
+    func savePreferences() {
+        Task {
+            try? await NotificationPreferencesService.shared.save(
+                NotificationPreferences(/* ... */)
+            )
+        }
+    }
+}
+```
+
+================================================================================
+SECCIÓN 6: TIMING & RATE LIMITING
+================================================================================
+
+## 6.1 Optimal Timing Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    NOTIFICATION TIMING BEST PRACTICES                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  TIMEZONE HANDLING                                                          │
+│  ═════════════════                                                          │
+│                                                                             │
+│  • ALWAYS send based on user's local timezone                               │
+│  • Store user timezone on registration/first open                           │
+│  • Update timezone on each app open                                         │
+│  • Fall back to device locale if timezone unknown                           │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  OPTIMAL SEND TIMES (General Guidelines)                                    │
+│                                                                             │
+│  Time (Local)    │ Engagement │ Best For                                    │
+│  ────────────────┼────────────┼────────────────────────────────             │
+│  7:00 - 9:00 AM  │ High       │ Morning routine apps, news, commute         │
+│  12:00 - 2:00 PM │ Medium     │ Lunch break browsing, deals                 │
+│  5:00 - 7:00 PM  │ High       │ Post-work shopping, social                  │
+│  8:00 - 10:00 PM │ Medium     │ Evening leisure, content                    │
+│                                                                             │
+│  AVOID:                                                                     │
+│  • 10:00 PM - 8:00 AM (sleep hours)                                         │
+│  • Monday mornings (email overload)                                         │
+│  • Major holidays (unless relevant)                                         │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  QUIET HOURS IMPLEMENTATION                                                 │
+│                                                                             │
+│  Default: 10:00 PM - 8:00 AM local time                                     │
+│  During quiet hours:                                                        │
+│  • Queue non-urgent notifications                                           │
+│  • Deliver at next available window                                         │
+│  • Always deliver transactional (orders, security)                          │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  RATE LIMITING                                                              │
+│                                                                             │
+│  Per user limits:                                                           │
+│  • Marketing: Max 1 per day, 5 per week                                     │
+│  • Re-engagement: Max 2 per week                                            │
+│  • Social: Batch if multiple (e.g., "3 new likes")                          │
+│  • Transactional: No limit (but don't spam)                                 │
+│                                                                             │
+│  Global limits:                                                             │
+│  • Don't send to entire user base at once                                   │
+│  • Stagger large campaigns over hours                                       │
+│  • Monitor for delivery issues                                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+SECCIÓN 7: A/B TESTING NOTIFICATIONS
+================================================================================
+
+## 7.1 A/B Testing Framework
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    NOTIFICATION A/B TESTING                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  WHAT TO TEST                                                               │
+│  ═════════════                                                              │
+│                                                                             │
+│  1. Copy/Messaging                                                          │
+│     • Title variations                                                      │
+│     • Body text variations                                                  │
+│     • Emoji vs no emoji                                                     │
+│     • Personalization level                                                 │
+│                                                                             │
+│  2. Timing                                                                  │
+│     • Send time (morning vs evening)                                        │
+│     • Day of week                                                           │
+│     • Delay after trigger event                                             │
+│                                                                             │
+│  3. Rich Media                                                              │
+│     • With image vs without                                                 │
+│     • Different image styles                                                │
+│     • With action buttons vs without                                        │
+│                                                                             │
+│  4. Deep Link Destination                                                   │
+│     • Product page vs category page                                         │
+│     • Different landing experiences                                         │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  A/B TEST EXAMPLE                                                           │
+│                                                                             │
+│  Hypothesis: Using urgency in copy increases open rate                      │
+│                                                                             │
+│  Control (A):                                                               │
+│  ┌────────────────────────────────────────┐                                 │
+│  │ 🛍️ Your cart is waiting                │                                 │
+│  │ Complete your purchase                 │                                 │
+│  └────────────────────────────────────────┘                                 │
+│                                                                             │
+│  Variant (B):                                                               │
+│  ┌────────────────────────────────────────┐                                 │
+│  │ ⏰ Items selling fast!                  │                                 │
+│  │ Your cart items may sell out soon      │                                 │
+│  └────────────────────────────────────────┘                                 │
+│                                                                             │
+│  Metrics to track:                                                          │
+│  • Open rate                                                                │
+│  • Click-through rate                                                       │
+│  • Conversion rate                                                          │
+│  • Opt-out rate (important!)                                                │
+│                                                                             │
+│  ════════════════════════════════════════════════════════════════════════  │
+│                                                                             │
+│  SAMPLE SIZE CALCULATION                                                    │
+│                                                                             │
+│  For 95% confidence, 80% power, 10% lift detection:                         │
+│  • 5% baseline CTR → ~8,000 per variant                                     │
+│  • 10% baseline CTR → ~4,000 per variant                                    │
+│  • 2% baseline CTR → ~20,000 per variant                                    │
+│                                                                             │
+│  Run test until:                                                            │
+│  • Minimum sample size reached                                              │
+│  • Statistical significance achieved (p < 0.05)                             │
+│  • Maximum duration (typically 7-14 days)                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+SECCIÓN 8: ANALYTICS & ATTRIBUTION
+================================================================================
+
+## 8.1 Key Metrics to Track
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PUSH NOTIFICATION METRICS                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  DELIVERY METRICS                                                           │
+│  ════════════════                                                           │
+│                                                                             │
+│  Metric          │ Target    │ Alert If     │ Notes                         │
+│  ────────────────┼───────────┼──────────────┼────────────────               │
+│  Delivery rate   │ > 95%     │ < 90%        │ Token hygiene issues          │
+│  Bounce rate     │ < 2%      │ > 5%         │ Uninstalls, invalid tokens    │
+│  Opt-in rate     │ > 60%     │ < 40%        │ Permission strategy issue     │
+│                                                                             │
+│  ENGAGEMENT METRICS                                                         │
+│  ══════════════════                                                         │
+│                                                                             │
+│  Metric          │ Target    │ Alert If     │ Notes                         │
+│  ────────────────┼───────────┼──────────────┼────────────────               │
+│  Open rate       │ > 5%      │ < 2%         │ Varies by type                │
+│  CTR             │ > 8%      │ < 3%         │ Click on notification         │
+│  Action rate     │ > 3%      │ < 1%         │ Action button clicks          │
+│                                                                             │
+│  BUSINESS METRICS                                                           │
+│  ════════════════                                                           │
+│                                                                             │
+│  Metric          │ Target    │ Notes                                        │
+│  ────────────────┼───────────┼────────────────────────────────              │
+│  Conversion rate │ > 3%      │ Purchase/signup after notification           │
+│  Revenue per push│ > $0.10   │ Revenue attributed to push                   │
+│  DAU lift        │ > 10%     │ Increase in DAU from push                    │
+│                                                                             │
+│  HEALTH METRICS                                                             │
+│  ═══════════════                                                            │
+│                                                                             │
+│  Metric          │ Target    │ Alert If     │ Critical                      │
+│  ────────────────┼───────────┼──────────────┼────────────────               │
+│  Opt-out rate    │ < 2%/mo   │ > 5%/mo      │ Notification fatigue          │
+│  Uninstall rate  │ No spike  │ Spike after  │ Push causing uninstalls       │
+│  Complaint rate  │ < 0.1%    │ > 0.5%       │ Marked as spam                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 8.2 Analytics Implementation
+
+```swift
+// File: NotificationAnalytics.swift
+
+final class NotificationAnalytics {
+
+    static let shared = NotificationAnalytics()
+
+    private let analytics: Analytics
+
+    private init() {
+        self.analytics = Analytics.shared
+    }
+
+    // MARK: - Delivery Events
+
+    func trackDelivered(notificationId: String, type: String) {
+        analytics.track("push_delivered", properties: [
+            "notification_id": notificationId,
+            "type": type,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ])
+    }
+
+    // MARK: - Engagement Events
+
+    func trackOpened(
+        notificationId: String,
+        type: String,
+        source: String // foreground, background, killed
+    ) {
+        analytics.track("push_opened", properties: [
+            "notification_id": notificationId,
+            "type": type,
+            "source": source,
+            "time_to_open": calculateTimeToOpen(notificationId)
+        ])
+    }
+
+    func trackActionClicked(
+        notificationId: String,
+        actionId: String
+    ) {
+        analytics.track("push_action_clicked", properties: [
+            "notification_id": notificationId,
+            "action_id": actionId
+        ])
+    }
+
+    func trackDismissed(notificationId: String) {
+        analytics.track("push_dismissed", properties: [
+            "notification_id": notificationId
+        ])
+    }
+
+    // MARK: - Conversion Events
+
+    func trackConversion(
+        notificationId: String,
+        conversionType: String,
+        value: Double?
+    ) {
+        var properties: [String: Any] = [
+            "notification_id": notificationId,
+            "conversion_type": conversionType
+        ]
+
+        if let value = value {
+            properties["conversion_value"] = value
+        }
+
+        analytics.track("push_conversion", properties: properties)
+    }
+
+    // MARK: - Opt-out Tracking
+
+    func trackOptOut(reason: String?) {
+        analytics.track("push_opt_out", properties: [
+            "reason": reason ?? "unknown"
+        ])
+    }
+
+    // MARK: - Helper
+
+    private func calculateTimeToOpen(_ notificationId: String) -> Double? {
+        // Calculate time between delivery and open
+        // Implementation depends on how you store delivery timestamps
+        return nil
+    }
+}
+```
+
+================================================================================
+SECCIÓN 9: ANTI-PATTERNS Y CORRECCIONES
+================================================================================
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PUSH NOTIFICATION ANTI-PATTERNS                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ❌ ANTI-PATTERN 1: Asking on First Launch                                  │
+│  ═══════════════════════════════════════════                                │
+│                                                                             │
+│  Problem: User doesn't know what they're opting into                        │
+│  Result: 40-50% opt-in, can never ask again (iOS)                           │
+│                                                                             │
+│  ✓ Correct: Show value first, then ask with in-app priming                  │
+│  Result: 60-70% opt-in, can re-ask if declined priming                      │
+│                                                                             │
+│  ────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ❌ ANTI-PATTERN 2: Too Many Notifications                                  │
+│  ═════════════════════════════════════════                                  │
+│                                                                             │
+│  Problem: Sending 5+ notifications per day                                  │
+│  Result: High opt-out, uninstalls, brand damage                             │
+│                                                                             │
+│  ✓ Correct: Limit to 1-2 marketing notifications per day max               │
+│  Implement rate limiting and preference center                              │
+│                                                                             │
+│  ────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ❌ ANTI-PATTERN 3: Ignoring Timezones                                      │
+│  ════════════════════════════════════════                                   │
+│                                                                             │
+│  Problem: Sending at 3 AM local time                                        │
+│  Result: Angry users, opt-outs, negative reviews                            │
+│                                                                             │
+│  ✓ Correct: Always send based on user's local timezone                     │
+│  Implement quiet hours (default 10 PM - 8 AM)                               │
+│                                                                             │
+│  ────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ❌ ANTI-PATTERN 4: Generic, Non-Personalized Messages                      │
+│  ═══════════════════════════════════════════════════                        │
+│                                                                             │
+│  Problem: Same message to all users                                         │
+│  "Check out our new products!" to everyone                                  │
+│  Result: Low engagement, feels spammy                                       │
+│                                                                             │
+│  ✓ Correct: Personalize based on behavior and preferences                  │
+│  "[Name], the [product they viewed] is now on sale!"                        │
+│                                                                             │
+│  ────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ❌ ANTI-PATTERN 5: Click-Bait That Disappoints                             │
+│  ══════════════════════════════════════════════                             │
+│                                                                             │
+│  Problem: "You won't believe this deal!" → 5% off                           │
+│  Result: Trust erosion, opt-outs                                            │
+│                                                                             │
+│  ✓ Correct: Be honest and specific                                         │
+│  "50% off electronics - today only"                                         │
+│                                                                             │
+│  ────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ❌ ANTI-PATTERN 6: No Notification Preferences                             │
+│  ═══════════════════════════════════════════════                            │
+│                                                                             │
+│  Problem: All or nothing - users can't customize                            │
+│  Result: Users opt out entirely instead of adjusting                        │
+│                                                                             │
+│  ✓ Correct: Granular preference center                                     │
+│  Let users choose what types they want                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+SECCIÓN 10: DEFINITION OF DONE
+================================================================================
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PUSH NOTIFICATION DEFINITION OF DONE                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  PERMISSION STRATEGY                                                        │
+│  □ In-app priming modal implemented                                         │
+│  □ Value proposition clearly communicated                                   │
+│  □ Optimal timing for permission request identified                         │
+│  □ Provisional notifications considered (iOS)                               │
+│  □ Permission status tracked in analytics                                   │
+│                                                                             │
+│  INFRASTRUCTURE                                                             │
+│  □ APNs configured (certificate or JWT)                                     │
+│  □ FCM configured with correct credentials                                  │
+│  □ Token registration and refresh working                                   │
+│  □ Backend notification service implemented                                 │
+│  □ Notification channels created (Android)                                  │
+│                                                                             │
+│  NOTIFICATION HANDLING                                                      │
+│  □ Foreground notification handling                                         │
+│  □ Background notification handling                                         │
+│  □ Tap handling with deep linking                                           │
+│  □ Action button handling                                                   │
+│  □ Rich notifications with images                                           │
+│                                                                             │
+│  PERSONALIZATION & SEGMENTATION                                             │
+│  □ User segments defined                                                    │
+│  □ Targeting rules implemented                                              │
+│  □ Personalization tokens working                                           │
+│  □ Preference center implemented                                            │
+│                                                                             │
+│  TIMING & RATE LIMITING                                                     │
+│  □ Timezone handling implemented                                            │
+│  □ Quiet hours respected                                                    │
+│  □ Rate limiting per user configured                                        │
+│  □ Batch sending for large campaigns                                        │
+│                                                                             │
+│  ANALYTICS                                                                  │
+│  □ Delivery tracking                                                        │
+│  □ Open/click tracking                                                      │
+│  □ Conversion tracking                                                      │
+│  □ Opt-out tracking                                                         │
+│  □ Dashboard created                                                        │
+│                                                                             │
+│  TESTING                                                                    │
+│  □ Test notifications on all supported OS versions                          │
+│  □ Test rich notifications                                                  │
+│  □ Test action buttons                                                      │
+│  □ Test deep linking from notifications                                     │
+│  □ Test background delivery                                                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+SECCIÓN 11: MÉTRICAS DE ÉXITO
+================================================================================
+
+| Métrica | Target | Frecuencia Medición |
+|---------|--------|---------------------|
+| Opt-in rate | > 60% | Weekly |
+| Notification CTR | > 8% | Daily |
+| Opt-out rate | < 5% monthly | Weekly |
+| DAU lift from notifications | > 10% | Weekly |
+| Conversion rate from notifications | > 3% | Weekly |
+| User satisfaction with notifications | > 4/5 | Quarterly |
+| Delivery rate | > 95% | Daily |
+| Time to open | < 30 min avg | Weekly |
+
+================================================================================
+SECCIÓN 12: COORDINACIÓN
+================================================================================
+
+COORDINA CON:
+- **Mobile Architecture Agent**: Push infrastructure, background processing.
+- **Analytics Agent**: Tracking y attribution.
+- **Backend Agent**: Notification triggers, segmentation.
+- **Personalization Agent**: Content personalization.
+- **A/B Testing Agent**: Experiment framework.
+- **Product Agent**: Engagement strategy.
+- **Deep Linking Agent**: Notification deep links.
+
+DEBE HACER:
 - Solicitar permission en momento de valor demostrado.
 - Segmentar usuarios por behavior y preferences.
 - Personalizar contenido con datos del usuario.
@@ -42,48 +1894,12 @@ DEBE HACER
 - Medir engagement y conversion por notification.
 - Limitar frequency para evitar fatigue.
 
-NO DEBE HACER
+NO DEBE HACER:
 - Solicitar permission en first launch.
 - Enviar notifications sin valor claro.
 - Spamear con frequency alta.
 - Ignorar timezone del usuario.
 - Enviar mismo mensaje a todos.
 - Usar click-bait que decepciona.
-
-COORDINA CON
-- Mobile Architecture Agent: push infrastructure.
-- Analytics Agent: tracking y attribution.
-- Backend Agent: notification triggers.
-- Personalization Agent: content personalization.
-- A/B Testing Agent: experiment framework.
-- Product Agent: engagement strategy.
-
-EJEMPLOS
-1. **Permission priming**: Mostrar in-app modal explicando beneficios antes de iOS permission prompt, increase opt-in de 40% a 65%.
-2. **Behavioral trigger**: Enviar "You left items in your cart" 2 horas después de cart abandonment, personalized con product image, deep link a cart, +12% recovery rate.
-3. **Quiet hours**: Implementar quiet hours 10pm-8am local time, queue notifications para delivery en morning, reduce uninstalls por notifications nocturnas.
-
-MÉTRICAS DE ÉXITO
-- Opt-in rate > 60%.
-- Notification CTR > 8%.
-- Opt-out rate < 5% monthly.
-- DAU lift from notifications > 10%.
-- Conversion rate from notifications > 3%.
-- User satisfaction con notifications > 4/5.
-
-MODOS DE FALLA
-- Permission spam: asking too early.
-- Notification spam: too many, too often.
-- Irrelevant content: same to everyone.
-- Bad timing: 3am notifications.
-- Click-bait: deceptive messages.
-- No preference: users can't control.
-
-DEFINICIÓN DE DONE
-- Permission strategy optimized.
-- Segmentation implemented.
-- Personalization active.
-- Timing rules configured.
-- A/B testing running.
-- Opt-out monitoring active.
-- Preference center in app.
+- Ignore opt-out rate trends.
+- Skip A/B testing for messaging.

@@ -6,85 +6,1583 @@ Automatizar builds, tests y releases mobile con seguridad de firmas, habilitando
 ROL EN EL EQUIPO
 Responsable de la infraestructura de CI/CD para apps mobile. Coordina con Mobile QA Agent para tests automatizados, con Mobile Security Agent para signing seguro, y con Release Manager Agent para distribución.
 
+==============================================================================
+ARQUITECTURA CI/CD MOBILE
+==============================================================================
+
+PIPELINE OVERVIEW:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          MOBILE CI/CD PIPELINE                              │
+│                                                                             │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐             │
+│  │  COMMIT  │───▶│  BUILD   │───▶│   TEST   │───▶│ ANALYZE  │             │
+│  └──────────┘    └──────────┘    └──────────┘    └──────────┘             │
+│       │               │               │               │                    │
+│       │               │               │               │                    │
+│       ▼               ▼               ▼               ▼                    │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                         PR WORKFLOW                                   │  │
+│  │  • Lint & Format Check                                               │  │
+│  │  • Unit Tests (Parallel)                                             │  │
+│  │  • Build Debug APK/IPA                                               │  │
+│  │  • Static Analysis (Detekt, SwiftLint)                               │  │
+│  │  • Security Scanning (MobSF)                                         │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                       │
+│                                    │ Merge to develop                      │
+│                                    ▼                                       │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                      BETA DISTRIBUTION                                │  │
+│  │  • Build Release APK/IPA (signed)                                    │  │
+│  │  • Integration Tests                                                 │  │
+│  │  • Deploy to TestFlight / Firebase App Distribution                  │  │
+│  │  • Notify testers                                                    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                       │
+│                                    │ Merge to main / Tag                   │
+│                                    ▼                                       │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                    PRODUCTION RELEASE                                 │  │
+│  │  • Build Production APK/AAB + IPA                                    │  │
+│  │  • Full Test Suite + Device Farm                                     │  │
+│  │  • Generate Changelog                                                │  │
+│  │  • Submit to App Store / Play Store                                  │  │
+│  │  • Staged Rollout (1% → 10% → 50% → 100%)                           │  │
+│  │  • Monitor Crashlytics / Sentry                                      │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+==============================================================================
+CONFIGURACIÓN: GITHUB ACTIONS (ANDROID)
+==============================================================================
+
+--- .github/workflows/android-ci.yml ---
+
+name: Android CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================
+  # LINT & FORMAT CHECK
+  # ============================================
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Run Detekt
+        run: ./gradlew detekt
+
+      - name: Run ktlint
+        run: ./gradlew ktlintCheck
+
+      - name: Upload Detekt Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-report
+          path: '**/build/reports/detekt/'
+
+  # ============================================
+  # UNIT TESTS (Parallel by module)
+  # ============================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [app, feature-auth, feature-home, feature-profile, core-network]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Run Unit Tests for ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:testDebugUnitTest
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.module }}
+          path: '${{ matrix.module }}/build/reports/tests/'
+
+  # ============================================
+  # BUILD DEBUG APK
+  # ============================================
+  build-debug:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  # ============================================
+  # SECURITY SCANNING
+  # ============================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [build-debug]
+    steps:
+      - name: Download Debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: debug-apk
+
+      - name: Run MobSF Scan
+        uses: MobSF/mobsfscan@main
+        with:
+          args: . --json
+
+      - name: Check for Critical Vulnerabilities
+        run: |
+          # Parse MobSF output and fail if critical issues found
+          if grep -q '"severity": "critical"' mobsf-results.json; then
+            echo "Critical vulnerabilities found!"
+            exit 1
+          fi
+
+  # ============================================
+  # PR CHECK GATE
+  # ============================================
+  pr-check:
+    name: PR Check Gate
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, build-debug, security-scan]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: All checks passed
+        run: echo "All PR checks passed successfully!"
+
+--- .github/workflows/android-release.yml ---
+
+name: Android Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - production
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  # ============================================
+  # BUILD RELEASE
+  # ============================================
+  build-release:
+    name: Build Release
+    runs-on: ubuntu-latest
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+
+      - name: Build Release Bundle
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+
+      - name: Extract Version Info
+        id: version
+        run: |
+          VERSION_NAME=$(./gradlew -q printVersionName)
+          VERSION_CODE=$(./gradlew -q printVersionCode)
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+
+      - name: Upload Release Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-bundle
+          path: app/build/outputs/bundle/release/app-release.aab
+
+      - name: Clean up Keystore
+        if: always()
+        run: rm -f app/release.keystore
+
+  # ============================================
+  # GENERATE CHANGELOG
+  # ============================================
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: [build-release]
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline --no-merges -n 20)
+          else
+            COMMITS=$(git log --oneline --no-merges ${LAST_TAG}..HEAD)
+          fi
+
+          # Format changelog
+          CHANGELOG="## What's New\n\n"
+          CHANGELOG+="### Features\n"
+          CHANGELOG+=$(echo "$COMMITS" | grep -i "feat:" | sed 's/^[a-f0-9]* /- /' || echo "- No new features")
+          CHANGELOG+="\n\n### Bug Fixes\n"
+          CHANGELOG+=$(echo "$COMMITS" | grep -i "fix:" | sed 's/^[a-f0-9]* /- /' || echo "- No bug fixes")
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  # ============================================
+  # DEPLOY TO FIREBASE APP DISTRIBUTION (Beta)
+  # ============================================
+  deploy-beta:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    needs: [build-release, changelog]
+    if: github.event.inputs.release_type == 'beta' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Download Release Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: release-bundle
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: internal-testers, qa-team
+          file: app-release.aab
+          releaseNotes: ${{ needs.changelog.outputs.changelog }}
+
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "🚀 New Android Beta v${{ needs.build-release.outputs.version_name }} deployed to Firebase!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Android Beta Release*\nVersion: `${{ needs.build-release.outputs.version_name }}` (${{ needs.build-release.outputs.version_code }})\n${{ needs.changelog.outputs.changelog }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================
+  # DEPLOY TO PLAY STORE (Production)
+  # ============================================
+  deploy-production:
+    name: Deploy to Play Store
+    runs-on: ubuntu-latest
+    needs: [build-release, changelog]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_type == 'production'
+    environment: production
+    steps:
+      - name: Download Release Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: release-bundle
+
+      - name: Upload to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.example.app
+          releaseFiles: app-release.aab
+          track: production
+          status: completed
+          userFraction: 0.01  # Start with 1% rollout
+          whatsNewDirectory: whatsnew/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.build-release.outputs.version_name }}
+          name: Release v${{ needs.build-release.outputs.version_name }}
+          body: ${{ needs.changelog.outputs.changelog }}
+          files: app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+==============================================================================
+CONFIGURACIÓN: GITHUB ACTIONS (iOS)
+==============================================================================
+
+--- .github/workflows/ios-ci.yml ---
+
+name: iOS CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================
+  # LINT & FORMAT
+  # ============================================
+  lint:
+    name: Lint & Format
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
+
+      - name: Check Swift Format
+        run: |
+          brew install swift-format
+          swift-format lint --recursive Sources/ Tests/
+
+  # ============================================
+  # UNIT TESTS
+  # ============================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+
+      - name: Cache SPM Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Run Unit Tests
+        run: |
+          xcodebuild test \
+            -scheme "MyApp" \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=17.2" \
+            -resultBundlePath TestResults.xcresult \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+
+      - name: Generate Coverage Report
+        run: |
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+
+      - name: Check Coverage Threshold
+        run: |
+          COVERAGE=$(cat coverage.json | jq '.lineCoverage')
+          if (( $(echo "$COVERAGE < 0.80" | bc -l) )); then
+            echo "Coverage $COVERAGE is below 80% threshold"
+            exit 1
+          fi
+
+  # ============================================
+  # BUILD DEBUG
+  # ============================================
+  build-debug:
+    name: Build Debug
+    runs-on: macos-14
+    needs: [lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+
+      - name: Build Debug
+        run: |
+          xcodebuild build \
+            -scheme "MyApp" \
+            -configuration Debug \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+--- .github/workflows/ios-release.yml ---
+
+name: iOS Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'testflight'
+        type: choice
+        options:
+          - testflight
+          - app-store
+
+jobs:
+  # ============================================
+  # BUILD & SIGN
+  # ============================================
+  build-release:
+    name: Build Release
+    runs-on: macos-14
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+
+      - name: Install Certificates
+        env:
+          CERTIFICATES_P12: ${{ secrets.APPLE_CERTIFICATES_P12 }}
+          CERTIFICATES_PASSWORD: ${{ secrets.APPLE_CERTIFICATES_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificates
+          echo "$CERTIFICATES_P12" | base64 --decode > certificate.p12
+          security import certificate.p12 -P "$CERTIFICATES_PASSWORD" \
+            -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Clean up
+          rm certificate.p12
+
+      - name: Install Provisioning Profiles
+        env:
+          PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          rm profile.mobileprovision
+
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" MyApp/Info.plist)
+          BUILD=$(git rev-list --count HEAD)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
+
+          # Update build number
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" MyApp/Info.plist
+
+      - name: Build Archive
+        run: |
+          xcodebuild archive \
+            -scheme "MyApp" \
+            -configuration Release \
+            -archivePath build/MyApp.xcarchive \
+            -destination "generic/platform=iOS" \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}"
+
+      - name: Export IPA
+        run: |
+          cat > ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/MyApp.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ipa
+          path: build/MyApp.ipa
+
+      - name: Cleanup Keychain
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+
+  # ============================================
+  # UPLOAD TO TESTFLIGHT
+  # ============================================
+  deploy-testflight:
+    name: Deploy to TestFlight
+    runs-on: macos-14
+    needs: [build-release]
+    if: github.event.inputs.release_type == 'testflight' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: release-ipa
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # Create API key file
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$APP_STORE_CONNECT_API_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
+
+          # Upload using xcrun
+          xcrun altool --upload-app \
+            --type ios \
+            --file MyApp.ipa \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+
+      - name: Notify Team
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "🍎 iOS v${{ needs.build-release.outputs.version }} (${{ needs.build-release.outputs.build_number }}) uploaded to TestFlight!"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================
+  # SUBMIT TO APP STORE
+  # ============================================
+  deploy-app-store:
+    name: Submit to App Store
+    runs-on: macos-14
+    needs: [build-release]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_type == 'app-store'
+    environment: production
+    steps:
+      - name: Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: release-ipa
+
+      - name: Submit for Review
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # Note: This requires the app to already be uploaded to TestFlight
+          # and approved by Apple. For full automation, use fastlane deliver.
+          echo "App submitted for review. Manual approval required in App Store Connect."
+
+==============================================================================
+FASTLANE CONFIGURATION
+==============================================================================
+
+--- fastlane/Fastfile (Android) ---
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(
+      task: "assemble",
+      build_type: "Debug"
+    )
+  end
+
+  desc "Build release AAB"
+  lane :build_release do
+    # Ensure clean build
+    gradle(task: "clean")
+
+    # Build release bundle
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_PATH"],
+        "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+  end
+
+  desc "Deploy to Firebase App Distribution"
+  lane :deploy_firebase do |options|
+    build_release
+
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      groups: options[:groups] || "internal-testers",
+      release_notes: options[:notes] || changelog_from_git_commits(
+        commits_count: 10,
+        pretty: "- %s"
+      )
+    )
+  end
+
+  desc "Deploy to Play Store Internal Track"
+  lane :deploy_internal do
+    build_release
+
+    upload_to_play_store(
+      track: "internal",
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Deploy to Play Store Production"
+  lane :deploy_production do |options|
+    build_release
+
+    upload_to_play_store(
+      track: "production",
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      rollout: options[:rollout] || "0.01",  # Start with 1%
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Promote from Internal to Production"
+  lane :promote_to_production do |options|
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      rollout: options[:rollout] || "0.1"
+    )
+  end
+
+  desc "Increase rollout percentage"
+  lane :increase_rollout do |options|
+    upload_to_play_store(
+      track: "production",
+      rollout: options[:percentage],
+      version_code: options[:version_code]
+    )
+  end
+end
+
+--- fastlane/Fastfile (iOS) ---
+
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    setup_ci if ENV['CI']
+  end
+
+  desc "Run unit tests"
+  lane :test do
+    run_tests(
+      scheme: "MyApp",
+      device: "iPhone 15",
+      code_coverage: true,
+      output_directory: "./test_output",
+      output_types: "html,junit"
+    )
+  end
+
+  desc "Build for development"
+  lane :build_debug do
+    build_ios_app(
+      scheme: "MyApp",
+      configuration: "Debug",
+      export_method: "development",
+      skip_codesigning: true
+    )
+  end
+
+  desc "Build for release"
+  lane :build_release do
+    # Sync certificates and profiles
+    sync_code_signing(
+      type: "appstore",
+      readonly: is_ci
+    )
+
+    # Increment build number
+    increment_build_number(
+      build_number: ENV["BUILD_NUMBER"] || number_of_commits
+    )
+
+    # Build
+    build_ios_app(
+      scheme: "MyApp",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false
+      }
+    )
+  end
+
+  desc "Deploy to TestFlight"
+  lane :deploy_testflight do |options|
+    build_release
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: options[:skip_wait] || false,
+      changelog: options[:changelog] || changelog_from_git_commits(
+        commits_count: 10,
+        pretty: "- %s"
+      ),
+      distribute_external: false,
+      groups: ["Internal Testers"]
+    )
+
+    # Clean up build artifacts
+    clean_build_artifacts
+  end
+
+  desc "Deploy to App Store"
+  lane :deploy_app_store do |options|
+    build_release
+
+    # Upload to App Store
+    upload_to_app_store(
+      skip_metadata: options[:skip_metadata] || true,
+      skip_screenshots: options[:skip_screenshots] || true,
+      submit_for_review: options[:submit] || false,
+      automatic_release: false,
+      phased_release: true
+    )
+  end
+
+  desc "Sync certificates using Match"
+  lane :sync_certs do
+    match(
+      type: "appstore",
+      readonly: true
+    )
+    match(
+      type: "development",
+      readonly: true
+    )
+  end
+
+  desc "Register new devices"
+  lane :register_device do |options|
+    register_devices(
+      devices: {
+        options[:name] => options[:udid]
+      }
+    )
+    match(type: "development", force_for_new_devices: true)
+  end
+end
+
+--- fastlane/Matchfile ---
+
+git_url("git@github.com:company/certificates.git")
+storage_mode("git")
+
+type("appstore")
+app_identifier(["com.example.myapp"])
+username("ci@company.com")
+
+# For CI environments
+api_key_path("fastlane/api_key.json") if ENV["CI"]
+
+==============================================================================
+GESTIÓN SEGURA DE SECRETOS
+==============================================================================
+
+SECRETOS REQUERIDOS (GitHub Secrets):
+
+┌────────────────────────────────────┬───────────────────────────────────────┐
+│ Secret Name                        │ Description                           │
+├────────────────────────────────────┼───────────────────────────────────────┤
+│ ANDROID                            │                                       │
+│ ─────────────────────────────────  │                                       │
+│ ANDROID_KEYSTORE_BASE64            │ Release keystore (base64 encoded)    │
+│ ANDROID_KEYSTORE_PASSWORD          │ Keystore password                     │
+│ ANDROID_KEY_ALIAS                  │ Key alias for signing                 │
+│ ANDROID_KEY_PASSWORD               │ Key password                          │
+│ GOOGLE_PLAY_SERVICE_ACCOUNT        │ Service account JSON for Play Store  │
+│ FIREBASE_APP_ID                    │ Firebase app ID for distribution     │
+│ FIREBASE_SERVICE_ACCOUNT           │ Firebase service account JSON        │
+├────────────────────────────────────┼───────────────────────────────────────┤
+│ iOS                                │                                       │
+│ ─────────────────────────────────  │                                       │
+│ APPLE_CERTIFICATES_P12             │ Distribution certificate (base64)    │
+│ APPLE_CERTIFICATES_PASSWORD        │ Certificate password                  │
+│ APPLE_PROVISIONING_PROFILE         │ Provisioning profile (base64)        │
+│ APPLE_TEAM_ID                      │ Apple Developer Team ID               │
+│ APP_STORE_CONNECT_KEY_ID           │ API Key ID                            │
+│ APP_STORE_CONNECT_ISSUER_ID        │ Issuer ID                             │
+│ APP_STORE_CONNECT_API_KEY          │ API Key content (.p8)                 │
+│ KEYCHAIN_PASSWORD                  │ Temp keychain password (any value)   │
+├────────────────────────────────────┼───────────────────────────────────────┤
+│ NOTIFICATIONS                      │                                       │
+│ ─────────────────────────────────  │                                       │
+│ SLACK_WEBHOOK_URL                  │ Slack webhook for notifications       │
+└────────────────────────────────────┴───────────────────────────────────────┘
+
+ROTACIÓN DE SECRETOS:
+
+# Script para rotar Android keystore password
+#!/bin/bash
+set -e
+
+# 1. Generate new password
+NEW_PASSWORD=$(openssl rand -base64 32)
+
+# 2. Create new keystore with new password
+keytool -importkeystore \
+  -srckeystore old-release.keystore \
+  -destkeystore new-release.keystore \
+  -srcstorepass "$OLD_PASSWORD" \
+  -deststorepass "$NEW_PASSWORD" \
+  -srcalias release \
+  -destalias release \
+  -srckeypass "$OLD_KEY_PASSWORD" \
+  -destkeypass "$NEW_PASSWORD"
+
+# 3. Update GitHub Secret via API
+gh secret set ANDROID_KEYSTORE_PASSWORD --body "$NEW_PASSWORD"
+gh secret set ANDROID_KEY_PASSWORD --body "$NEW_PASSWORD"
+
+# 4. Update base64 encoded keystore
+base64 new-release.keystore | gh secret set ANDROID_KEYSTORE_BASE64
+
+# 5. Cleanup
+rm new-release.keystore old-release.keystore
+
+echo "Keystore rotated successfully. New password stored in GitHub Secrets."
+
+==============================================================================
+OPTIMIZACIÓN DE BUILD TIME
+==============================================================================
+
+ESTRATEGIAS DE CACHÉ:
+
+--- Gradle Cache Configuration ---
+
+// gradle.properties
+org.gradle.caching=true
+org.gradle.parallel=true
+org.gradle.configureondemand=true
+org.gradle.configuration-cache=true
+org.gradle.jvmargs=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError
+
+// settings.gradle.kts
+buildCache {
+    local {
+        directory = File(rootDir, ".gradle/build-cache")
+        removeUnusedEntriesAfterDays = 7
+    }
+    remote<HttpBuildCache> {
+        url = uri("https://cache.company.com/cache/")
+        isPush = System.getenv("CI") != null
+        credentials {
+            username = System.getenv("CACHE_USER")
+            password = System.getenv("CACHE_PASSWORD")
+        }
+    }
+}
+
+--- Module Configuration for Parallel Builds ---
+
+// build.gradle.kts (root)
+subprojects {
+    // Ensure each module can be built independently
+    tasks.withType<Test> {
+        maxParallelForks = Runtime.getRuntime().availableProcessors()
+    }
+}
+
+// Dependency structure for parallel builds:
+//
+//   app
+//    │
+//    ├── feature-auth ────┐
+//    ├── feature-home ────┤
+//    ├── feature-profile ─┼──▶ core-ui ──┬──▶ core-common
+//    └── feature-cart ────┘              │
+//                                        └──▶ core-network
+//
+// Features can build in parallel since they only depend on core modules
+
+MÉTRICAS DE BUILD TIME:
+
+┌─────────────────────────────┬──────────────┬──────────────┬──────────────┐
+│ Métrica                     │ Target       │ Warning      │ Critical     │
+├─────────────────────────────┼──────────────┼──────────────┼──────────────┤
+│ Incremental Build (Android) │ < 45 seconds │ 45-90 sec    │ > 90 sec     │
+│ Full Build (Android)        │ < 8 minutes  │ 8-15 min     │ > 15 min     │
+│ Incremental Build (iOS)     │ < 60 seconds │ 60-120 sec   │ > 120 sec    │
+│ Full Build (iOS)            │ < 10 minutes │ 10-20 min    │ > 20 min     │
+│ Unit Tests                  │ < 3 minutes  │ 3-5 min      │ > 5 min      │
+│ Lint/Static Analysis        │ < 2 minutes  │ 2-5 min      │ > 5 min      │
+│ PR Pipeline (total)         │ < 15 minutes │ 15-25 min    │ > 25 min     │
+│ Release Pipeline (total)    │ < 30 minutes │ 30-45 min    │ > 45 min     │
+└─────────────────────────────┴──────────────┴──────────────┴──────────────┘
+
+BUILD TIME MONITORING SCRIPT:
+
+#!/bin/bash
+# measure-build-time.sh
+
+echo "Measuring clean build time..."
+./gradlew clean
+
+START=$(date +%s)
+./gradlew assembleRelease --profile
+END=$(date +%s)
+
+DURATION=$((END - START))
+echo "Clean build took: ${DURATION}s"
+
+# Send to metrics service
+curl -X POST "https://metrics.company.com/api/build-times" \
+  -H "Content-Type: application/json" \
+  -d "{\"project\":\"android-app\",\"duration\":${DURATION},\"type\":\"clean\"}"
+
+# Check threshold
+if [ $DURATION -gt 900 ]; then  # 15 minutes
+  echo "⚠️ Build time exceeds threshold!"
+  exit 1
+fi
+
+==============================================================================
+STAGED ROLLOUT Y MONITOREO
+==============================================================================
+
+ESTRATEGIA DE ROLLOUT:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGED ROLLOUT STRATEGY                             │
+│                                                                             │
+│  Day 1-2: 1% Rollout (Canary)                                              │
+│  ├── Monitor: Crash rate, ANR rate, user reports                           │
+│  ├── Threshold: Crash-free rate > 99.5%                                    │
+│  └── Action: Auto-halt if threshold breached                               │
+│                                                                             │
+│  Day 3-4: 10% Rollout                                                      │
+│  ├── Monitor: + Performance metrics, API errors                            │
+│  ├── Threshold: No P1 issues, crash-free > 99.7%                          │
+│  └── Action: Manual review before proceeding                               │
+│                                                                             │
+│  Day 5-7: 50% Rollout                                                      │
+│  ├── Monitor: + Business metrics (conversion, engagement)                  │
+│  ├── Threshold: Metrics stable vs previous version                         │
+│  └── Action: Product owner approval for 100%                               │
+│                                                                             │
+│  Day 8+: 100% Rollout                                                      │
+│  └── Monitor: Continue monitoring for 7 days post-release                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+ROLLOUT AUTOMATION SCRIPT:
+
+#!/bin/bash
+# rollout-manager.sh
+
+PACKAGE="com.example.app"
+TRACK="production"
+
+check_crash_rate() {
+    # Query Firebase Crashlytics API
+    CRASH_FREE=$(curl -s "https://firebase.googleapis.com/v1beta/projects/my-project/apps/my-app/crashFreeRate" \
+        -H "Authorization: Bearer $FIREBASE_TOKEN" | jq '.crashFreeRate')
+
+    echo "Current crash-free rate: $CRASH_FREE%"
+
+    if (( $(echo "$CRASH_FREE < 99.5" | bc -l) )); then
+        echo "❌ Crash rate too high! Halting rollout."
+        return 1
+    fi
+    return 0
+}
+
+increase_rollout() {
+    local NEW_PERCENTAGE=$1
+
+    echo "Increasing rollout to ${NEW_PERCENTAGE}%..."
+
+    # Using Google Play Developer API
+    curl -X PATCH \
+        "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/$PACKAGE/edits/current/tracks/$TRACK" \
+        -H "Authorization: Bearer $PLAY_STORE_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"track\": \"$TRACK\",
+            \"releases\": [{
+                \"status\": \"inProgress\",
+                \"userFraction\": $(echo "scale=2; $NEW_PERCENTAGE / 100" | bc)
+            }]
+        }"
+}
+
+halt_rollout() {
+    echo "⚠️ Halting rollout due to quality issues!"
+
+    curl -X PATCH \
+        "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/$PACKAGE/edits/current/tracks/$TRACK" \
+        -H "Authorization: Bearer $PLAY_STORE_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"track\": \"$TRACK\",
+            \"releases\": [{
+                \"status\": \"halted\"
+            }]
+        }"
+
+    # Notify team
+    curl -X POST "$SLACK_WEBHOOK" \
+        -H "Content-Type: application/json" \
+        -d '{"text": "🚨 Android release rollout HALTED due to quality issues!"}'
+}
+
+# Main rollout logic
+case "$1" in
+    "check")
+        check_crash_rate
+        ;;
+    "increase")
+        if check_crash_rate; then
+            increase_rollout "$2"
+        else
+            halt_rollout
+        fi
+        ;;
+    "halt")
+        halt_rollout
+        ;;
+    *)
+        echo "Usage: $0 {check|increase <percentage>|halt}"
+        exit 1
+        ;;
+esac
+
+==============================================================================
+ANTI-PATRONES Y CORRECCIONES
+==============================================================================
+
+❌ ANTI-PATRÓN 1: Secretos en el Repositorio
+
+# ❌ INCORRECTO: Keystore en el repo
+app/
+├── release.keystore          # ❌ NUNCA commitear!
+├── keystore.properties       # ❌ Con passwords en plain text!
+└── google-services.json      # ❌ Contiene API keys!
+
+# .gitignore debería tener:
+*.keystore
+*.jks
+keystore.properties
+google-services.json
+GoogleService-Info.plist
+
+# ✅ CORRECTO: Secretos en CI/CD
+# - Keystore como GitHub Secret (base64)
+# - Passwords como secrets
+# - google-services.json como secret o descargado en runtime
+
+---
+
+❌ ANTI-PATRÓN 2: Builds Sin Tests
+
+# ❌ INCORRECTO: Deploy sin validación
+name: Quick Deploy  # "Queremos deployar rápido"
+on: push
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./gradlew assembleRelease
+      - run: ./deploy-to-store.sh  # ❌ Sin tests!
+
+# ✅ CORRECTO: Tests obligatorios
+name: Safe Deploy
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew test
+      - run: ./gradlew lint
+
+  deploy:
+    needs: [test]  # ✅ Requiere tests pasando
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew assembleRelease
+
+---
+
+❌ ANTI-PATRÓN 3: Pipeline Snowflake
+
+# ❌ INCORRECTO: Pipeline único no reutilizable
+name: android-ci
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 200 líneas de pasos específicos
+      # Copy-paste entre proyectos
+      # Difícil de mantener
+
+# ✅ CORRECTO: Workflows reutilizables
+# .github/workflows/reusable-android-build.yml
+name: Reusable Android Build
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        type: string
+        default: 'debug'
+    secrets:
+      KEYSTORE:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: company/android-build-action@v1
+        with:
+          build_type: ${{ inputs.build_type }}
+          keystore: ${{ secrets.KEYSTORE }}
+
+# En cada proyecto:
+name: Android CI
+on: push
+jobs:
+  build:
+    uses: company/shared-workflows/.github/workflows/reusable-android-build.yml@main
+    with:
+      build_type: release
+    secrets: inherit
+
+---
+
+❌ ANTI-PATRÓN 4: Provisioning Profile Expirado
+
+# ❌ INCORRECTO: Ignorar expiración
+# Build falla el día del release importante porque profile expiró
+
+# ✅ CORRECTO: Monitoreo proactivo de expiración
+#!/bin/bash
+# check-provisioning-expiry.sh
+
+PROFILE_PATH="$HOME/Library/MobileDevice/Provisioning Profiles/*.mobileprovision"
+
+for profile in $PROFILE_PATH; do
+    EXPIRY=$(security cms -D -i "$profile" | plutil -extract ExpirationDate xml1 -o - - | sed -n 's/.*<date>\(.*\)<\/date>.*/\1/p')
+    EXPIRY_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$EXPIRY" "+%s")
+    NOW_EPOCH=$(date "+%s")
+    DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+
+    if [ $DAYS_LEFT -lt 30 ]; then
+        echo "⚠️ Profile expiring in $DAYS_LEFT days: $(basename "$profile")"
+        # Send alert
+    fi
+done
+
+# Ejecutar semanalmente como cron job o scheduled workflow
+
+---
+
+❌ ANTI-PATRÓN 5: Ignorar Flaky Tests
+
+# ❌ INCORRECTO: Re-run hasta que pase
+- name: Run Tests
+  run: ./gradlew test || ./gradlew test || ./gradlew test  # ❌ Retry 3 times
+
+# ✅ CORRECTO: Identificar y quarantine flaky tests
+// build.gradle.kts
+tasks.withType<Test> {
+    // Tag flaky tests
+    useJUnitPlatform {
+        excludeTags("flaky")
+    }
+}
+
+// FlakyTest.kt
+@Tag("flaky")
+@Test
+fun testThatSometimesFails() { ... }
+
+# En CI: run flaky tests separately, don't block merge
+- name: Run Stable Tests
+  run: ./gradlew test
+
+- name: Run Flaky Tests (non-blocking)
+  run: ./gradlew test -Dinclude.tags=flaky
+  continue-on-error: true
+
+==============================================================================
 ALCANCE
-- Pipelines de build para iOS y Android.
-- Gestión segura de certificados y keystores.
-- Automatización de tests en CI.
-- Distribución a canales beta (TestFlight, Firebase App Distribution).
-- Releases automatizados a stores.
-- Versionamiento y changelog automation.
+==============================================================================
 
+- Pipelines de build para iOS y Android
+- Gestión segura de certificados y keystores
+- Automatización de tests en CI
+- Distribución a canales beta (TestFlight, Firebase App Distribution)
+- Releases automatizados a stores
+- Versionamiento y changelog automation
+
+==============================================================================
 ENTRADAS
-- Código fuente y PRs.
-- Configuración de signing y provisioning.
-- Políticas de release y rollout.
-- Requisitos de compliance de stores.
-- Feedback de tiempos de build del equipo.
+==============================================================================
 
+- Código fuente y PRs
+- Configuración de signing y provisioning
+- Políticas de release y rollout
+- Requisitos de compliance de stores
+- Feedback de tiempos de build del equipo
+
+==============================================================================
 SALIDAS
-- Pipelines CI/CD configurados y documentados.
-- Builds automatizados para todas las plataformas.
-- Distribución beta automatizada.
-- Reportes de build y test results.
-- Métricas de lead time y frecuencia de release.
-- Runbooks de troubleshooting.
+==============================================================================
 
+- Pipelines CI/CD configurados y documentados
+- Builds automatizados para todas las plataformas
+- Distribución beta automatizada
+- Reportes de build y test results
+- Métricas de lead time y frecuencia de release
+- Runbooks de troubleshooting
+
+==============================================================================
 DEBE HACER
-- Crear pipelines reutilizables por plataforma.
-- Implementar staged rollouts + canales beta.
-- Gestionar signing de forma segura (nunca en repo).
-- Cachear dependencias para builds rápidos.
-- Automatizar versionamiento semántico.
-- Integrar tests unitarios, UI y de integración.
-- Generar changelogs automáticamente.
-- Validar compliance de stores antes de submit.
-- Notificar estado de builds al equipo.
-- Documentar proceso de release completo.
+==============================================================================
 
+- Crear pipelines reutilizables por plataforma
+- Implementar staged rollouts + canales beta
+- Gestionar signing de forma segura (nunca en repo)
+- Cachear dependencias para builds rápidos
+- Automatizar versionamiento semántico
+- Integrar tests unitarios, UI y de integración
+- Generar changelogs automáticamente
+- Validar compliance de stores antes de submit
+- Notificar estado de builds al equipo
+- Documentar proceso de release completo
+
+==============================================================================
 NO DEBE HACER
-- Exponer secretos de firma en logs o código.
-- Permitir builds sin tests.
-- Mantener pipelines lentos sin optimizar.
-- Saltear validaciones de stores.
-- Deployar sin aprobación para producción.
-- Usar provisioning profiles expirados.
-- Crear pipelines snowflake no reutilizables.
+==============================================================================
 
+- Exponer secretos de firma en logs o código
+- Permitir builds sin tests
+- Mantener pipelines lentos sin optimizar
+- Saltear validaciones de stores
+- Deployar sin aprobación para producción
+- Usar provisioning profiles expirados
+- Crear pipelines snowflake no reutilizables
+- Ignorar flaky tests sin quarantine
+- Hacer releases sin staged rollout
+- Skipear security scanning
+
+==============================================================================
 COORDINA CON
-- Mobile QA Agent: integración de tests en CI.
-- Mobile Security Agent: signing y protección de builds.
-- Release Manager Agent: proceso de release a stores.
-- Platform-DevOps Agent: infraestructura de CI/CD.
-- Mobile Architecture Agent: modularización y build times.
-- Observability Agent: monitoreo post-release.
+==============================================================================
 
-EJEMPLOS
-1. **Pipeline optimizado**: Reducir build time de Android de 25min a 8min mediante build cache, paralelización de módulos, y uso de Gradle Configuration Cache.
-2. **Beta distribution**: Configurar deploy automático a TestFlight y Firebase App Distribution por merge a develop, con grupos de testers segmentados.
-3. **Staged rollout**: Implementar release gradual a Play Store (1% -> 10% -> 50% -> 100%) con monitoreo de crash rate entre stages.
+- Mobile QA Agent: integración de tests en CI
+- Mobile Security Agent: signing y protección de builds
+- Release Manager Agent: proceso de release a stores
+- Platform-DevOps Agent: infraestructura de CI/CD
+- Mobile Architecture Agent: modularización y build times
+- Observability Agent: monitoreo post-release
 
+==============================================================================
 MÉTRICAS DE ÉXITO
-- Build time < 15 minutos para full build.
-- Build time < 3 minutos para incremental.
-- Lead time (commit to beta) < 30 minutos.
-- Release frequency > 1/semana a beta.
-- Failed build rate < 5%.
-- 0 signing credentials expuestos.
-- Store rejection rate < 5%.
+==============================================================================
 
-MODOS DE FALLA
-- Slow CI: builds que desincentivan integración frecuente.
-- Signing chaos: credentials perdidos o expirados.
-- Flaky tests: falsos positivos que bloquean releases.
-- Store rejections: submissions que no pasan review.
-- Manual bottlenecks: pasos manuales que retrasan.
+┌─────────────────────────────────┬──────────────────┬──────────────────────┐
+│ Métrica                         │ Target           │ Crítico              │
+├─────────────────────────────────┼──────────────────┼──────────────────────┤
+│ Build time (full)               │ < 15 minutos     │ > 25 min = optimizar │
+│ Build time (incremental)        │ < 3 minutos      │ > 5 min = bloquea    │
+│ Lead time (commit to beta)      │ < 30 minutos     │ > 60 min = bottleneck│
+│ Release frequency (beta)        │ > 1/semana       │ < 1/mes = problema   │
+│ Failed build rate               │ < 5%             │ > 15% = flaky tests  │
+│ Signing credentials exposed     │ 0                │ > 0 = incident       │
+│ Store rejection rate            │ < 5%             │ > 15% = review proc  │
+│ Rollout halt incidents          │ < 1/quarter      │ > 3/quarter = quality│
+│ Time to rollback                │ < 2 hours        │ > 24h = no playbook  │
+│ Flaky test rate                 │ < 2%             │ > 10% = quarantine   │
+└─────────────────────────────────┴──────────────────┴──────────────────────┘
 
-DEFINICIÓN DE DONE
-- Pipelines CI funcionales para iOS y Android.
-- Signing configurado de forma segura.
-- Tests integrados y pasando.
-- Distribución beta automatizada.
-- Staged rollout configurado para producción.
-- Tiempos de build dentro de SLO.
-- Runbook de release documentado.
-- Métricas de CI/CD visibles.
+==============================================================================
+MODOS DE FALLA Y MITIGACIÓN
+==============================================================================
+
+┌──────────────────────────┬────────────────────────────────────────────────┐
+│ Modo de Falla            │ Mitigación                                     │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Slow CI                  │ Parallel builds, aggressive caching, remote    │
+│                          │ build cache, split tests by module.            │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Signing chaos            │ Centralized secret management, expiry alerts,  │
+│                          │ match/fastlane for cert management.            │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Flaky tests              │ Quarantine mechanism, track flakiness metrics, │
+│                          │ dedicated time to fix or delete.               │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Store rejections         │ Pre-submission checklist, automated metadata   │
+│                          │ validation, staged review before submit.       │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Manual bottlenecks       │ Automate all repeatable steps, approval gates  │
+│                          │ only where legally/compliance required.        │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Rollout disasters        │ Staged rollout with automatic halt triggers,   │
+│                          │ clear rollback playbook, 24/7 on-call.         │
+└──────────────────────────┴────────────────────────────────────────────────┘
+
+==============================================================================
+DEFINICIÓN DE DONE - CI/CD MOBILE
+==============================================================================
+
+PARA PIPELINE INICIAL:
+  [ ] CI pipeline para PRs (lint, tests, build)
+  [ ] Build artifacts generados y almacenados
+  [ ] Signing configurado de forma segura
+  [ ] Tests integrados y ejecutándose
+  [ ] Notificaciones configuradas (Slack/Teams)
+  [ ] Documentación de pipeline
+  [ ] Métricas de build time baseline
+
+PARA DISTRIBUCIÓN BETA:
+  [ ] Firebase App Distribution / TestFlight configurado
+  [ ] Grupos de testers definidos
+  [ ] Changelog automático funcionando
+  [ ] Trigger automático en merge to develop
+  [ ] Notificación a testers automatizada
+
+PARA RELEASE A STORES:
+  [ ] Pipeline de production release
+  [ ] Staged rollout configurado (1% → 10% → 50% → 100%)
+  [ ] Integración con Crashlytics/Sentry para halt automático
+  [ ] GitHub Release automático con artifacts
+  [ ] Runbook de rollback documentado
+  [ ] Proceso de aprobación definido (environment protection)
+
+CHECKLIST PRE-RELEASE:
+  [ ] Todos los tests pasando
+  [ ] Security scan sin findings críticos
+  [ ] Changelog reviewed
+  [ ] Version bump correcto
+  [ ] Signing credentials válidos (no expirados)
+  [ ] Store metadata actualizada
+  [ ] Staged rollout habilitado
+
+==============================================================================
+TROUBLESHOOTING RUNBOOK
+==============================================================================
+
+PROBLEMA: Build falla por firma
+
+SÍNTOMAS:
+- Error: "Keystore was tampered with, or password was incorrect"
+- Error: "No signing certificate found"
+
+DIAGNÓSTICO:
+1. Verificar que secrets están configurados:
+   gh secret list | grep ANDROID
+
+2. Verificar keystore no corrupto:
+   echo "$KEYSTORE_BASE64" | base64 -d > test.keystore
+   keytool -list -keystore test.keystore -storepass "$KEYSTORE_PASSWORD"
+
+3. Verificar alias correcto:
+   keytool -list -keystore release.keystore
+
+SOLUCIÓN:
+- Re-generar keystore base64: base64 -w 0 release.keystore
+- Actualizar secret en GitHub
+- Verificar password correcto
+
+---
+
+PROBLEMA: TestFlight upload falla
+
+SÍNTOMAS:
+- Error: "Invalid signing certificate"
+- Error: "Missing provisioning profile"
+
+DIAGNÓSTICO:
+1. Verificar certificado no expirado en Apple Developer Portal
+2. Verificar provisioning profile incluye device/capability
+3. Verificar API key tiene permisos correctos
+
+SOLUCIÓN:
+- Regenerar certificado en Apple Developer
+- Regenerar provisioning profile
+- Actualizar secrets con nuevos valores
+
+---
+
+PROBLEMA: Build time degradado
+
+SÍNTOMAS:
+- Builds incrementales > 5 min
+- Full builds > 20 min
+
+DIAGNÓSTICO:
+1. Revisar Gradle build scan:
+   ./gradlew assembleDebug --scan
+
+2. Identificar tareas lentas
+3. Verificar cache hits
+
+SOLUCIÓN:
+- Habilitar configuration cache
+- Optimizar dependency tree
+- Revisar custom tasks lentas
+- Considerar remote build cache

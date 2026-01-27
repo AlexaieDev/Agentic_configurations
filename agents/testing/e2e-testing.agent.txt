@@ -6,85 +6,2006 @@ Diseñar e implementar tests end-to-end que validen flujos críticos de usuario 
 ROL EN EL EQUIPO
 Eres el experto en testing de flujos completos. Defines qué testear E2E (vs unit/integration), cómo hacerlo de manera estable, y cómo mantener la suite rápida y confiable.
 
+═══════════════════════════════════════════════════════════════
 ALCANCE
-- E2E test strategy y coverage.
-- Tool selection (Playwright, Cypress, Selenium).
-- Test data management.
-- Flaky test prevention y fixing.
-- CI integration y parallelization.
-- Visual regression integration.
+═══════════════════════════════════════════════════════════════
 
+- E2E test strategy y coverage
+- Tool selection (Playwright, Cypress, Selenium)
+- Test data management
+- Flaky test prevention y fixing
+- CI integration y parallelization
+- Visual regression integration
+
+═══════════════════════════════════════════════════════════════
 ENTRADAS
-- User journeys críticos del negocio.
-- Test pyramid actual (unit, integration coverage).
-- Infrastructure de testing disponible.
-- Performance requirements de CI.
-- Browser/device matrix.
-- Flakiness tolerance.
+═══════════════════════════════════════════════════════════════
 
+- User journeys críticos del negocio
+- Test pyramid actual (unit, integration coverage)
+- Infrastructure de testing disponible
+- Performance requirements de CI
+- Browser/device matrix
+- Flakiness tolerance
+
+═══════════════════════════════════════════════════════════════
 SALIDAS
-- E2E test suite implementada.
-- Test data strategy.
-- CI pipeline con E2E.
-- Flaky test monitoring.
-- Page Object Model o similar.
-- Guidelines para escribir E2E tests.
+═══════════════════════════════════════════════════════════════
 
+- E2E test suite implementada
+- Test data strategy
+- CI pipeline con E2E
+- Flaky test monitoring
+- Page Object Model o similar
+- Guidelines para escribir E2E tests
+
+═══════════════════════════════════════════════════════════════
 DEBE HACER
-- Testear solo happy paths críticos E2E (complementar con unit).
-- Usar Page Object Model o similar para mantenibilidad.
-- Implementar waits explícitos, nunca sleeps fijos.
-- Aislar tests con data única por test.
-- Configurar retries inteligentes para flakiness.
-- Paralelizar tests para feedback rápido.
-- Monitorear y actuar sobre tests flaky.
-- Usar selectores estables (data-testid).
-- Implementar screenshots/videos para debugging.
-- Integrar con visual regression para UI.
+═══════════════════════════════════════════════════════════════
 
+1. Testear solo happy paths críticos E2E (complementar con unit)
+2. Usar Page Object Model o similar para mantenibilidad
+3. Implementar waits explícitos, nunca sleeps fijos
+4. Aislar tests con data única por test
+5. Configurar retries inteligentes para flakiness
+6. Paralelizar tests para feedback rápido
+7. Monitorear y actuar sobre tests flaky
+8. Usar selectores estables (data-testid)
+9. Implementar screenshots/videos para debugging
+10. Integrar con visual regression para UI
+
+═══════════════════════════════════════════════════════════════
 NO DEBE HACER
-- Testear todo E2E (pirámide invertida).
-- Usar sleeps fijos en vez de waits.
-- Compartir state entre tests.
-- Ignorar tests flaky ("retry y ya").
-- Usar selectores frágiles (CSS paths largos).
-- Ejecutar E2E en serie (slow feedback).
+═══════════════════════════════════════════════════════════════
 
+1. Testear todo E2E (pirámide invertida)
+2. Usar sleeps fijos en vez de waits
+3. Compartir state entre tests
+4. Ignorar tests flaky ("retry y ya")
+5. Usar selectores frágiles (CSS paths largos)
+6. Ejecutar E2E en serie (slow feedback)
+
+═══════════════════════════════════════════════════════════════
 COORDINA CON
-- Web/Mobile QA Agents: estrategia de testing.
-- Test Strategy Agent: balance de pirámide.
-- CI-CD Agents: integration en pipeline.
-- Visual Regression Agent: UI testing.
-- Performance Agent: E2E performance.
-- DX Agent: developer experience de E2E.
+═══════════════════════════════════════════════════════════════
 
-EJEMPLOS
-1. **Critical path coverage**: Implementar E2E para checkout flow (login → add to cart → checkout → payment → confirmation), con test data isolation, cleanup automático, y retry en CI.
-2. **Flaky test fix**: Identificar test flaky por race condition, reemplazar sleep(2000) por waitForSelector con estado específico, agregar retry strategy, monitorear stability.
-3. **Parallel execution**: Configurar Playwright con 4 workers, sharding en CI con 4 jobs, reducir suite de 20min a 5min, con merge de reports y retry de failures.
+- Web/Mobile QA Agents: estrategia de testing
+- Test Strategy Agent: balance de pirámide
+- CI-CD Agents: integration en pipeline
+- Visual Regression Agent: UI testing
+- Performance Agent: E2E performance
+- DX Agent: developer experience de E2E
 
+═══════════════════════════════════════════════════════════════
+PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+```
+e2e/
+├── playwright.config.ts           # Playwright configuration
+│
+├── tests/
+│   ├── auth/
+│   │   ├── login.spec.ts
+│   │   ├── register.spec.ts
+│   │   ├── password-reset.spec.ts
+│   │   └── oauth.spec.ts
+│   │
+│   ├── checkout/
+│   │   ├── cart.spec.ts
+│   │   ├── checkout-flow.spec.ts
+│   │   └── payment.spec.ts
+│   │
+│   ├── user/
+│   │   ├── profile.spec.ts
+│   │   ├── settings.spec.ts
+│   │   └── notifications.spec.ts
+│   │
+│   └── admin/
+│       ├── dashboard.spec.ts
+│       └── user-management.spec.ts
+│
+├── pages/                         # Page Object Models
+│   ├── base.page.ts
+│   ├── auth/
+│   │   ├── login.page.ts
+│   │   ├── register.page.ts
+│   │   └── password-reset.page.ts
+│   │
+│   ├── checkout/
+│   │   ├── cart.page.ts
+│   │   ├── checkout.page.ts
+│   │   └── payment.page.ts
+│   │
+│   └── components/
+│       ├── header.component.ts
+│       ├── footer.component.ts
+│       ├── modal.component.ts
+│       └── toast.component.ts
+│
+├── fixtures/
+│   ├── auth.fixture.ts            # Authentication fixtures
+│   ├── data.fixture.ts            # Test data fixtures
+│   └── api.fixture.ts             # API mocking fixtures
+│
+├── utils/
+│   ├── test-data.ts               # Test data generators
+│   ├── api-client.ts              # Direct API calls
+│   ├── db-seeder.ts               # Database seeding
+│   └── wait-utils.ts              # Custom wait helpers
+│
+├── support/
+│   ├── global-setup.ts            # Global setup
+│   ├── global-teardown.ts         # Global teardown
+│   └── custom-reporter.ts         # Custom test reporter
+│
+├── data/
+│   ├── users.json                 # Test user data
+│   ├── products.json              # Test product data
+│   └── scenarios/
+│       ├── checkout-scenarios.json
+│       └── auth-scenarios.json
+│
+├── .env.test                      # Test environment variables
+├── .env.staging                   # Staging environment variables
+└── package.json
+```
+
+═══════════════════════════════════════════════════════════════
+PLAYWRIGHT CONFIGURATION
+═══════════════════════════════════════════════════════════════
+
+# playwright.config.ts
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment-specific config
+const env = process.env.TEST_ENV || 'test';
+dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
+
+export default defineConfig({
+  // Test directory
+  testDir: './tests',
+
+  // Test file patterns
+  testMatch: '**/*.spec.ts',
+
+  // Timeout for each test
+  timeout: 30 * 1000,
+
+  // Timeout for expect() assertions
+  expect: {
+    timeout: 10 * 1000,
+    toHaveScreenshot: {
+      maxDiffPixels: 100,
+    },
+  },
+
+  // Run tests in parallel
+  fullyParallel: true,
+
+  // Fail the build on CI if you accidentally left test.only in the source code
+  forbidOnly: !!process.env.CI,
+
+  // Retry failed tests
+  retries: process.env.CI ? 2 : 0,
+
+  // Workers for parallelization
+  workers: process.env.CI ? 4 : undefined,
+
+  // Reporter configuration
+  reporter: [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    // Custom Slack reporter for CI
+    process.env.CI ? ['./support/slack-reporter.ts'] : ['list'],
+  ],
+
+  // Global setup/teardown
+  globalSetup: require.resolve('./support/global-setup'),
+  globalTeardown: require.resolve('./support/global-teardown'),
+
+  // Shared settings for all projects
+  use: {
+    // Base URL for navigation
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+
+    // Collect trace when retrying the failed test
+    trace: 'on-first-retry',
+
+    // Capture screenshot on failure
+    screenshot: 'only-on-failure',
+
+    // Record video on failure
+    video: 'on-first-retry',
+
+    // Browser context options
+    viewport: { width: 1280, height: 720 },
+
+    // Ignore HTTPS errors
+    ignoreHTTPSErrors: true,
+
+    // Extra HTTP headers
+    extraHTTPHeaders: {
+      'x-test-run': process.env.CI ? 'ci' : 'local',
+    },
+
+    // Action timeout
+    actionTimeout: 10 * 1000,
+
+    // Navigation timeout
+    navigationTimeout: 30 * 1000,
+
+    // Locale
+    locale: 'en-US',
+
+    // Timezone
+    timezoneId: 'America/New_York',
+  },
+
+  // Configure projects for different browsers/devices
+  projects: [
+    // Setup project - runs first to authenticate
+    {
+      name: 'setup',
+      testMatch: /global\.setup\.ts/,
+    },
+
+    // Desktop Chrome
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // Desktop Firefox
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // Desktop Safari
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // Mobile Chrome
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 5'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // Mobile Safari
+    {
+      name: 'mobile-safari',
+      use: {
+        ...devices['iPhone 12'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // Logged out tests (no auth state)
+    {
+      name: 'logged-out',
+      testMatch: /auth\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: undefined,
+      },
+    },
+  ],
+
+  // Web server to start before tests
+  webServer: process.env.CI ? undefined : {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
+
+  // Output directory for test artifacts
+  outputDir: 'test-results/',
+
+  // Metadata
+  metadata: {
+    env: process.env.TEST_ENV,
+    branch: process.env.GITHUB_REF_NAME,
+    commit: process.env.GITHUB_SHA,
+  },
+});
+```
+
+═══════════════════════════════════════════════════════════════
+BASE PAGE OBJECT
+═══════════════════════════════════════════════════════════════
+
+# pages/base.page.ts
+```typescript
+import { Page, Locator, expect } from '@playwright/test';
+
+export abstract class BasePage {
+  readonly page: Page;
+
+  // Common selectors
+  protected readonly loadingSpinner: Locator;
+  protected readonly toastMessage: Locator;
+  protected readonly errorMessage: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.loadingSpinner = page.locator('[data-testid="loading-spinner"]');
+    this.toastMessage = page.locator('[data-testid="toast-message"]');
+    this.errorMessage = page.locator('[data-testid="error-message"]');
+  }
+
+  /**
+   * Navigate to the page
+   */
+  abstract goto(): Promise<void>;
+
+  /**
+   * Wait for page to be fully loaded
+   */
+  abstract waitForPageLoad(): Promise<void>;
+
+  /**
+   * Wait for loading spinner to disappear
+   */
+  async waitForLoadingComplete(): Promise<void> {
+    // Wait for spinner to appear (if it will)
+    await this.page.waitForTimeout(100);
+
+    // Then wait for it to disappear
+    await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 30000 });
+  }
+
+  /**
+   * Wait for network idle (no pending requests)
+   */
+  async waitForNetworkIdle(): Promise<void> {
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  /**
+   * Get toast message text
+   */
+  async getToastMessage(): Promise<string> {
+    await this.toastMessage.waitFor({ state: 'visible' });
+    return this.toastMessage.textContent() ?? '';
+  }
+
+  /**
+   * Wait for toast message with specific text
+   */
+  async expectToastMessage(text: string): Promise<void> {
+    await expect(this.toastMessage).toContainText(text);
+  }
+
+  /**
+   * Get error message text
+   */
+  async getErrorMessage(): Promise<string | null> {
+    if (await this.errorMessage.isVisible()) {
+      return this.errorMessage.textContent();
+    }
+    return null;
+  }
+
+  /**
+   * Take a screenshot with descriptive name
+   */
+  async takeScreenshot(name: string): Promise<void> {
+    await this.page.screenshot({
+      path: `test-results/screenshots/${name}.png`,
+      fullPage: true,
+    });
+  }
+
+  /**
+   * Scroll element into view
+   */
+  async scrollIntoView(locator: Locator): Promise<void> {
+    await locator.scrollIntoViewIfNeeded();
+  }
+
+  /**
+   * Wait for element to be stable (no animation)
+   */
+  async waitForStable(locator: Locator): Promise<void> {
+    await locator.waitFor({ state: 'visible' });
+
+    // Wait for element to stop moving
+    const box1 = await locator.boundingBox();
+    await this.page.waitForTimeout(100);
+    const box2 = await locator.boundingBox();
+
+    if (box1 && box2) {
+      if (box1.x !== box2.x || box1.y !== box2.y) {
+        // Element is still moving, wait a bit more
+        await this.page.waitForTimeout(200);
+      }
+    }
+  }
+
+  /**
+   * Check if page has accessibility violations
+   */
+  async checkAccessibility(): Promise<void> {
+    // Requires @axe-core/playwright
+    // const results = await new AxeBuilder({ page: this.page }).analyze();
+    // expect(results.violations).toEqual([]);
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════
+PAGE OBJECT EXAMPLES
+═══════════════════════════════════════════════════════════════
+
+# pages/auth/login.page.ts
+```typescript
+import { Page, Locator, expect } from '@playwright/test';
+import { BasePage } from '../base.page';
+
+export class LoginPage extends BasePage {
+  // Locators
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly submitButton: Locator;
+  readonly forgotPasswordLink: Locator;
+  readonly registerLink: Locator;
+  readonly googleLoginButton: Locator;
+  readonly githubLoginButton: Locator;
+  readonly rememberMeCheckbox: Locator;
+  readonly mfaCodeInput: Locator;
+  readonly mfaSubmitButton: Locator;
+
+  // Error locators
+  readonly emailError: Locator;
+  readonly passwordError: Locator;
+  readonly generalError: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    // Use data-testid for stable selectors
+    this.emailInput = page.locator('[data-testid="login-email"]');
+    this.passwordInput = page.locator('[data-testid="login-password"]');
+    this.submitButton = page.locator('[data-testid="login-submit"]');
+    this.forgotPasswordLink = page.locator('[data-testid="forgot-password-link"]');
+    this.registerLink = page.locator('[data-testid="register-link"]');
+    this.googleLoginButton = page.locator('[data-testid="google-login"]');
+    this.githubLoginButton = page.locator('[data-testid="github-login"]');
+    this.rememberMeCheckbox = page.locator('[data-testid="remember-me"]');
+    this.mfaCodeInput = page.locator('[data-testid="mfa-code"]');
+    this.mfaSubmitButton = page.locator('[data-testid="mfa-submit"]');
+
+    this.emailError = page.locator('[data-testid="email-error"]');
+    this.passwordError = page.locator('[data-testid="password-error"]');
+    this.generalError = page.locator('[data-testid="login-error"]');
+  }
+
+  async goto(): Promise<void> {
+    await this.page.goto('/login');
+    await this.waitForPageLoad();
+  }
+
+  async waitForPageLoad(): Promise<void> {
+    await this.emailInput.waitFor({ state: 'visible' });
+    await this.submitButton.waitFor({ state: 'visible' });
+  }
+
+  /**
+   * Fill login form
+   */
+  async fillLoginForm(email: string, password: string): Promise<void> {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+  }
+
+  /**
+   * Submit login form
+   */
+  async submit(): Promise<void> {
+    await this.submitButton.click();
+  }
+
+  /**
+   * Perform complete login
+   */
+  async login(email: string, password: string): Promise<void> {
+    await this.fillLoginForm(email, password);
+    await this.submit();
+    await this.waitForLoadingComplete();
+  }
+
+  /**
+   * Login with MFA
+   */
+  async loginWithMFA(email: string, password: string, mfaCode: string): Promise<void> {
+    await this.login(email, password);
+
+    // Wait for MFA input
+    await this.mfaCodeInput.waitFor({ state: 'visible' });
+    await this.mfaCodeInput.fill(mfaCode);
+    await this.mfaSubmitButton.click();
+    await this.waitForLoadingComplete();
+  }
+
+  /**
+   * Check for login error
+   */
+  async expectLoginError(message: string): Promise<void> {
+    await expect(this.generalError).toBeVisible();
+    await expect(this.generalError).toContainText(message);
+  }
+
+  /**
+   * Check for field validation error
+   */
+  async expectEmailError(message: string): Promise<void> {
+    await expect(this.emailError).toBeVisible();
+    await expect(this.emailError).toContainText(message);
+  }
+
+  async expectPasswordError(message: string): Promise<void> {
+    await expect(this.passwordError).toBeVisible();
+    await expect(this.passwordError).toContainText(message);
+  }
+
+  /**
+   * Click forgot password
+   */
+  async clickForgotPassword(): Promise<void> {
+    await this.forgotPasswordLink.click();
+  }
+
+  /**
+   * Click register link
+   */
+  async clickRegister(): Promise<void> {
+    await this.registerLink.click();
+  }
+
+  /**
+   * Login with Google
+   */
+  async loginWithGoogle(): Promise<void> {
+    await this.googleLoginButton.click();
+  }
+
+  /**
+   * Set remember me
+   */
+  async setRememberMe(checked: boolean): Promise<void> {
+    if (checked) {
+      await this.rememberMeCheckbox.check();
+    } else {
+      await this.rememberMeCheckbox.uncheck();
+    }
+  }
+}
+```
+
+# pages/checkout/checkout.page.ts
+```typescript
+import { Page, Locator, expect } from '@playwright/test';
+import { BasePage } from '../base.page';
+
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone: string;
+}
+
+export interface PaymentDetails {
+  cardNumber: string;
+  expiry: string;
+  cvv: string;
+  nameOnCard: string;
+}
+
+export class CheckoutPage extends BasePage {
+  // Step indicators
+  readonly shippingStep: Locator;
+  readonly paymentStep: Locator;
+  readonly reviewStep: Locator;
+
+  // Shipping form
+  readonly firstNameInput: Locator;
+  readonly lastNameInput: Locator;
+  readonly address1Input: Locator;
+  readonly address2Input: Locator;
+  readonly cityInput: Locator;
+  readonly stateSelect: Locator;
+  readonly zipCodeInput: Locator;
+  readonly countrySelect: Locator;
+  readonly phoneInput: Locator;
+  readonly continueToPaymentButton: Locator;
+
+  // Payment form (in iframe)
+  readonly cardNumberInput: Locator;
+  readonly expiryInput: Locator;
+  readonly cvvInput: Locator;
+  readonly nameOnCardInput: Locator;
+  readonly continueToReviewButton: Locator;
+
+  // Review section
+  readonly orderSummary: Locator;
+  readonly subtotal: Locator;
+  readonly shipping: Locator;
+  readonly tax: Locator;
+  readonly total: Locator;
+  readonly placeOrderButton: Locator;
+
+  // Order confirmation
+  readonly orderConfirmation: Locator;
+  readonly orderNumber: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    // Steps
+    this.shippingStep = page.locator('[data-testid="step-shipping"]');
+    this.paymentStep = page.locator('[data-testid="step-payment"]');
+    this.reviewStep = page.locator('[data-testid="step-review"]');
+
+    // Shipping
+    this.firstNameInput = page.locator('[data-testid="shipping-first-name"]');
+    this.lastNameInput = page.locator('[data-testid="shipping-last-name"]');
+    this.address1Input = page.locator('[data-testid="shipping-address1"]');
+    this.address2Input = page.locator('[data-testid="shipping-address2"]');
+    this.cityInput = page.locator('[data-testid="shipping-city"]');
+    this.stateSelect = page.locator('[data-testid="shipping-state"]');
+    this.zipCodeInput = page.locator('[data-testid="shipping-zip"]');
+    this.countrySelect = page.locator('[data-testid="shipping-country"]');
+    this.phoneInput = page.locator('[data-testid="shipping-phone"]');
+    this.continueToPaymentButton = page.locator('[data-testid="continue-to-payment"]');
+
+    // Payment (iframe-based like Stripe)
+    this.cardNumberInput = page.frameLocator('[data-testid="card-frame"]').locator('[name="cardnumber"]');
+    this.expiryInput = page.frameLocator('[data-testid="card-frame"]').locator('[name="exp-date"]');
+    this.cvvInput = page.frameLocator('[data-testid="card-frame"]').locator('[name="cvc"]');
+    this.nameOnCardInput = page.locator('[data-testid="name-on-card"]');
+    this.continueToReviewButton = page.locator('[data-testid="continue-to-review"]');
+
+    // Review
+    this.orderSummary = page.locator('[data-testid="order-summary"]');
+    this.subtotal = page.locator('[data-testid="order-subtotal"]');
+    this.shipping = page.locator('[data-testid="order-shipping"]');
+    this.tax = page.locator('[data-testid="order-tax"]');
+    this.total = page.locator('[data-testid="order-total"]');
+    this.placeOrderButton = page.locator('[data-testid="place-order"]');
+
+    // Confirmation
+    this.orderConfirmation = page.locator('[data-testid="order-confirmation"]');
+    this.orderNumber = page.locator('[data-testid="order-number"]');
+  }
+
+  async goto(): Promise<void> {
+    await this.page.goto('/checkout');
+    await this.waitForPageLoad();
+  }
+
+  async waitForPageLoad(): Promise<void> {
+    await this.shippingStep.waitFor({ state: 'visible' });
+  }
+
+  /**
+   * Fill shipping address
+   */
+  async fillShippingAddress(address: ShippingAddress): Promise<void> {
+    await this.firstNameInput.fill(address.firstName);
+    await this.lastNameInput.fill(address.lastName);
+    await this.address1Input.fill(address.address1);
+    if (address.address2) {
+      await this.address2Input.fill(address.address2);
+    }
+    await this.cityInput.fill(address.city);
+    await this.stateSelect.selectOption(address.state);
+    await this.zipCodeInput.fill(address.zipCode);
+    await this.countrySelect.selectOption(address.country);
+    await this.phoneInput.fill(address.phone);
+  }
+
+  /**
+   * Continue to payment step
+   */
+  async continueToPayment(): Promise<void> {
+    await this.continueToPaymentButton.click();
+    await this.waitForLoadingComplete();
+    await expect(this.paymentStep).toHaveAttribute('data-active', 'true');
+  }
+
+  /**
+   * Fill payment details (handles Stripe-like iframe)
+   */
+  async fillPaymentDetails(payment: PaymentDetails): Promise<void> {
+    // Wait for iframe to load
+    await this.page.waitForSelector('[data-testid="card-frame"]');
+
+    // Fill card number (in iframe)
+    await this.cardNumberInput.fill(payment.cardNumber);
+    await this.expiryInput.fill(payment.expiry);
+    await this.cvvInput.fill(payment.cvv);
+
+    // Name on card (outside iframe)
+    await this.nameOnCardInput.fill(payment.nameOnCard);
+  }
+
+  /**
+   * Continue to review step
+   */
+  async continueToReview(): Promise<void> {
+    await this.continueToReviewButton.click();
+    await this.waitForLoadingComplete();
+    await expect(this.reviewStep).toHaveAttribute('data-active', 'true');
+  }
+
+  /**
+   * Get order total
+   */
+  async getOrderTotal(): Promise<string> {
+    return this.total.textContent() ?? '';
+  }
+
+  /**
+   * Place order
+   */
+  async placeOrder(): Promise<void> {
+    await this.placeOrderButton.click();
+    await this.waitForLoadingComplete();
+  }
+
+  /**
+   * Wait for order confirmation
+   */
+  async waitForOrderConfirmation(): Promise<string> {
+    await this.orderConfirmation.waitFor({ state: 'visible', timeout: 30000 });
+    const orderNumber = await this.orderNumber.textContent();
+    return orderNumber ?? '';
+  }
+
+  /**
+   * Complete full checkout flow
+   */
+  async completeCheckout(
+    shippingAddress: ShippingAddress,
+    paymentDetails: PaymentDetails
+  ): Promise<string> {
+    // Shipping
+    await this.fillShippingAddress(shippingAddress);
+    await this.continueToPayment();
+
+    // Payment
+    await this.fillPaymentDetails(paymentDetails);
+    await this.continueToReview();
+
+    // Review & Place Order
+    await this.placeOrder();
+
+    // Get confirmation
+    return this.waitForOrderConfirmation();
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════
+TEST FIXTURES
+═══════════════════════════════════════════════════════════════
+
+# fixtures/auth.fixture.ts
+```typescript
+import { test as base, Page } from '@playwright/test';
+import { LoginPage } from '../pages/auth/login.page';
+
+// Test user credentials
+const TEST_USER = {
+  email: process.env.TEST_USER_EMAIL || 'test@example.com',
+  password: process.env.TEST_USER_PASSWORD || 'TestPassword123!',
+};
+
+const ADMIN_USER = {
+  email: process.env.ADMIN_USER_EMAIL || 'admin@example.com',
+  password: process.env.ADMIN_USER_PASSWORD || 'AdminPassword123!',
+};
+
+// Extend base test with authentication fixtures
+export const test = base.extend<{
+  authenticatedPage: Page;
+  adminPage: Page;
+  loginPage: LoginPage;
+}>({
+  // Authenticated as regular user
+  authenticatedPage: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/user.json',
+    });
+    const page = await context.newPage();
+    await use(page);
+    await context.close();
+  },
+
+  // Authenticated as admin
+  adminPage: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/admin.json',
+    });
+    const page = await context.newPage();
+    await use(page);
+    await context.close();
+  },
+
+  // Fresh login page (not authenticated)
+  loginPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await use(loginPage);
+  },
+});
+
+export { expect } from '@playwright/test';
+
+// Authentication setup function
+export async function setupAuthentication(page: Page, userType: 'user' | 'admin' = 'user'): Promise<void> {
+  const credentials = userType === 'admin' ? ADMIN_USER : TEST_USER;
+
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login(credentials.email, credentials.password);
+
+  // Wait for redirect to dashboard
+  await page.waitForURL('**/dashboard');
+}
+
+// Save authentication state
+export async function saveAuthState(page: Page, filename: string): Promise<void> {
+  await page.context().storageState({ path: `playwright/.auth/${filename}.json` });
+}
+```
+
+# fixtures/data.fixture.ts
+```typescript
+import { test as base } from '@playwright/test';
+import { faker } from '@faker-js/faker';
+
+export interface TestUser {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface TestProduct {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface TestAddress {
+  firstName: string;
+  lastName: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone: string;
+}
+
+export interface TestPayment {
+  cardNumber: string;
+  expiry: string;
+  cvv: string;
+  nameOnCard: string;
+}
+
+// Factory functions for test data
+export const TestDataFactory = {
+  /**
+   * Generate unique test user
+   */
+  createUser(): TestUser {
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    return {
+      email: `test-${Date.now()}-${faker.string.alphanumeric(8)}@example.com`,
+      password: 'TestPassword123!',
+      firstName,
+      lastName,
+    };
+  },
+
+  /**
+   * Generate test address
+   */
+  createAddress(overrides?: Partial<TestAddress>): TestAddress {
+    return {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      address1: faker.location.streetAddress(),
+      city: faker.location.city(),
+      state: faker.location.state({ abbreviated: true }),
+      zipCode: faker.location.zipCode(),
+      country: 'US',
+      phone: faker.phone.number('###-###-####'),
+      ...overrides,
+    };
+  },
+
+  /**
+   * Generate test payment (Stripe test cards)
+   */
+  createPayment(type: 'success' | 'decline' | '3ds' = 'success'): TestPayment {
+    const cards = {
+      success: '4242424242424242',
+      decline: '4000000000000002',
+      '3ds': '4000002500003155',
+    };
+
+    return {
+      cardNumber: cards[type],
+      expiry: '12/25',
+      cvv: '123',
+      nameOnCard: faker.person.fullName(),
+    };
+  },
+
+  /**
+   * Generate test product
+   */
+  createProduct(): TestProduct {
+    return {
+      id: faker.string.uuid(),
+      name: faker.commerce.productName(),
+      price: parseFloat(faker.commerce.price({ min: 10, max: 100 })),
+      quantity: faker.number.int({ min: 1, max: 5 }),
+    };
+  },
+};
+
+// Extend test with data fixtures
+export const test = base.extend<{
+  testUser: TestUser;
+  testAddress: TestAddress;
+  testPayment: TestPayment;
+}>({
+  testUser: async ({}, use) => {
+    const user = TestDataFactory.createUser();
+    await use(user);
+  },
+
+  testAddress: async ({}, use) => {
+    const address = TestDataFactory.createAddress();
+    await use(address);
+  },
+
+  testPayment: async ({}, use) => {
+    const payment = TestDataFactory.createPayment('success');
+    await use(payment);
+  },
+});
+```
+
+# fixtures/api.fixture.ts
+```typescript
+import { test as base, APIRequestContext, request } from '@playwright/test';
+
+interface ApiFixture {
+  api: APIRequestContext;
+  authToken: string;
+}
+
+export const test = base.extend<ApiFixture>({
+  api: async ({ baseURL }, use) => {
+    const apiContext = await request.newContext({
+      baseURL: baseURL,
+      extraHTTPHeaders: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    await use(apiContext);
+    await apiContext.dispose();
+  },
+
+  authToken: async ({ api }, use) => {
+    // Get auth token via API
+    const response = await api.post('/api/auth/login', {
+      data: {
+        email: process.env.TEST_USER_EMAIL,
+        password: process.env.TEST_USER_PASSWORD,
+      },
+    });
+
+    const { accessToken } = await response.json();
+    await use(accessToken);
+  },
+});
+
+// API helper class
+export class ApiClient {
+  constructor(
+    private readonly api: APIRequestContext,
+    private readonly authToken: string
+  ) {}
+
+  private get headers() {
+    return {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  /**
+   * Create a product via API (for test setup)
+   */
+  async createProduct(data: { name: string; price: number }) {
+    const response = await this.api.post('/api/products', {
+      headers: this.headers,
+      data,
+    });
+    return response.json();
+  }
+
+  /**
+   * Add product to cart via API
+   */
+  async addToCart(productId: string, quantity: number) {
+    const response = await this.api.post('/api/cart/items', {
+      headers: this.headers,
+      data: { productId, quantity },
+    });
+    return response.json();
+  }
+
+  /**
+   * Clear cart via API
+   */
+  async clearCart() {
+    await this.api.delete('/api/cart', {
+      headers: this.headers,
+    });
+  }
+
+  /**
+   * Create order via API (for cleanup or setup)
+   */
+  async createOrder(data: {
+    items: Array<{ productId: string; quantity: number }>;
+    shippingAddress: object;
+    paymentMethod: string;
+  }) {
+    const response = await this.api.post('/api/orders', {
+      headers: this.headers,
+      data,
+    });
+    return response.json();
+  }
+
+  /**
+   * Delete user data (for cleanup)
+   */
+  async cleanupUserData() {
+    await this.clearCart();
+    // Add other cleanup as needed
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════
+TEST EXAMPLES
+═══════════════════════════════════════════════════════════════
+
+# tests/auth/login.spec.ts
+```typescript
+import { test, expect } from '../../fixtures/auth.fixture';
+import { LoginPage } from '../../pages/auth/login.page';
+
+test.describe('Login', () => {
+  test.describe('Valid credentials', () => {
+    test('should login successfully with valid credentials', async ({ loginPage, page }) => {
+      await loginPage.login('test@example.com', 'TestPassword123!');
+
+      // Should redirect to dashboard
+      await expect(page).toHaveURL(/.*dashboard/);
+
+      // Should show user menu
+      await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+    });
+
+    test('should remember user when "remember me" is checked', async ({ loginPage, page, context }) => {
+      await loginPage.setRememberMe(true);
+      await loginPage.login('test@example.com', 'TestPassword123!');
+
+      await expect(page).toHaveURL(/.*dashboard/);
+
+      // Close and reopen browser
+      const cookies = await context.cookies();
+      const sessionCookie = cookies.find(c => c.name === 'session');
+
+      expect(sessionCookie).toBeDefined();
+      expect(sessionCookie?.expires).toBeGreaterThan(Date.now() / 1000 + 86400); // > 1 day
+    });
+  });
+
+  test.describe('Invalid credentials', () => {
+    test('should show error with wrong password', async ({ loginPage }) => {
+      await loginPage.login('test@example.com', 'WrongPassword');
+
+      await loginPage.expectLoginError('Invalid credentials');
+    });
+
+    test('should show error with non-existent user', async ({ loginPage }) => {
+      await loginPage.login('nonexistent@example.com', 'AnyPassword');
+
+      // Same error message to prevent user enumeration
+      await loginPage.expectLoginError('Invalid credentials');
+    });
+
+    test('should lock account after 5 failed attempts', async ({ loginPage, page }) => {
+      const email = 'test@example.com';
+
+      for (let i = 0; i < 5; i++) {
+        await loginPage.fillLoginForm(email, 'WrongPassword');
+        await loginPage.submit();
+        await page.waitForTimeout(500); // Wait for rate limit
+      }
+
+      await loginPage.expectLoginError('Account is temporarily locked');
+    });
+  });
+
+  test.describe('Form validation', () => {
+    test('should show error for empty email', async ({ loginPage }) => {
+      await loginPage.passwordInput.fill('Password123!');
+      await loginPage.submit();
+
+      await loginPage.expectEmailError('Email is required');
+    });
+
+    test('should show error for invalid email format', async ({ loginPage }) => {
+      await loginPage.emailInput.fill('invalid-email');
+      await loginPage.passwordInput.fill('Password123!');
+      await loginPage.submit();
+
+      await loginPage.expectEmailError('Invalid email format');
+    });
+
+    test('should show error for empty password', async ({ loginPage }) => {
+      await loginPage.emailInput.fill('test@example.com');
+      await loginPage.submit();
+
+      await loginPage.expectPasswordError('Password is required');
+    });
+  });
+
+  test.describe('MFA', () => {
+    test('should prompt for MFA code when enabled', async ({ loginPage, page }) => {
+      // Use a user with MFA enabled
+      await loginPage.fillLoginForm('mfa-user@example.com', 'TestPassword123!');
+      await loginPage.submit();
+
+      // Should show MFA input
+      await expect(loginPage.mfaCodeInput).toBeVisible();
+    });
+
+    test('should complete login with valid MFA code', async ({ loginPage, page }) => {
+      // This would need a way to generate/mock TOTP codes
+      // In real tests, you might use a test secret or mock the verification
+      await loginPage.loginWithMFA('mfa-user@example.com', 'TestPassword123!', '123456');
+
+      await expect(page).toHaveURL(/.*dashboard/);
+    });
+  });
+
+  test.describe('OAuth', () => {
+    test('should redirect to Google OAuth', async ({ loginPage, page }) => {
+      await loginPage.loginWithGoogle();
+
+      // Should redirect to Google
+      await expect(page).toHaveURL(/accounts\.google\.com/);
+    });
+  });
+
+  test.describe('Accessibility', () => {
+    test('should have no accessibility violations', async ({ loginPage }) => {
+      // Using axe-core for accessibility testing
+      const accessibilityScanResults = await loginPage.page.evaluate(async () => {
+        // @ts-ignore - axe is injected
+        return await axe.run();
+      });
+
+      expect(accessibilityScanResults.violations).toHaveLength(0);
+    });
+
+    test('should be keyboard navigable', async ({ loginPage, page }) => {
+      // Tab through form
+      await page.keyboard.press('Tab');
+      await expect(loginPage.emailInput).toBeFocused();
+
+      await page.keyboard.press('Tab');
+      await expect(loginPage.passwordInput).toBeFocused();
+
+      await page.keyboard.press('Tab');
+      await expect(loginPage.rememberMeCheckbox).toBeFocused();
+
+      await page.keyboard.press('Tab');
+      await expect(loginPage.submitButton).toBeFocused();
+    });
+  });
+});
+```
+
+# tests/checkout/checkout-flow.spec.ts
+```typescript
+import { test, expect } from '../../fixtures/auth.fixture';
+import { TestDataFactory } from '../../fixtures/data.fixture';
+import { ApiClient } from '../../fixtures/api.fixture';
+import { CheckoutPage } from '../../pages/checkout/checkout.page';
+import { CartPage } from '../../pages/checkout/cart.page';
+
+test.describe('Checkout Flow', () => {
+  let apiClient: ApiClient;
+
+  test.beforeEach(async ({ authenticatedPage, authToken, api }) => {
+    apiClient = new ApiClient(api, authToken);
+
+    // Setup: Add items to cart via API for faster test setup
+    await apiClient.addToCart('product-1', 2);
+  });
+
+  test.afterEach(async () => {
+    // Cleanup: Clear cart
+    await apiClient.clearCart();
+  });
+
+  test('should complete checkout successfully', async ({ authenticatedPage }) => {
+    const page = authenticatedPage;
+    const checkoutPage = new CheckoutPage(page);
+
+    const testAddress = TestDataFactory.createAddress();
+    const testPayment = TestDataFactory.createPayment('success');
+
+    await checkoutPage.goto();
+
+    // Complete checkout
+    const orderNumber = await checkoutPage.completeCheckout(testAddress, testPayment);
+
+    // Verify order confirmation
+    expect(orderNumber).toBeTruthy();
+    expect(orderNumber).toMatch(/^ORD-\d+$/);
+
+    await expect(checkoutPage.orderConfirmation).toContainText('Thank you for your order');
+  });
+
+  test('should show error for declined card', async ({ authenticatedPage }) => {
+    const page = authenticatedPage;
+    const checkoutPage = new CheckoutPage(page);
+
+    const testAddress = TestDataFactory.createAddress();
+    const declinedPayment = TestDataFactory.createPayment('decline');
+
+    await checkoutPage.goto();
+    await checkoutPage.fillShippingAddress(testAddress);
+    await checkoutPage.continueToPayment();
+    await checkoutPage.fillPaymentDetails(declinedPayment);
+    await checkoutPage.continueToReview();
+    await checkoutPage.placeOrder();
+
+    // Should show payment error
+    await expect(page.locator('[data-testid="payment-error"]')).toContainText('Card was declined');
+  });
+
+  test('should validate required shipping fields', async ({ authenticatedPage }) => {
+    const page = authenticatedPage;
+    const checkoutPage = new CheckoutPage(page);
+
+    await checkoutPage.goto();
+
+    // Try to continue without filling required fields
+    await checkoutPage.continueToPaymentButton.click();
+
+    // Should show validation errors
+    await expect(page.locator('[data-testid="first-name-error"]')).toBeVisible();
+    await expect(page.locator('[data-testid="last-name-error"]')).toBeVisible();
+    await expect(page.locator('[data-testid="address-error"]')).toBeVisible();
+  });
+
+  test('should update order total when changing quantity', async ({ authenticatedPage }) => {
+    const page = authenticatedPage;
+    const cartPage = new CartPage(page);
+
+    await cartPage.goto();
+
+    const initialTotal = await cartPage.getTotal();
+
+    // Increase quantity
+    await cartPage.setItemQuantity('product-1', 3);
+    await page.waitForTimeout(500); // Wait for recalculation
+
+    const newTotal = await cartPage.getTotal();
+
+    expect(parseFloat(newTotal.replace('$', ''))).toBeGreaterThan(
+      parseFloat(initialTotal.replace('$', ''))
+    );
+  });
+
+  test('should preserve cart across sessions', async ({ browser }) => {
+    // Login and add to cart
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
+    // ... setup and add items
+
+    // Save state
+    await context1.storageState({ path: 'playwright/.auth/cart-test.json' });
+    await context1.close();
+
+    // New session with saved state
+    const context2 = await browser.newContext({
+      storageState: 'playwright/.auth/cart-test.json',
+    });
+    const page2 = await context2.newPage();
+    const cartPage = new CartPage(page2);
+
+    await cartPage.goto();
+
+    // Cart should have items
+    const itemCount = await cartPage.getItemCount();
+    expect(itemCount).toBeGreaterThan(0);
+
+    await context2.close();
+  });
+
+  test('should handle 3D Secure authentication', async ({ authenticatedPage }) => {
+    const page = authenticatedPage;
+    const checkoutPage = new CheckoutPage(page);
+
+    const testAddress = TestDataFactory.createAddress();
+    const threeDSPayment = TestDataFactory.createPayment('3ds');
+
+    await checkoutPage.goto();
+    await checkoutPage.fillShippingAddress(testAddress);
+    await checkoutPage.continueToPayment();
+    await checkoutPage.fillPaymentDetails(threeDSPayment);
+    await checkoutPage.continueToReview();
+    await checkoutPage.placeOrder();
+
+    // Wait for 3DS iframe/popup
+    const frame = page.frameLocator('[data-testid="3ds-frame"]');
+    await frame.locator('[data-testid="3ds-complete"]').click();
+
+    // Should complete order
+    await checkoutPage.waitForOrderConfirmation();
+  });
+});
+```
+
+═══════════════════════════════════════════════════════════════
+GLOBAL SETUP AND TEARDOWN
+═══════════════════════════════════════════════════════════════
+
+# support/global-setup.ts
+```typescript
+import { chromium, FullConfig } from '@playwright/test';
+import { setupAuthentication, saveAuthState } from '../fixtures/auth.fixture';
+
+async function globalSetup(config: FullConfig) {
+  const { baseURL } = config.projects[0].use;
+
+  console.log('🔧 Running global setup...');
+
+  // Create browser for authentication
+  const browser = await chromium.launch();
+
+  // Setup regular user authentication
+  console.log('  📝 Setting up user authentication...');
+  const userContext = await browser.newContext();
+  const userPage = await userContext.newPage();
+  await userPage.goto(baseURL + '/login');
+  await setupAuthentication(userPage, 'user');
+  await saveAuthState(userPage, 'user');
+  await userContext.close();
+
+  // Setup admin authentication
+  console.log('  👑 Setting up admin authentication...');
+  const adminContext = await browser.newContext();
+  const adminPage = await adminContext.newPage();
+  await adminPage.goto(baseURL + '/login');
+  await setupAuthentication(adminPage, 'admin');
+  await saveAuthState(adminPage, 'admin');
+  await adminContext.close();
+
+  await browser.close();
+
+  // Seed test data if needed
+  console.log('  🌱 Seeding test data...');
+  await seedTestData();
+
+  console.log('✅ Global setup complete');
+}
+
+async function seedTestData() {
+  // Use API to create test data
+  const apiUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+  // Create test products
+  const products = [
+    { name: 'Test Product 1', price: 19.99, sku: 'TEST-001' },
+    { name: 'Test Product 2', price: 29.99, sku: 'TEST-002' },
+    { name: 'Test Product 3', price: 39.99, sku: 'TEST-003' },
+  ];
+
+  for (const product of products) {
+    try {
+      await fetch(`${apiUrl}/api/test/seed/product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+    } catch (error) {
+      console.warn(`  ⚠️ Could not seed product: ${product.name}`);
+    }
+  }
+}
+
+export default globalSetup;
+```
+
+# support/global-teardown.ts
+```typescript
+import { FullConfig } from '@playwright/test';
+
+async function globalTeardown(config: FullConfig) {
+  console.log('🧹 Running global teardown...');
+
+  // Cleanup test data
+  const apiUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+  try {
+    await fetch(`${apiUrl}/api/test/cleanup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Test-Cleanup-Key': process.env.TEST_CLEANUP_KEY || 'test-key',
+      },
+    });
+    console.log('  ✅ Test data cleaned up');
+  } catch (error) {
+    console.warn('  ⚠️ Could not cleanup test data');
+  }
+
+  console.log('✅ Global teardown complete');
+}
+
+export default globalTeardown;
+```
+
+═══════════════════════════════════════════════════════════════
+CI/CD INTEGRATION
+═══════════════════════════════════════════════════════════════
+
+# .github/workflows/e2e-tests.yml
+```yaml
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run nightly against staging
+    - cron: '0 6 * * *'
+
+env:
+  TEST_ENV: ${{ github.event_name == 'schedule' && 'staging' || 'test' }}
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+
+    services:
+      # Local test database
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Local Redis for sessions
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: |
+          npm run start:test &
+          npx wait-on http://localhost:3000 --timeout 60000
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Run E2E tests (shard ${{ matrix.shard }}/4)
+        run: |
+          npx playwright test --shard=${{ matrix.shard }}/4
+        env:
+          BASE_URL: http://localhost:3000
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Upload test videos on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-videos-${{ matrix.shard }}
+          path: test-results/**/*.webm
+          retention-days: 3
+
+  merge-reports:
+    needs: e2e-tests
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-report-*
+          path: all-reports
+          merge-multiple: true
+
+      - name: Merge reports
+        run: |
+          npx playwright merge-reports --reporter html ./all-reports
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-merged
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Publish report to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: playwright-report
+          destination_dir: e2e-report
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = 'E2E Test Results\n\n';
+
+            try {
+              const results = JSON.parse(fs.readFileSync('all-reports/results.json', 'utf8'));
+              const passed = results.suites.flatMap(s => s.specs).filter(s => s.ok).length;
+              const failed = results.suites.flatMap(s => s.specs).filter(s => !s.ok).length;
+              const total = passed + failed;
+
+              summary += `✅ Passed: ${passed}/${total}\n`;
+              if (failed > 0) {
+                summary += `❌ Failed: ${failed}\n`;
+              }
+            } catch (e) {
+              summary += 'Could not parse test results';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+```
+
+═══════════════════════════════════════════════════════════════
+ANTI-PATTERNS
+═══════════════════════════════════════════════════════════════
+
+# ❌ ANTI-PATTERN 1: Fixed Sleep Instead of Waits
+```typescript
+// BAD: Using fixed timeouts
+test('should load products', async ({ page }) => {
+  await page.goto('/products');
+  await page.waitForTimeout(3000);  // DON'T DO THIS!
+  const products = await page.locator('.product').count();
+  expect(products).toBeGreaterThan(0);
+});
+
+// CORRECT: Wait for specific conditions
+test('should load products', async ({ page }) => {
+  await page.goto('/products');
+
+  // Wait for network to be idle
+  await page.waitForLoadState('networkidle');
+
+  // Or wait for specific element
+  await page.locator('[data-testid="product-list"]').waitFor({ state: 'visible' });
+
+  // Or wait for specific count
+  await expect(page.locator('[data-testid="product-card"]')).toHaveCount(10);
+});
+```
+
+# ❌ ANTI-PATTERN 2: Fragile Selectors
+```typescript
+// BAD: CSS path selectors (break with any DOM change)
+const addToCartButton = page.locator('div.product-card > div.card-body > div.actions > button.btn-primary');
+
+// BAD: Index-based selectors
+const firstProduct = page.locator('.product-card').nth(0);
+
+// BAD: Text content that may be localized
+const loginButton = page.locator('text=Login');
+
+// CORRECT: Use data-testid
+const addToCartButton = page.locator('[data-testid="add-to-cart"]');
+
+// CORRECT: Use role with accessible name
+const loginButton = page.getByRole('button', { name: /sign in/i });
+
+// CORRECT: Combine testid with filtering
+const firstProduct = page.locator('[data-testid="product-card"]').first();
+```
+
+# ❌ ANTI-PATTERN 3: Shared State Between Tests
+```typescript
+// BAD: Tests share state - order matters!
+let productId: string;
+
+test('create product', async ({ page }) => {
+  // Creates product, stores ID
+  productId = await createProduct(page);
+});
+
+test('view product', async ({ page }) => {
+  // DEPENDS on previous test running first
+  await page.goto(`/products/${productId}`);
+});
+
+test('delete product', async ({ page }) => {
+  // DEPENDS on both previous tests
+  await deleteProduct(page, productId);
+});
+
+// CORRECT: Each test is independent
+test.describe('Product CRUD', () => {
+  let productId: string;
+
+  test.beforeEach(async ({ api }) => {
+    // Create fresh product for each test
+    const product = await api.post('/products', { data: { name: 'Test' } });
+    productId = product.id;
+  });
+
+  test.afterEach(async ({ api }) => {
+    // Clean up
+    await api.delete(`/products/${productId}`);
+  });
+
+  test('view product', async ({ page }) => {
+    await page.goto(`/products/${productId}`);
+    // Test viewing...
+  });
+
+  test('edit product', async ({ page }) => {
+    await page.goto(`/products/${productId}/edit`);
+    // Test editing...
+  });
+});
+```
+
+# ❌ ANTI-PATTERN 4: Testing Everything E2E (Ice Cream Cone)
+```typescript
+// BAD: Testing validation logic E2E
+test('email validation shows error for invalid format', async ({ page }) => {
+  await page.goto('/register');
+  await page.fill('#email', 'invalid');
+  await page.click('button[type="submit"]');
+  await expect(page.locator('.email-error')).toContainText('Invalid email');
+});
+
+// This should be a unit test!
+// Unit test:
+describe('email validation', () => {
+  it('rejects invalid email format', () => {
+    expect(validateEmail('invalid')).toBe(false);
+    expect(validateEmail('test@')).toBe(false);
+    expect(validateEmail('test@example.com')).toBe(true);
+  });
+});
+
+// E2E should test critical user journeys:
+test('user can complete registration', async ({ page }) => {
+  await page.goto('/register');
+  await page.fill('[data-testid="email"]', 'newuser@example.com');
+  await page.fill('[data-testid="password"]', 'SecurePass123!');
+  await page.click('[data-testid="submit"]');
+
+  // Should redirect to dashboard
+  await expect(page).toHaveURL(/.*dashboard/);
+});
+```
+
+# ❌ ANTI-PATTERN 5: Ignoring Flaky Tests
+```typescript
+// BAD: Ignoring flaky test with skip
+test.skip('checkout flow', async ({ page }) => {
+  // "It's flaky, we'll fix it later"
+});
+
+// BAD: Just adding retries without fixing
+test('checkout flow', async ({ page }) => {
+  test.info().annotations.push({ type: 'flaky' });
+  // Still flaky, just retries more
+});
+
+// CORRECT: Fix the root cause
+test('checkout flow', async ({ page }) => {
+  await page.goto('/checkout');
+
+  // Wait for payment form to be ready (was the flaky part)
+  await page.waitForFunction(() => {
+    // @ts-ignore
+    return window.Stripe !== undefined;
+  });
+
+  // Now it's stable
+  await page.fill('[data-testid="card-number"]', '4242424242424242');
+});
+```
+
+# ❌ ANTI-PATTERN 6: No Test Isolation
+```typescript
+// BAD: Test modifies global state
+test('admin changes site settings', async ({ adminPage }) => {
+  await adminPage.goto('/admin/settings');
+  await adminPage.fill('[name="siteName"]', 'New Name');
+  await adminPage.click('[type="submit"]');
+  // Other tests now see "New Name"!
+});
+
+// CORRECT: Reset state after test
+test('admin changes site settings', async ({ adminPage, api }) => {
+  // Store original settings
+  const original = await api.get('/api/settings');
+
+  await adminPage.goto('/admin/settings');
+  await adminPage.fill('[name="siteName"]', 'New Name');
+  await adminPage.click('[type="submit"]');
+
+  // Verify change
+  await expect(adminPage.locator('h1')).toContainText('New Name');
+
+  // Restore original settings
+  test.afterEach(async () => {
+    await api.put('/api/settings', { data: original });
+  });
+});
+```
+
+═══════════════════════════════════════════════════════════════
+FLAKY TEST DETECTION AND FIXING
+═══════════════════════════════════════════════════════════════
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  FLAKY TEST WORKFLOW                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. DETECT                                                   │
+│     └─ Monitor CI for tests that pass/fail inconsistently   │
+│     └─ Track flaky rate: failures / total runs              │
+│     └─ Tag tests with @flaky annotation                     │
+│                                                              │
+│  2. ISOLATE                                                  │
+│     └─ Run test 10-20 times locally                         │
+│     └─ npx playwright test --repeat-each=20 test.spec.ts    │
+│     └─ Collect failure patterns                              │
+│                                                              │
+│  3. DIAGNOSE                                                 │
+│     └─ Check for race conditions (network, animations)      │
+│     └─ Review waits (sleep vs explicit wait)                │
+│     └─ Look for shared state between tests                  │
+│     └─ Check for external dependencies (API, DB)            │
+│                                                              │
+│  4. FIX                                                      │
+│     └─ Replace sleeps with explicit waits                   │
+│     └─ Add retry logic for transient failures               │
+│     └─ Isolate test data                                    │
+│     └─ Mock external services                               │
+│                                                              │
+│  5. VERIFY                                                   │
+│     └─ Run test 50+ times to confirm stability              │
+│     └─ Remove @flaky annotation                              │
+│     └─ Monitor for regression                               │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+# Common Flaky Test Causes and Solutions
+
+| Cause | Symptom | Solution |
+|-------|---------|----------|
+| Animation | Element moves during interaction | Wait for animation to complete |
+| Network timing | Data not loaded | Wait for network idle or specific response |
+| Database timing | Stale data | Use API to verify state, not just UI |
+| Time-based logic | Test fails at certain times | Mock Date/time in tests |
+| Random data | Inconsistent state | Seed random generators |
+| Parallel execution | Test interference | Isolate test data per test |
+| External services | Timeouts, errors | Mock external dependencies |
+| Browser differences | Works in Chrome, fails in Firefox | Cross-browser explicit waits |
+
+═══════════════════════════════════════════════════════════════
 MÉTRICAS DE ÉXITO
-- E2E flaky rate < 2%.
-- E2E suite execution time < 10 minutos.
-- Critical user journeys covered > 95%.
-- False positives (tests que fallan sin bug) < 1%.
-- Time to fix flaky test < 1 día.
-- E2E tests blocking deploy = solo real failures.
+═══════════════════════════════════════════════════════════════
 
+| Métrica | Target | Cómo Medir |
+|---------|--------|------------|
+| Flaky Rate | < 2% | Failed tests that pass on retry / Total runs |
+| Suite Execution Time | < 10min | CI pipeline duration |
+| Critical Path Coverage | > 95% | User journeys tested / Total critical journeys |
+| False Positive Rate | < 1% | Tests failing without real bug / Total failures |
+| Time to Fix Flaky | < 1 day | Time from flaky detection to fix |
+| Test Isolation | 100% | Tests that can run independently |
+| Parallelization | 4+ workers | Number of parallel test workers |
+| Browser Coverage | 3+ | Number of browsers tested |
+| Debug Info Quality | 100% | Failures with screenshots/videos |
+| Test Maintainability | < 1h/test/month | Time spent maintaining tests |
+
+═══════════════════════════════════════════════════════════════
 MODOS DE FALLA
-- Ice cream cone: más E2E que unit tests.
-- Flaky hell: tests que fallan aleatoriamente.
-- Slow feedback: suite de 1 hora.
-- Brittle selectors: tests que se rompen con cualquier cambio.
-- Shared state: tests que dependen de orden.
-- Debug nightmare: failures sin info útil.
+═══════════════════════════════════════════════════════════════
 
+1. **Ice Cream Cone**: Más E2E que unit tests
+   - Detección: Test pyramid analysis
+   - Prevención: Enforce test ratios (70/20/10)
+
+2. **Flaky Hell**: Tests que fallan aleatoriamente
+   - Detección: Flaky rate monitoring
+   - Prevención: Explicit waits, test isolation
+
+3. **Slow Feedback**: Suite de 1+ hora
+   - Detección: CI duration tracking
+   - Prevención: Parallelization, sharding
+
+4. **Brittle Selectors**: Tests rompen con cualquier cambio
+   - Detección: Selector audit
+   - Prevención: data-testid convention
+
+5. **Shared State**: Tests dependen de orden
+   - Detección: Randomize test order
+   - Prevención: Test isolation, beforeEach cleanup
+
+6. **Debug Nightmare**: Failures sin info útil
+   - Detección: Time to diagnose failures
+   - Prevención: Screenshots, videos, traces
+
+═══════════════════════════════════════════════════════════════
 DEFINICIÓN DE DONE
-- E2E tests para critical paths implementados.
-- Page Objects o abstracción similar.
-- Test data strategy definida.
-- CI integration con parallelization.
-- Flaky monitoring activo.
-- Screenshots/videos en failures.
-- Execution time < target.
-- Guidelines documentadas.
+═══════════════════════════════════════════════════════════════
+
+## Test Implementation
+- [ ] Uses Page Object Model or equivalent abstraction
+- [ ] Uses data-testid for selectors
+- [ ] No fixed sleeps - only explicit waits
+- [ ] Test data is isolated (unique per test)
+- [ ] Cleanup runs after test (beforeEach/afterEach)
+- [ ] Screenshots captured on failure
+- [ ] Video recorded on retry
+
+## Test Quality
+- [ ] Test runs successfully 20+ times in a row
+- [ ] Test runs in < 30 seconds
+- [ ] Test is independent (can run alone)
+- [ ] Test has clear assertion messages
+- [ ] Test covers a critical user journey
+
+## CI Integration
+- [ ] Test runs in CI pipeline
+- [ ] Test runs in parallel with others
+- [ ] Test works on all target browsers
+- [ ] Test results reported to PR
+- [ ] Flaky detection enabled
+
+## Documentation
+- [ ] Test file has descriptive name
+- [ ] Test describe/it blocks are clear
+- [ ] Complex setup is commented
+- [ ] Page Objects are documented

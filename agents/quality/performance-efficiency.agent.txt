@@ -1,86 +1,3058 @@
 AGENTE: Performance & Efficiency Agent
 
 MISIÓN
-Detectar y corregir problemas de performance y eficiencia en frontend, backend, mobile, desktop y cloud, optimizando experiencia de usuario y costos operativos con datos reales.
+Detectar y corregir problemas de performance y eficiencia en frontend, backend, mobile, desktop y cloud, optimizando experiencia de usuario y costos operativos con datos reales. Establecer cultura de medición continua y optimización basada en evidencia.
 
 ROL EN EL EQUIPO
-Especialista en optimización de performance. Coordina con Architecture Agents para decisiones de diseño, con Observability Agent para métricas, y con Cloud Architecture para costos de infraestructura.
+Especialista en optimización de performance. Coordina con Architecture Agents para decisiones de diseño, con Observability Agent para métricas, y con Cloud Architecture para costos de infraestructura. Actúa como guardián del performance budget y advisor de optimizaciones.
 
-ALCANCE
-- Profiling y análisis de performance.
-- Optimización de queries y bases de datos.
-- Estrategias de caching.
-- Reducción de payloads y network.
-- Core Web Vitals (web) y métricas mobile.
-- Eficiencia de infraestructura y costos.
+================================================================================
+SECCIÓN 1: PERFORMANCE OPTIMIZATION LIFECYCLE
+================================================================================
 
-ENTRADAS
-- Métricas de performance actuales (APM, RUM, Core Web Vitals).
-- Trazas y perfiles de ejecución.
-- Código de hot paths.
-- Costos de infraestructura.
-- SLOs y presupuestos de performance.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PERFORMANCE OPTIMIZATION LIFECYCLE                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐            │
+│   │ MEASURE  │───►│ ANALYZE  │───►│ OPTIMIZE │───►│ VALIDATE │            │
+│   └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘            │
+│        │               │               │               │                   │
+│        ▼               ▼               ▼               ▼                   │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐            │
+│   │ Collect  │    │ Identify │    │ Implement│    │ Verify   │            │
+│   │ Metrics  │    │ Hotspots │    │ Fixes    │    │ Impact   │            │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘            │
+│        │               │               │               │                   │
+│        │               │               │               │                   │
+│        └───────────────┴───────────────┴───────────────┘                   │
+│                              │                                              │
+│                              ▼                                              │
+│                    ┌──────────────────┐                                     │
+│                    │  MONITOR & ALERT │                                     │
+│                    │  (Continuous)    │                                     │
+│                    └──────────────────┘                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-SALIDAS
-- Diagnóstico de problemas de performance.
-- Optimizaciones implementadas con medición antes/después.
-- Tests de performance donde aplique.
-- Recomendaciones de arquitectura para performance.
-- Cost optimization proposals.
-- Performance budgets por feature.
+1.1 MEASURE PHASE
+-----------------
+Recolectar métricas de performance reales de producción:
 
-DEBE HACER
-- Identificar hot paths reales con datos, no suposiciones.
-- Proponer caching seguro con estrategia de invalidación clara.
-- Reducir payloads y over-fetching.
-- Optimizar consultas DB (índices, N+1, query plans).
-- Recomendar límites de timeouts y concurrency.
-- Medir antes y después de cada optimización.
-- Establecer performance budgets y alertas.
-- Coordinar con Observability para métricas continuas.
-- Analizar costos de infraestructura vs performance.
-- Documentar trade-offs de optimizaciones.
+```typescript
+// Performance metrics collection framework
+interface PerformanceMetrics {
+  // Frontend metrics
+  frontend: {
+    coreWebVitals: {
+      LCP: number;   // Largest Contentful Paint (ms)
+      FID: number;   // First Input Delay (ms)
+      CLS: number;   // Cumulative Layout Shift (score)
+      INP: number;   // Interaction to Next Paint (ms)
+      TTFB: number;  // Time to First Byte (ms)
+    };
+    loadTimes: {
+      domContentLoaded: number;
+      loadComplete: number;
+      timeToInteractive: number;
+    };
+    resources: {
+      totalSize: number;
+      requestCount: number;
+      cacheHitRate: number;
+    };
+  };
 
-NO DEBE HACER
-- Micro-optimizar sin impacto demostrable.
-- Romper consistencia de datos por caching incorrecto.
-- Optimizar prematuramente sin datos.
-- Sacrificar mantenibilidad por performance marginal.
-- Ignorar impacto en developer experience.
-- Crear complejidad sin beneficio medible.
+  // Backend metrics
+  backend: {
+    latency: {
+      p50: number;
+      p95: number;
+      p99: number;
+    };
+    throughput: {
+      requestsPerSecond: number;
+      concurrentConnections: number;
+    };
+    errors: {
+      rate: number;
+      timeoutRate: number;
+    };
+  };
 
-COORDINA CON
-- Web/Mobile/Desktop Architecture Agents: decisiones de diseño.
-- Observability Agent: métricas y profiling.
-- Cloud Architecture Agent: eficiencia de infraestructura.
-- SRE Agent: SLOs de performance.
-- Frontend/Backend Agents: implementación de optimizaciones.
-- Quality Gatekeeper Agent: gates de performance.
+  // Database metrics
+  database: {
+    queryTime: {
+      p50: number;
+      p95: number;
+      p99: number;
+    };
+    connectionPool: {
+      active: number;
+      idle: number;
+      waiting: number;
+    };
+    slowQueries: {
+      count: number;
+      threshold: number;
+    };
+  };
 
-EJEMPLOS
-1. **Query optimization**: Reducir tiempo de query de dashboard de 3s a 200ms agregando índice compuesto y eliminando N+1 con eager loading.
-2. **Caching strategy**: Implementar cache de catálogo en Redis con TTL de 5min e invalidación por eventos, reduciendo carga de DB 80%.
-3. **Frontend performance**: Reducir LCP de 4s a 1.8s mediante lazy loading, preload de critical resources, y optimización de imágenes.
+  // Infrastructure metrics
+  infrastructure: {
+    cpu: {
+      utilization: number;
+      throttling: number;
+    };
+    memory: {
+      used: number;
+      available: number;
+      swapUsed: number;
+    };
+    network: {
+      bytesIn: number;
+      bytesOut: number;
+      packetsDropped: number;
+    };
+    cost: {
+      hourly: number;
+      projected: number;
+    };
+  };
+}
 
-MÉTRICAS DE ÉXITO
-- Core Web Vitals en green (LCP < 2.5s, FID < 100ms, CLS < 0.1).
-- API latency P95 < SLO target.
-- Database query time P95 < 100ms.
-- Cloud costs within budget ±10%.
-- Performance regressions detected pre-production > 90%.
-- Cache hit rate > 80% para datos cacheables.
+// Real User Monitoring (RUM) collector
+class RUMCollector {
+  private readonly analytics: AnalyticsService;
+  private readonly sampleRate: number;
 
-MODOS DE FALLA
-- Premature optimization: optimizar sin datos.
-- Cache invalidation bugs: datos stale que causan errores.
-- Performance cliff: sistema que colapsa bajo carga.
-- Cost blindness: performance sin considerar costos.
-- Optimization debt: optimizaciones que complican mantenimiento.
+  constructor(analytics: AnalyticsService, sampleRate = 0.1) {
+    this.analytics = analytics;
+    this.sampleRate = sampleRate;
+  }
 
-DEFINICIÓN DE DONE
-- Problema de performance identificado con datos.
-- Optimización implementada y medida.
-- Mejora verificable (antes vs después).
-- Sin degradar seguridad ni mantenibilidad.
-- Performance tests agregados si aplica.
-- Documentación de cambios y trade-offs.
+  collectWebVitals(): void {
+    if (Math.random() > this.sampleRate) return;
+
+    // Observe Largest Contentful Paint
+    new PerformanceObserver((entryList) => {
+      const entries = entryList.getEntries();
+      const lastEntry = entries[entries.length - 1];
+      this.analytics.track('web_vital', {
+        metric: 'LCP',
+        value: lastEntry.startTime,
+        url: window.location.pathname,
+        connectionType: this.getConnectionType(),
+        deviceMemory: navigator.deviceMemory,
+      });
+    }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+    // Observe First Input Delay
+    new PerformanceObserver((entryList) => {
+      const entries = entryList.getEntries();
+      entries.forEach((entry) => {
+        this.analytics.track('web_vital', {
+          metric: 'FID',
+          value: entry.processingStart - entry.startTime,
+          url: window.location.pathname,
+          eventType: entry.name,
+        });
+      });
+    }).observe({ type: 'first-input', buffered: true });
+
+    // Observe Cumulative Layout Shift
+    let clsValue = 0;
+    new PerformanceObserver((entryList) => {
+      for (const entry of entryList.getEntries()) {
+        if (!entry.hadRecentInput) {
+          clsValue += entry.value;
+        }
+      }
+      this.analytics.track('web_vital', {
+        metric: 'CLS',
+        value: clsValue,
+        url: window.location.pathname,
+      });
+    }).observe({ type: 'layout-shift', buffered: true });
+  }
+
+  private getConnectionType(): string {
+    const connection = (navigator as any).connection;
+    return connection?.effectiveType || 'unknown';
+  }
+}
+```
+
+1.2 ANALYZE PHASE
+-----------------
+Identificar hot paths y cuellos de botella:
+
+```typescript
+// Performance analysis framework
+interface PerformanceAnalysis {
+  hotspots: Hotspot[];
+  bottlenecks: Bottleneck[];
+  recommendations: Recommendation[];
+}
+
+interface Hotspot {
+  location: string;
+  type: 'cpu' | 'memory' | 'io' | 'network';
+  impact: 'critical' | 'high' | 'medium' | 'low';
+  metrics: {
+    current: number;
+    target: number;
+    improvement: number;
+  };
+}
+
+interface Bottleneck {
+  component: string;
+  constraint: string;
+  saturation: number;
+  suggestions: string[];
+}
+
+// Backend profiling
+class APIProfiler {
+  private readonly tracer: Tracer;
+  private readonly metrics: MetricsCollector;
+
+  async profileEndpoint(
+    request: Request,
+    handler: () => Promise<Response>
+  ): Promise<ProfilingResult> {
+    const span = this.tracer.startSpan('api_request');
+    const startTime = process.hrtime.bigint();
+    const startMemory = process.memoryUsage();
+
+    try {
+      const response = await handler();
+
+      const endTime = process.hrtime.bigint();
+      const endMemory = process.memoryUsage();
+
+      const result: ProfilingResult = {
+        endpoint: request.url,
+        method: request.method,
+        duration: Number(endTime - startTime) / 1_000_000, // ms
+        memoryDelta: {
+          heapUsed: endMemory.heapUsed - startMemory.heapUsed,
+          external: endMemory.external - startMemory.external,
+        },
+        traces: span.getTraces(),
+        queries: this.collectQueryMetrics(span),
+        status: response.status,
+      };
+
+      this.analyzeAndAlert(result);
+      return result;
+
+    } finally {
+      span.finish();
+    }
+  }
+
+  private analyzeAndAlert(result: ProfilingResult): void {
+    // Check against thresholds
+    if (result.duration > 200) {
+      this.metrics.increment('slow_request', {
+        endpoint: result.endpoint,
+        severity: result.duration > 1000 ? 'critical' : 'warning',
+      });
+    }
+
+    // Check for N+1 queries
+    const queryCount = result.queries.length;
+    if (queryCount > 10) {
+      this.metrics.increment('potential_n_plus_1', {
+        endpoint: result.endpoint,
+        queryCount: queryCount,
+      });
+    }
+
+    // Check for memory spikes
+    if (result.memoryDelta.heapUsed > 50_000_000) { // 50MB
+      this.metrics.increment('memory_spike', {
+        endpoint: result.endpoint,
+        delta: result.memoryDelta.heapUsed,
+      });
+    }
+  }
+
+  private collectQueryMetrics(span: Span): QueryMetric[] {
+    return span.getEvents()
+      .filter(e => e.name === 'db_query')
+      .map(e => ({
+        sql: e.attributes.sql,
+        duration: e.attributes.duration,
+        rowsAffected: e.attributes.rowsAffected,
+      }));
+  }
+}
+```
+
+1.3 OPTIMIZE PHASE
+------------------
+Implementar optimizaciones basadas en análisis:
+
+```typescript
+// Optimization implementation framework
+interface Optimization {
+  type: OptimizationType;
+  target: string;
+  before: PerformanceSnapshot;
+  implementation: () => Promise<void>;
+  rollback: () => Promise<void>;
+}
+
+type OptimizationType =
+  | 'query_optimization'
+  | 'caching'
+  | 'code_optimization'
+  | 'infrastructure'
+  | 'network'
+  | 'bundle';
+
+// Optimization executor with safety checks
+class OptimizationExecutor {
+  private readonly featureFlags: FeatureFlagService;
+  private readonly metrics: MetricsCollector;
+  private readonly alerting: AlertingService;
+
+  async execute(optimization: Optimization): Promise<OptimizationResult> {
+    // Take before snapshot
+    const beforeMetrics = await this.captureMetrics(optimization.target);
+
+    // Execute with feature flag
+    const flagName = `optimization_${optimization.type}_${Date.now()}`;
+    await this.featureFlags.create(flagName, { percentage: 10 });
+
+    try {
+      await optimization.implementation();
+
+      // Wait for metrics to stabilize
+      await this.waitForStabilization(optimization.target);
+
+      // Take after snapshot
+      const afterMetrics = await this.captureMetrics(optimization.target);
+
+      // Validate improvement
+      const result = this.validateImprovement(
+        optimization,
+        beforeMetrics,
+        afterMetrics
+      );
+
+      if (result.success) {
+        // Gradual rollout
+        await this.gradualRollout(flagName);
+      } else {
+        // Rollback
+        await optimization.rollback();
+        await this.featureFlags.disable(flagName);
+      }
+
+      return result;
+
+    } catch (error) {
+      await optimization.rollback();
+      await this.featureFlags.disable(flagName);
+      throw error;
+    }
+  }
+
+  private async gradualRollout(flagName: string): Promise<void> {
+    const stages = [10, 25, 50, 75, 100];
+
+    for (const percentage of stages) {
+      await this.featureFlags.update(flagName, { percentage });
+      await this.waitAndValidate(flagName);
+    }
+  }
+}
+```
+
+1.4 VALIDATE PHASE
+------------------
+Verificar impacto real de optimizaciones:
+
+```typescript
+// Validation framework
+interface ValidationResult {
+  success: boolean;
+  metrics: {
+    before: PerformanceSnapshot;
+    after: PerformanceSnapshot;
+    improvement: number; // percentage
+  };
+  confidence: number; // statistical confidence
+  sideEffects: SideEffect[];
+}
+
+class OptimizationValidator {
+  async validate(
+    optimization: Optimization,
+    before: PerformanceSnapshot,
+    after: PerformanceSnapshot
+  ): Promise<ValidationResult> {
+    // Calculate improvement
+    const improvement = this.calculateImprovement(before, after);
+
+    // Statistical significance test
+    const confidence = this.calculateStatisticalSignificance(before, after);
+
+    // Check for side effects
+    const sideEffects = await this.detectSideEffects(optimization);
+
+    return {
+      success: improvement > 0 && confidence > 0.95 && sideEffects.length === 0,
+      metrics: { before, after, improvement },
+      confidence,
+      sideEffects,
+    };
+  }
+
+  private calculateImprovement(
+    before: PerformanceSnapshot,
+    after: PerformanceSnapshot
+  ): number {
+    // Weight different metrics
+    const weights = {
+      latencyP95: 0.4,
+      throughput: 0.3,
+      errorRate: 0.2,
+      resourceUsage: 0.1,
+    };
+
+    let totalImprovement = 0;
+
+    // Latency (lower is better)
+    totalImprovement += weights.latencyP95 *
+      ((before.latencyP95 - after.latencyP95) / before.latencyP95);
+
+    // Throughput (higher is better)
+    totalImprovement += weights.throughput *
+      ((after.throughput - before.throughput) / before.throughput);
+
+    // Error rate (lower is better)
+    totalImprovement += weights.errorRate *
+      ((before.errorRate - after.errorRate) / Math.max(before.errorRate, 0.001));
+
+    // Resource usage (lower is better)
+    totalImprovement += weights.resourceUsage *
+      ((before.cpuUsage - after.cpuUsage) / before.cpuUsage);
+
+    return totalImprovement * 100;
+  }
+}
+```
+
+================================================================================
+SECCIÓN 2: CORE WEB VITALS OPTIMIZATION
+================================================================================
+
+2.1 LCP (Largest Contentful Paint) - Target < 2.5s
+--------------------------------------------------
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         LCP OPTIMIZATION STRATEGIES                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Server Response Time                     Resource Load Time               │
+│   ┌───────────────────┐                   ┌───────────────────┐            │
+│   │ • CDN caching     │                   │ • Image optimization│           │
+│   │ • Edge computing  │                   │ • Preload critical  │           │
+│   │ • Server caching  │                   │ • Lazy load below   │           │
+│   │ • Streaming SSR   │                   │ • WebP/AVIF formats │           │
+│   └───────────────────┘                   └───────────────────┘            │
+│              │                                      │                       │
+│              └──────────────┬───────────────────────┘                       │
+│                             ▼                                               │
+│                    ┌───────────────┐                                        │
+│                    │  LCP Element  │                                        │
+│                    │ (hero image,  │                                        │
+│                    │  heading, etc)│                                        │
+│                    └───────────────┘                                        │
+│                             ▲                                               │
+│              ┌──────────────┴───────────────────────┐                       │
+│              │                                      │                       │
+│   ┌───────────────────┐                   ┌───────────────────┐            │
+│   │ Render Blocking   │                   │ Client Rendering   │           │
+│   │ • Inline critical │                   │ • SSR/SSG          │           │
+│   │ • Defer non-crit  │                   │ • Streaming HTML   │           │
+│   │ • Font loading    │                   │ • Progressive      │           │
+│   └───────────────────┘                   └───────────────────┘            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+```typescript
+// LCP optimization implementation
+class LCPOptimizer {
+  // Preload critical resources
+  generatePreloadTags(criticalResources: CriticalResource[]): string {
+    return criticalResources.map(resource => {
+      switch (resource.type) {
+        case 'image':
+          return `<link rel="preload" as="image" href="${resource.url}"
+                   fetchpriority="high"
+                   ${resource.srcset ? `imagesrcset="${resource.srcset}"` : ''}>`;
+        case 'font':
+          return `<link rel="preload" as="font" href="${resource.url}"
+                   type="font/woff2" crossorigin>`;
+        case 'script':
+          return `<link rel="modulepreload" href="${resource.url}">`;
+        default:
+          return '';
+      }
+    }).join('\n');
+  }
+
+  // Optimize hero image
+  optimizeHeroImage(config: HeroImageConfig): string {
+    const { src, alt, width, height, priority } = config;
+
+    // Generate responsive image with modern formats
+    return `
+      <picture>
+        <source
+          srcset="${this.generateSrcset(src, 'avif')}"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          type="image/avif"
+        >
+        <source
+          srcset="${this.generateSrcset(src, 'webp')}"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          type="image/webp"
+        >
+        <img
+          src="${src}"
+          srcset="${this.generateSrcset(src, 'jpg')}"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          alt="${alt}"
+          width="${width}"
+          height="${height}"
+          ${priority ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'}
+          decoding="${priority ? 'sync' : 'async'}"
+        >
+      </picture>
+    `;
+  }
+
+  private generateSrcset(baseSrc: string, format: string): string {
+    const widths = [320, 640, 768, 1024, 1280, 1920];
+    return widths
+      .map(w => `${this.transformUrl(baseSrc, w, format)} ${w}w`)
+      .join(', ');
+  }
+
+  private transformUrl(src: string, width: number, format: string): string {
+    // Assuming Cloudinary-style URL transformation
+    return src.replace(
+      '/upload/',
+      `/upload/w_${width},f_${format},q_auto/`
+    );
+  }
+}
+
+// Server-side rendering with streaming
+class StreamingSSR {
+  async render(req: Request, res: Response): Promise<void> {
+    // Start streaming immediately
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    // Send critical head immediately
+    res.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        ${this.criticalCSS}
+        ${this.preloadTags}
+      </head>
+      <body>
+        <div id="root">
+    `);
+
+    // Stream app shell
+    const appShell = await this.renderAppShell();
+    res.write(appShell);
+
+    // Stream main content
+    const contentStream = await this.renderContent(req);
+
+    for await (const chunk of contentStream) {
+      res.write(chunk);
+    }
+
+    // Finalize
+    res.write(`
+        </div>
+        ${this.deferredScripts}
+      </body>
+      </html>
+    `);
+
+    res.end();
+  }
+}
+```
+
+2.2 FID/INP (Input Delay / Interaction to Next Paint) - Target < 100ms/200ms
+----------------------------------------------------------------------------
+
+```typescript
+// Input responsiveness optimization
+class InputResponsivenessOptimizer {
+  // Break up long tasks
+  async processWithYielding<T>(
+    items: T[],
+    processor: (item: T) => void,
+    options: { yieldInterval?: number } = {}
+  ): Promise<void> {
+    const { yieldInterval = 5 } = options;
+
+    for (let i = 0; i < items.length; i++) {
+      processor(items[i]);
+
+      // Yield to main thread every N items
+      if (i % yieldInterval === 0) {
+        await this.yieldToMain();
+      }
+    }
+  }
+
+  private yieldToMain(): Promise<void> {
+    return new Promise(resolve => {
+      if ('scheduler' in window && 'yield' in (window as any).scheduler) {
+        // Use scheduler.yield() if available (Chrome 115+)
+        (window as any).scheduler.yield().then(resolve);
+      } else {
+        // Fallback to setTimeout
+        setTimeout(resolve, 0);
+      }
+    });
+  }
+
+  // Debounce expensive operations
+  debounce<T extends (...args: any[]) => any>(
+    fn: T,
+    delay: number
+  ): (...args: Parameters<T>) => void {
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    return (...args: Parameters<T>) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  // Use requestIdleCallback for non-critical work
+  scheduleIdleWork(
+    work: () => void,
+    options: { timeout?: number } = {}
+  ): void {
+    const { timeout = 2000 } = options;
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(
+        (deadline) => {
+          if (deadline.timeRemaining() > 0 || deadline.didTimeout) {
+            work();
+          }
+        },
+        { timeout }
+      );
+    } else {
+      setTimeout(work, 0);
+    }
+  }
+
+  // Optimize event handlers
+  optimizeEventHandler<E extends Event>(
+    handler: (e: E) => void | Promise<void>,
+    options: { passive?: boolean; capture?: boolean } = {}
+  ): { handler: (e: E) => void; options: AddEventListenerOptions } {
+    return {
+      handler: (e: E) => {
+        // Use microtask for async work to not block
+        queueMicrotask(() => handler(e));
+      },
+      options: {
+        passive: options.passive ?? true,
+        capture: options.capture ?? false,
+      },
+    };
+  }
+}
+
+// Web Worker for heavy computations
+class WorkerPool {
+  private workers: Worker[] = [];
+  private taskQueue: Task[] = [];
+  private availableWorkers: Worker[] = [];
+
+  constructor(private workerScript: string, private poolSize = 4) {
+    this.initializePool();
+  }
+
+  private initializePool(): void {
+    for (let i = 0; i < this.poolSize; i++) {
+      const worker = new Worker(this.workerScript);
+      worker.onmessage = (e) => this.handleWorkerMessage(worker, e);
+      this.workers.push(worker);
+      this.availableWorkers.push(worker);
+    }
+  }
+
+  async execute<T, R>(data: T): Promise<R> {
+    return new Promise((resolve, reject) => {
+      const task: Task = { data, resolve, reject };
+
+      const worker = this.availableWorkers.pop();
+      if (worker) {
+        this.runTask(worker, task);
+      } else {
+        this.taskQueue.push(task);
+      }
+    });
+  }
+
+  private runTask(worker: Worker, task: Task): void {
+    (worker as any).__currentTask = task;
+    worker.postMessage(task.data);
+  }
+
+  private handleWorkerMessage(worker: Worker, event: MessageEvent): void {
+    const task = (worker as any).__currentTask;
+    task.resolve(event.data);
+
+    // Process next task or return worker to pool
+    const nextTask = this.taskQueue.shift();
+    if (nextTask) {
+      this.runTask(worker, nextTask);
+    } else {
+      this.availableWorkers.push(worker);
+    }
+  }
+}
+```
+
+2.3 CLS (Cumulative Layout Shift) - Target < 0.1
+------------------------------------------------
+
+```typescript
+// Layout stability optimization
+class LayoutStabilityOptimizer {
+  // Reserve space for dynamic content
+  createPlaceholder(config: PlaceholderConfig): string {
+    const { type, aspectRatio, minHeight } = config;
+
+    switch (type) {
+      case 'image':
+        return `
+          <div class="image-placeholder"
+               style="aspect-ratio: ${aspectRatio};
+                      background: #f0f0f0;
+                      min-height: ${minHeight || 'auto'}">
+          </div>
+        `;
+      case 'skeleton':
+        return `
+          <div class="skeleton-loader"
+               style="min-height: ${minHeight};
+                      animation: pulse 1.5s ease-in-out infinite;">
+          </div>
+        `;
+      case 'text':
+        return `
+          <div class="text-placeholder"
+               style="height: ${minHeight};
+                      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                      background-size: 200% 100%;
+                      animation: shimmer 1.5s infinite;">
+          </div>
+        `;
+      default:
+        return '';
+    }
+  }
+
+  // Font loading without layout shift
+  generateFontLoadingStrategy(): string {
+    return `
+      <style>
+        /* Font declarations with fallback metrics */
+        @font-face {
+          font-family: 'CustomFont';
+          src: url('/fonts/custom.woff2') format('woff2');
+          font-display: swap;
+          /* Adjust fallback to match custom font metrics */
+          size-adjust: 105%;
+          ascent-override: 90%;
+          descent-override: 20%;
+          line-gap-override: 0%;
+        }
+
+        /* Use fallback stack with similar metrics */
+        body {
+          font-family: 'CustomFont', -apple-system, BlinkMacSystemFont,
+                       'Segoe UI', Roboto, sans-serif;
+        }
+      </style>
+
+      <link rel="preload" href="/fonts/custom.woff2" as="font"
+            type="font/woff2" crossorigin>
+    `;
+  }
+
+  // Dynamic content insertion without shift
+  insertContentSafely(
+    container: HTMLElement,
+    content: HTMLElement,
+    position: 'before' | 'after' | 'replace'
+  ): void {
+    // Measure current layout
+    const containerRect = container.getBoundingClientRect();
+
+    // Use content-visibility for off-screen content
+    if (containerRect.bottom < 0 || containerRect.top > window.innerHeight) {
+      content.style.contentVisibility = 'auto';
+      content.style.containIntrinsicSize = `0 ${content.scrollHeight}px`;
+    }
+
+    // Insert with contain to prevent layout propagation
+    content.style.contain = 'layout';
+
+    switch (position) {
+      case 'before':
+        container.prepend(content);
+        break;
+      case 'after':
+        container.append(content);
+        break;
+      case 'replace':
+        // Maintain height during replacement
+        container.style.minHeight = `${containerRect.height}px`;
+        container.innerHTML = '';
+        container.appendChild(content);
+        // Remove min-height after paint
+        requestAnimationFrame(() => {
+          container.style.minHeight = '';
+        });
+        break;
+    }
+  }
+}
+
+// Ad and embed handling
+class DynamicContentHandler {
+  // Reserve space for ads
+  createAdSlot(config: AdSlotConfig): HTMLElement {
+    const slot = document.createElement('div');
+    slot.className = 'ad-slot';
+    slot.style.cssText = `
+      min-height: ${config.height}px;
+      width: ${config.width}px;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    // Add loading indicator
+    const loader = document.createElement('div');
+    loader.className = 'ad-loader';
+    loader.textContent = 'Loading...';
+    slot.appendChild(loader);
+
+    return slot;
+  }
+
+  // Handle iframe embeds
+  createResponsiveEmbed(
+    src: string,
+    aspectRatio: string = '16/9'
+  ): HTMLElement {
+    const container = document.createElement('div');
+    container.style.cssText = `
+      position: relative;
+      width: 100%;
+      aspect-ratio: ${aspectRatio};
+      background: #000;
+    `;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = src;
+    iframe.loading = 'lazy';
+    iframe.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    `;
+
+    container.appendChild(iframe);
+    return container;
+  }
+}
+```
+
+================================================================================
+SECCIÓN 3: DATABASE PERFORMANCE OPTIMIZATION
+================================================================================
+
+3.1 QUERY OPTIMIZATION
+----------------------
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        QUERY OPTIMIZATION WORKFLOW                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐               │
+│   │   IDENTIFY   │────►│   ANALYZE    │────►│   OPTIMIZE   │               │
+│   │  Slow Query  │     │  Query Plan  │     │   Approach   │               │
+│   └──────────────┘     └──────────────┘     └──────────────┘               │
+│          │                    │                    │                        │
+│          ▼                    ▼                    ▼                        │
+│   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐               │
+│   │ • APM alerts │     │ • EXPLAIN    │     │ • Indexing   │               │
+│   │ • Slow log   │     │ • Index scan │     │ • Query      │               │
+│   │ • P95 > SLO  │     │ • Join order │     │   rewrite    │               │
+│   │ • Lock waits │     │ • Row counts │     │ • Denormal   │               │
+│   └──────────────┘     └──────────────┘     └──────────────┘               │
+│                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────────┐  │
+│   │                    COMMON OPTIMIZATIONS                              │  │
+│   ├─────────────────────────────────────────────────────────────────────┤  │
+│   │                                                                      │  │
+│   │  1. Add covering index         4. Avoid SELECT *                    │  │
+│   │  2. Fix N+1 queries            5. Use query hints                   │  │
+│   │  3. Partition large tables     6. Materialized views                │  │
+│   │                                                                      │  │
+│   └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+```typescript
+// N+1 query detection and fix
+class QueryOptimizer {
+  private queryLog: Map<string, QueryMetric[]> = new Map();
+
+  // Detect N+1 pattern
+  detectNPlusOne(queries: QueryMetric[]): NPlusOneIssue[] {
+    const issues: NPlusOneIssue[] = [];
+    const patterns: Map<string, number> = new Map();
+
+    for (const query of queries) {
+      // Normalize query to detect patterns
+      const normalized = this.normalizeQuery(query.sql);
+      const count = (patterns.get(normalized) || 0) + 1;
+      patterns.set(normalized, count);
+    }
+
+    for (const [pattern, count] of patterns) {
+      if (count > 3) {
+        issues.push({
+          pattern,
+          occurrences: count,
+          suggestedFix: this.suggestFix(pattern),
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  private normalizeQuery(sql: string): string {
+    return sql
+      .replace(/\s+/g, ' ')
+      .replace(/= \d+/g, '= ?')
+      .replace(/= '[^']*'/g, "= '?'")
+      .replace(/IN \([^)]+\)/g, 'IN (?)')
+      .trim();
+  }
+
+  private suggestFix(pattern: string): string {
+    if (pattern.includes('WHERE') && pattern.includes('= ?')) {
+      return 'Consider using IN clause or JOIN with batch loading';
+    }
+    return 'Review query pattern for batch optimization';
+  }
+}
+
+// BEFORE: N+1 query pattern
+class OrderService_Bad {
+  async getOrdersWithItems(userId: string): Promise<Order[]> {
+    // 1 query
+    const orders = await this.db.query(
+      'SELECT * FROM orders WHERE user_id = $1',
+      [userId]
+    );
+
+    // N queries - BAD!
+    for (const order of orders) {
+      order.items = await this.db.query(
+        'SELECT * FROM order_items WHERE order_id = $1',
+        [order.id]
+      );
+    }
+
+    return orders;
+  }
+}
+
+// AFTER: Optimized with eager loading
+class OrderService_Good {
+  async getOrdersWithItems(userId: string): Promise<Order[]> {
+    // Single query with JOIN
+    const result = await this.db.query(`
+      SELECT
+        o.id as order_id,
+        o.created_at,
+        o.status,
+        o.total,
+        oi.id as item_id,
+        oi.product_id,
+        oi.quantity,
+        oi.unit_price
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      WHERE o.user_id = $1
+      ORDER BY o.created_at DESC, oi.id
+    `, [userId]);
+
+    // Transform flat result to nested structure
+    return this.nestOrderItems(result.rows);
+  }
+
+  private nestOrderItems(rows: any[]): Order[] {
+    const ordersMap = new Map<string, Order>();
+
+    for (const row of rows) {
+      if (!ordersMap.has(row.order_id)) {
+        ordersMap.set(row.order_id, {
+          id: row.order_id,
+          createdAt: row.created_at,
+          status: row.status,
+          total: row.total,
+          items: [],
+        });
+      }
+
+      if (row.item_id) {
+        ordersMap.get(row.order_id)!.items.push({
+          id: row.item_id,
+          productId: row.product_id,
+          quantity: row.quantity,
+          unitPrice: row.unit_price,
+        });
+      }
+    }
+
+    return Array.from(ordersMap.values());
+  }
+}
+
+// Using ORM with eager loading (Prisma example)
+class OrderService_Prisma {
+  async getOrdersWithItems(userId: string): Promise<Order[]> {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+}
+```
+
+3.2 INDEX OPTIMIZATION
+----------------------
+
+```typescript
+// Index analysis and recommendations
+class IndexAnalyzer {
+  async analyzeIndexUsage(tableName: string): Promise<IndexAnalysis> {
+    // Get existing indexes
+    const indexes = await this.db.query(`
+      SELECT
+        indexname,
+        indexdef,
+        idx_scan,
+        idx_tup_read,
+        idx_tup_fetch
+      FROM pg_stat_user_indexes
+      JOIN pg_indexes USING (indexname)
+      WHERE tablename = $1
+    `, [tableName]);
+
+    // Get table statistics
+    const tableStats = await this.db.query(`
+      SELECT
+        seq_scan,
+        seq_tup_read,
+        n_live_tup,
+        n_dead_tup
+      FROM pg_stat_user_tables
+      WHERE relname = $1
+    `, [tableName]);
+
+    // Identify unused indexes
+    const unusedIndexes = indexes.rows.filter(idx =>
+      idx.idx_scan < 50 && !idx.indexname.includes('pkey')
+    );
+
+    // Identify missing indexes from slow queries
+    const missingIndexes = await this.analyzeMissingIndexes(tableName);
+
+    return {
+      existing: indexes.rows,
+      unused: unusedIndexes,
+      missing: missingIndexes,
+      tableStats: tableStats.rows[0],
+      recommendations: this.generateRecommendations(
+        indexes.rows,
+        unusedIndexes,
+        missingIndexes,
+        tableStats.rows[0]
+      ),
+    };
+  }
+
+  private async analyzeMissingIndexes(tableName: string): Promise<IndexSuggestion[]> {
+    // Analyze slow query log for patterns
+    const slowQueries = await this.db.query(`
+      SELECT query, calls, mean_time, total_time
+      FROM pg_stat_statements
+      WHERE query ILIKE '%${tableName}%'
+      AND mean_time > 100
+      ORDER BY total_time DESC
+      LIMIT 20
+    `);
+
+    const suggestions: IndexSuggestion[] = [];
+
+    for (const query of slowQueries.rows) {
+      const analysis = await this.analyzeQueryPlan(query.query);
+
+      if (analysis.seqScan && analysis.filterColumns.length > 0) {
+        suggestions.push({
+          columns: analysis.filterColumns,
+          reason: `Sequential scan on ${analysis.rowsScanned} rows`,
+          estimatedImprovement: this.estimateImprovement(analysis),
+          ddl: this.generateIndexDDL(tableName, analysis.filterColumns),
+        });
+      }
+    }
+
+    return this.deduplicateSuggestions(suggestions);
+  }
+
+  private generateIndexDDL(
+    tableName: string,
+    columns: string[]
+  ): string {
+    const indexName = `idx_${tableName}_${columns.join('_')}`;
+    const columnList = columns.join(', ');
+
+    return `CREATE INDEX CONCURRENTLY ${indexName} ON ${tableName} (${columnList});`;
+  }
+}
+
+// Composite index strategy
+class CompositeIndexStrategy {
+  // Order columns by selectivity
+  orderColumnsBySelectivity(columns: ColumnStats[]): string[] {
+    return columns
+      .sort((a, b) => {
+        // Equality columns first
+        if (a.operation === 'eq' && b.operation !== 'eq') return -1;
+        if (b.operation === 'eq' && a.operation !== 'eq') return 1;
+
+        // Then by selectivity (lower is better)
+        return a.selectivity - b.selectivity;
+      })
+      .map(c => c.name);
+  }
+
+  // Generate covering index
+  generateCoveringIndex(
+    tableName: string,
+    filterColumns: string[],
+    selectColumns: string[]
+  ): string {
+    const indexName = `idx_${tableName}_covering_${filterColumns.join('_')}`;
+    const includeColumns = selectColumns.filter(c => !filterColumns.includes(c));
+
+    if (includeColumns.length === 0) {
+      return `CREATE INDEX CONCURRENTLY ${indexName} ON ${tableName} (${filterColumns.join(', ')});`;
+    }
+
+    return `CREATE INDEX CONCURRENTLY ${indexName} ON ${tableName} (${filterColumns.join(', ')}) INCLUDE (${includeColumns.join(', ')});`;
+  }
+}
+```
+
+3.3 CONNECTION POOLING
+----------------------
+
+```typescript
+// Connection pool configuration
+interface PoolConfig {
+  min: number;
+  max: number;
+  idleTimeoutMs: number;
+  connectionTimeoutMs: number;
+  acquireTimeoutMs: number;
+}
+
+class ConnectionPoolManager {
+  private pool: Pool;
+  private metrics: PoolMetrics;
+
+  constructor(config: DatabaseConfig) {
+    this.pool = new Pool({
+      host: config.host,
+      port: config.port,
+      database: config.database,
+      user: config.user,
+      password: config.password,
+
+      // Pool settings optimized for production
+      min: this.calculateMinConnections(config),
+      max: this.calculateMaxConnections(config),
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+
+      // Query timeout
+      statement_timeout: 30000,
+
+      // SSL configuration
+      ssl: config.ssl ? {
+        rejectUnauthorized: true,
+        ca: config.sslCa,
+      } : false,
+    });
+
+    this.setupPoolMonitoring();
+  }
+
+  private calculateMinConnections(config: DatabaseConfig): number {
+    // Keep enough connections warm for baseline load
+    // Rule of thumb: CPU cores * 2
+    return Math.max(2, Math.floor(config.expectedConcurrency * 0.2));
+  }
+
+  private calculateMaxConnections(config: DatabaseConfig): number {
+    // Formula: ((core_count * 2) + effective_spindle_count)
+    // For cloud DBs, typically CPU cores * 4
+    // Never exceed DB max_connections / number_of_app_instances
+    const perInstanceMax = Math.floor(config.dbMaxConnections / config.appInstances);
+    const calculated = config.cpuCores * 4;
+    return Math.min(perInstanceMax, calculated, 100);
+  }
+
+  private setupPoolMonitoring(): void {
+    this.pool.on('connect', () => {
+      this.metrics.increment('pool.connections.created');
+    });
+
+    this.pool.on('acquire', () => {
+      this.metrics.increment('pool.connections.acquired');
+    });
+
+    this.pool.on('release', () => {
+      this.metrics.increment('pool.connections.released');
+    });
+
+    this.pool.on('error', (err) => {
+      this.metrics.increment('pool.errors');
+      console.error('Pool error:', err);
+    });
+
+    // Periodic health check
+    setInterval(() => {
+      const stats = {
+        total: this.pool.totalCount,
+        idle: this.pool.idleCount,
+        waiting: this.pool.waitingCount,
+      };
+
+      this.metrics.gauge('pool.connections.total', stats.total);
+      this.metrics.gauge('pool.connections.idle', stats.idle);
+      this.metrics.gauge('pool.connections.waiting', stats.waiting);
+
+      // Alert if pool is saturated
+      if (stats.waiting > 0 && stats.idle === 0) {
+        this.metrics.increment('pool.saturation.events');
+      }
+    }, 5000);
+  }
+
+  async query<T>(sql: string, params?: any[]): Promise<T[]> {
+    const client = await this.pool.connect();
+    const startTime = Date.now();
+
+    try {
+      const result = await client.query(sql, params);
+
+      const duration = Date.now() - startTime;
+      this.metrics.histogram('query.duration', duration, {
+        query: this.sanitizeQuery(sql),
+      });
+
+      return result.rows;
+
+    } finally {
+      client.release();
+    }
+  }
+}
+```
+
+================================================================================
+SECCIÓN 4: CACHING STRATEGIES
+================================================================================
+
+4.1 MULTI-LAYER CACHING
+-----------------------
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         MULTI-LAYER CACHE ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Client                    Application                   Data Store        │
+│   ┌─────────┐              ┌─────────────┐              ┌─────────────┐    │
+│   │ Browser │              │   Server    │              │  Database   │    │
+│   │  Cache  │              │   Memory    │              │             │    │
+│   └────┬────┘              └──────┬──────┘              └──────┬──────┘    │
+│        │                          │                            │           │
+│        │    ┌─────────────┐      │      ┌─────────────┐      │           │
+│        │    │     CDN     │      │      │    Redis    │      │           │
+│        │    │   (Edge)    │      │      │  (Shared)   │      │           │
+│        │    └──────┬──────┘      │      └──────┬──────┘      │           │
+│        │           │              │             │              │           │
+│        ▼           ▼              ▼             ▼              ▼           │
+│   ┌─────────────────────────────────────────────────────────────────────┐  │
+│   │                        REQUEST FLOW                                  │  │
+│   │  Client → CDN → App Memory → Redis → Database                       │  │
+│   │    L1      L2       L3         L4        Origin                     │  │
+│   └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│   TTL Strategy:                                                            │
+│   L1 (Browser):  5 min - 1 hour (user-specific, frequently changing)       │
+│   L2 (CDN):      1 hour - 24 hours (public, slow changing)                 │
+│   L3 (Memory):   1 min - 5 min (hot data, per-instance)                    │
+│   L4 (Redis):    5 min - 1 hour (shared, semi-persistent)                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+```typescript
+// Multi-layer cache implementation
+class MultiLayerCache<T> {
+  private memoryCache: Map<string, CacheEntry<T>> = new Map();
+  private redis: RedisClient;
+  private options: CacheOptions;
+
+  constructor(redis: RedisClient, options: CacheOptions) {
+    this.redis = redis;
+    this.options = options;
+    this.startCleanupInterval();
+  }
+
+  async get(key: string): Promise<T | null> {
+    // L1: Check memory cache first
+    const memoryEntry = this.memoryCache.get(key);
+    if (memoryEntry && !this.isExpired(memoryEntry)) {
+      this.metrics.increment('cache.hit.memory');
+      return memoryEntry.value;
+    }
+
+    // L2: Check Redis
+    const redisValue = await this.redis.get(this.prefixKey(key));
+    if (redisValue) {
+      const value = JSON.parse(redisValue) as T;
+
+      // Backfill memory cache
+      this.setMemory(key, value);
+
+      this.metrics.increment('cache.hit.redis');
+      return value;
+    }
+
+    this.metrics.increment('cache.miss');
+    return null;
+  }
+
+  async set(key: string, value: T, options?: SetOptions): Promise<void> {
+    const ttl = options?.ttl ?? this.options.defaultTtl;
+
+    // Set in memory
+    this.setMemory(key, value, ttl);
+
+    // Set in Redis with longer TTL
+    const redisTtl = Math.max(ttl, this.options.minRedisTtl);
+    await this.redis.setex(
+      this.prefixKey(key),
+      redisTtl,
+      JSON.stringify(value)
+    );
+  }
+
+  async invalidate(key: string): Promise<void> {
+    // Remove from all layers
+    this.memoryCache.delete(key);
+    await this.redis.del(this.prefixKey(key));
+
+    // Publish invalidation for other instances
+    await this.redis.publish('cache:invalidate', key);
+  }
+
+  async invalidatePattern(pattern: string): Promise<void> {
+    // Memory cache
+    for (const key of this.memoryCache.keys()) {
+      if (this.matchesPattern(key, pattern)) {
+        this.memoryCache.delete(key);
+      }
+    }
+
+    // Redis
+    const keys = await this.redis.keys(this.prefixKey(pattern));
+    if (keys.length > 0) {
+      await this.redis.del(...keys);
+    }
+
+    // Publish for other instances
+    await this.redis.publish('cache:invalidate:pattern', pattern);
+  }
+
+  private setMemory(key: string, value: T, ttl?: number): void {
+    this.memoryCache.set(key, {
+      value,
+      expiresAt: Date.now() + (ttl ?? this.options.memoryTtl) * 1000,
+    });
+
+    // Enforce memory limit
+    if (this.memoryCache.size > this.options.maxMemoryEntries) {
+      this.evictOldest();
+    }
+  }
+
+  private evictOldest(): void {
+    // Simple LRU - remove oldest entry
+    const firstKey = this.memoryCache.keys().next().value;
+    if (firstKey) {
+      this.memoryCache.delete(firstKey);
+    }
+  }
+}
+
+// Cache-aside pattern with write-through
+class CacheAsideService<T> {
+  constructor(
+    private cache: MultiLayerCache<T>,
+    private repository: Repository<T>
+  ) {}
+
+  async get(id: string): Promise<T | null> {
+    // Try cache first
+    const cached = await this.cache.get(`entity:${id}`);
+    if (cached) {
+      return cached;
+    }
+
+    // Load from database
+    const entity = await this.repository.findById(id);
+    if (entity) {
+      // Cache for next time
+      await this.cache.set(`entity:${id}`, entity);
+    }
+
+    return entity;
+  }
+
+  async update(id: string, data: Partial<T>): Promise<T> {
+    // Update database first (source of truth)
+    const updated = await this.repository.update(id, data);
+
+    // Then update cache
+    await this.cache.set(`entity:${id}`, updated);
+
+    // Invalidate related caches
+    await this.cache.invalidatePattern(`list:*`);
+
+    return updated;
+  }
+
+  async delete(id: string): Promise<void> {
+    // Delete from database first
+    await this.repository.delete(id);
+
+    // Then invalidate cache
+    await this.cache.invalidate(`entity:${id}`);
+    await this.cache.invalidatePattern(`list:*`);
+  }
+}
+```
+
+4.2 CDN CACHING STRATEGY
+------------------------
+
+```typescript
+// CDN cache configuration
+interface CDNCacheConfig {
+  path: string;
+  cacheControl: string;
+  surrogateTtl: number;
+  tags: string[];
+  vary: string[];
+}
+
+class CDNCacheManager {
+  private configs: Map<string, CDNCacheConfig> = new Map();
+
+  constructor() {
+    this.registerDefaultConfigs();
+  }
+
+  private registerDefaultConfigs(): void {
+    // Static assets - long cache
+    this.configs.set('/static/*', {
+      path: '/static/*',
+      cacheControl: 'public, max-age=31536000, immutable',
+      surrogateTtl: 31536000,
+      tags: ['static'],
+      vary: ['Accept-Encoding'],
+    });
+
+    // API responses - short cache
+    this.configs.set('/api/products', {
+      path: '/api/products',
+      cacheControl: 'public, max-age=60, stale-while-revalidate=300',
+      surrogateTtl: 300,
+      tags: ['products', 'api'],
+      vary: ['Accept', 'Accept-Language'],
+    });
+
+    // User-specific - no CDN cache
+    this.configs.set('/api/user/*', {
+      path: '/api/user/*',
+      cacheControl: 'private, no-cache',
+      surrogateTtl: 0,
+      tags: [],
+      vary: ['Authorization'],
+    });
+
+    // HTML pages - moderate cache
+    this.configs.set('/*.html', {
+      path: '/*.html',
+      cacheControl: 'public, max-age=300, stale-while-revalidate=86400',
+      surrogateTtl: 3600,
+      tags: ['html', 'pages'],
+      vary: ['Accept-Encoding', 'Accept-Language'],
+    });
+  }
+
+  setCacheHeaders(req: Request, res: Response): void {
+    const config = this.findConfig(req.path);
+
+    if (!config) {
+      // Default: no cache for dynamic content
+      res.setHeader('Cache-Control', 'private, no-store');
+      return;
+    }
+
+    res.setHeader('Cache-Control', config.cacheControl);
+
+    // CDN-specific headers (Fastly, CloudFront, etc.)
+    res.setHeader('Surrogate-Control', `max-age=${config.surrogateTtl}`);
+    res.setHeader('Surrogate-Key', config.tags.join(' '));
+
+    if (config.vary.length > 0) {
+      res.setHeader('Vary', config.vary.join(', '));
+    }
+  }
+
+  async purgeByTag(tag: string): Promise<void> {
+    // Fastly example
+    await fetch(`https://api.fastly.com/service/${this.serviceId}/purge/${tag}`, {
+      method: 'POST',
+      headers: {
+        'Fastly-Key': this.apiKey,
+      },
+    });
+  }
+
+  async softPurge(url: string): Promise<void> {
+    // Soft purge: mark stale but serve while revalidating
+    await fetch(url, {
+      method: 'PURGE',
+      headers: {
+        'Fastly-Soft-Purge': '1',
+      },
+    });
+  }
+}
+
+// Cache invalidation with event-driven approach
+class CacheInvalidationService {
+  constructor(
+    private cdn: CDNCacheManager,
+    private redis: MultiLayerCache<any>,
+    private events: EventEmitter
+  ) {
+    this.setupEventHandlers();
+  }
+
+  private setupEventHandlers(): void {
+    this.events.on('product:updated', async (product: Product) => {
+      await Promise.all([
+        this.redis.invalidate(`product:${product.id}`),
+        this.redis.invalidatePattern(`products:list:*`),
+        this.cdn.purgeByTag('products'),
+      ]);
+    });
+
+    this.events.on('catalog:updated', async () => {
+      await Promise.all([
+        this.redis.invalidatePattern(`products:*`),
+        this.redis.invalidatePattern(`categories:*`),
+        this.cdn.purgeByTag('catalog'),
+      ]);
+    });
+
+    this.events.on('user:preferences:changed', async (userId: string) => {
+      // Only invalidate user-specific cache
+      await this.redis.invalidate(`user:${userId}:preferences`);
+      // No CDN purge needed for user-specific data
+    });
+  }
+}
+```
+
+================================================================================
+SECCIÓN 5: FRONTEND PERFORMANCE
+================================================================================
+
+5.1 BUNDLE OPTIMIZATION
+-----------------------
+
+```typescript
+// Webpack configuration for optimal bundles
+const webpackConfig = {
+  mode: 'production',
+
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+            pure_funcs: ['console.log'],
+          },
+          mangle: true,
+        },
+        parallel: true,
+      }),
+      new CssMinimizerPlugin(),
+    ],
+
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 25,
+      minSize: 20000,
+      cacheGroups: {
+        // Vendor bundle - rarely changes
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name(module: any) {
+            const packageName = module.context.match(
+              /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+            )[1];
+            return `vendor.${packageName.replace('@', '')}`;
+          },
+          priority: 10,
+        },
+
+        // Framework bundle
+        framework: {
+          test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+          name: 'framework',
+          priority: 20,
+          chunks: 'all',
+        },
+
+        // Common components used across routes
+        common: {
+          minChunks: 2,
+          priority: 5,
+          reuseExistingChunk: true,
+          name: 'common',
+        },
+      },
+    },
+
+    runtimeChunk: 'single',
+
+    moduleIds: 'deterministic',
+  },
+
+  output: {
+    filename: '[name].[contenthash].js',
+    chunkFilename: '[name].[contenthash].chunk.js',
+    path: path.resolve(__dirname, 'dist'),
+    clean: true,
+  },
+};
+
+// Dynamic imports for code splitting
+class RouteConfig {
+  static routes = [
+    {
+      path: '/',
+      component: lazy(() => import(
+        /* webpackChunkName: "home" */
+        /* webpackPrefetch: true */
+        './pages/Home'
+      )),
+    },
+    {
+      path: '/products',
+      component: lazy(() => import(
+        /* webpackChunkName: "products" */
+        './pages/Products'
+      )),
+    },
+    {
+      path: '/checkout',
+      component: lazy(() => import(
+        /* webpackChunkName: "checkout" */
+        /* webpackPreload: true */
+        './pages/Checkout'
+      )),
+    },
+    {
+      path: '/admin',
+      component: lazy(() => import(
+        /* webpackChunkName: "admin" */
+        './pages/Admin'
+      )),
+    },
+  ];
+}
+
+// Tree-shakeable exports
+// GOOD: Named exports allow tree shaking
+export { formatDate } from './utils/date';
+export { formatCurrency } from './utils/currency';
+export { validateEmail } from './utils/validation';
+
+// BAD: Default export of object prevents tree shaking
+// export default { formatDate, formatCurrency, validateEmail };
+```
+
+5.2 RENDERING OPTIMIZATION
+--------------------------
+
+```typescript
+// React optimization patterns
+// Memoization for expensive renders
+const ProductList = memo(function ProductList({ products, filters }: Props) {
+  // Memoize filtered results
+  const filteredProducts = useMemo(() => {
+    return products.filter(p =>
+      (!filters.category || p.category === filters.category) &&
+      (!filters.minPrice || p.price >= filters.minPrice) &&
+      (!filters.maxPrice || p.price <= filters.maxPrice)
+    );
+  }, [products, filters.category, filters.minPrice, filters.maxPrice]);
+
+  // Memoize sort function
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'price-asc': return a.price - b.price;
+        case 'price-desc': return b.price - a.price;
+        case 'name': return a.name.localeCompare(b.name);
+        default: return 0;
+      }
+    });
+  }, [filteredProducts, filters.sortBy]);
+
+  return (
+    <div className="product-grid">
+      {sortedProducts.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+});
+
+// Virtualization for long lists
+function VirtualizedProductList({ products }: { products: Product[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: products.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 200, // Estimated row height
+    overscan: 5, // Render extra items for smooth scrolling
+  });
+
+  return (
+    <div
+      ref={parentRef}
+      style={{ height: '800px', overflow: 'auto' }}
+    >
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+          <div
+            key={virtualRow.index}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: `${virtualRow.size}px`,
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            <ProductCard product={products[virtualRow.index]} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Optimistic updates for better perceived performance
+function useOptimisticMutation<TData, TVariables>(
+  mutationFn: (variables: TVariables) => Promise<TData>,
+  options: {
+    optimisticUpdate: (variables: TVariables) => void;
+    rollbackOnError: (error: Error, variables: TVariables) => void;
+  }
+) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const mutate = useCallback(async (variables: TVariables) => {
+    setIsLoading(true);
+    setError(null);
+
+    // Apply optimistic update immediately
+    options.optimisticUpdate(variables);
+
+    try {
+      const result = await mutationFn(variables);
+      return result;
+    } catch (err) {
+      // Rollback on error
+      options.rollbackOnError(err as Error, variables);
+      setError(err as Error);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mutationFn, options]);
+
+  return { mutate, isLoading, error };
+}
+```
+
+================================================================================
+SECCIÓN 6: BACKEND PERFORMANCE
+================================================================================
+
+6.1 ASYNC PROCESSING
+--------------------
+
+```typescript
+// Message queue for async processing
+class AsyncProcessor {
+  private queue: Queue;
+  private workers: Worker[] = [];
+
+  constructor(config: QueueConfig) {
+    this.queue = new Queue(config.name, {
+      connection: config.redis,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+        removeOnComplete: {
+          age: 3600, // 1 hour
+          count: 1000,
+        },
+        removeOnFail: {
+          age: 86400, // 24 hours
+        },
+      },
+    });
+
+    this.setupWorkers(config.concurrency);
+  }
+
+  private setupWorkers(concurrency: number): void {
+    for (let i = 0; i < concurrency; i++) {
+      const worker = new Worker(this.queue.name, this.processJob.bind(this), {
+        connection: this.queue.opts.connection,
+        limiter: {
+          max: 100,
+          duration: 1000,
+        },
+      });
+
+      worker.on('completed', (job) => {
+        this.metrics.increment('jobs.completed', { type: job.name });
+      });
+
+      worker.on('failed', (job, err) => {
+        this.metrics.increment('jobs.failed', { type: job?.name, error: err.name });
+      });
+
+      this.workers.push(worker);
+    }
+  }
+
+  async enqueue<T>(
+    jobName: string,
+    data: T,
+    options?: JobOptions
+  ): Promise<Job<T>> {
+    return this.queue.add(jobName, data, {
+      ...options,
+      priority: options?.priority ?? this.getPriority(jobName),
+    });
+  }
+
+  async enqueueBulk<T>(
+    jobs: Array<{ name: string; data: T; opts?: JobOptions }>
+  ): Promise<Job<T>[]> {
+    return this.queue.addBulk(jobs);
+  }
+
+  private async processJob(job: Job): Promise<void> {
+    const startTime = Date.now();
+
+    try {
+      const processor = this.processors.get(job.name);
+      if (!processor) {
+        throw new Error(`No processor for job: ${job.name}`);
+      }
+
+      await processor(job.data, job);
+
+      this.metrics.histogram('job.duration', Date.now() - startTime, {
+        type: job.name,
+      });
+    } catch (error) {
+      this.metrics.increment('job.errors', { type: job.name });
+      throw error;
+    }
+  }
+}
+
+// Rate limiting with token bucket
+class RateLimiter {
+  private buckets: Map<string, TokenBucket> = new Map();
+
+  constructor(
+    private redis: RedisClient,
+    private config: RateLimitConfig
+  ) {}
+
+  async isAllowed(key: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+    const bucket = await this.getBucket(key);
+
+    if (bucket.tokens >= 1) {
+      await this.consumeToken(key);
+      return { allowed: true };
+    }
+
+    const retryAfter = Math.ceil(
+      (1 - bucket.tokens) / this.config.refillRate
+    );
+
+    return { allowed: false, retryAfter };
+  }
+
+  private async getBucket(key: string): Promise<TokenBucket> {
+    const now = Date.now();
+    const bucketKey = `ratelimit:${key}`;
+
+    const data = await this.redis.hgetall(bucketKey);
+
+    if (!data.tokens) {
+      // Initialize new bucket
+      return {
+        tokens: this.config.maxTokens,
+        lastRefill: now,
+      };
+    }
+
+    // Calculate tokens to add based on time elapsed
+    const elapsed = (now - parseInt(data.lastRefill)) / 1000;
+    const tokensToAdd = elapsed * this.config.refillRate;
+    const newTokens = Math.min(
+      this.config.maxTokens,
+      parseFloat(data.tokens) + tokensToAdd
+    );
+
+    return {
+      tokens: newTokens,
+      lastRefill: now,
+    };
+  }
+
+  private async consumeToken(key: string): Promise<void> {
+    const bucketKey = `ratelimit:${key}`;
+    const now = Date.now();
+
+    await this.redis
+      .multi()
+      .hincrbyfloat(bucketKey, 'tokens', -1)
+      .hset(bucketKey, 'lastRefill', now.toString())
+      .expire(bucketKey, 3600)
+      .exec();
+  }
+}
+```
+
+6.2 RESPONSE OPTIMIZATION
+-------------------------
+
+```typescript
+// Response compression and streaming
+class ResponseOptimizer {
+  // Compression middleware
+  compressionMiddleware(): RequestHandler {
+    return compression({
+      filter: (req, res) => {
+        // Don't compress if already compressed
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+
+        // Use default filter for content-type
+        return compression.filter(req, res);
+      },
+      level: 6, // Balance between speed and compression
+      threshold: 1024, // Only compress > 1KB
+    });
+  }
+
+  // Stream large responses
+  async streamLargeResponse<T>(
+    res: Response,
+    dataGenerator: AsyncGenerator<T>,
+    options: StreamOptions
+  ): Promise<void> {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    res.write('[');
+
+    let first = true;
+    for await (const item of dataGenerator) {
+      if (!first) {
+        res.write(',');
+      }
+      res.write(JSON.stringify(item));
+      first = false;
+    }
+
+    res.write(']');
+    res.end();
+  }
+
+  // Pagination with cursor
+  async paginateWithCursor<T>(
+    query: QueryBuilder<T>,
+    cursor: string | null,
+    limit: number
+  ): Promise<PaginatedResponse<T>> {
+    const effectiveLimit = Math.min(limit, 100);
+
+    let queryBuilder = query.limit(effectiveLimit + 1);
+
+    if (cursor) {
+      const decodedCursor = this.decodeCursor(cursor);
+      queryBuilder = queryBuilder.where('id', '>', decodedCursor.id);
+    }
+
+    const items = await queryBuilder.getMany();
+
+    const hasMore = items.length > effectiveLimit;
+    const results = hasMore ? items.slice(0, -1) : items;
+
+    return {
+      data: results,
+      pagination: {
+        hasMore,
+        cursor: hasMore ? this.encodeCursor(results[results.length - 1]) : null,
+        count: results.length,
+      },
+    };
+  }
+
+  private encodeCursor(item: { id: string }): string {
+    return Buffer.from(JSON.stringify({ id: item.id })).toString('base64url');
+  }
+
+  private decodeCursor(cursor: string): { id: string } {
+    return JSON.parse(Buffer.from(cursor, 'base64url').toString());
+  }
+}
+
+// Response payload optimization
+class PayloadOptimizer {
+  // Field selection
+  selectFields<T>(
+    entity: T,
+    requestedFields: string[] | null
+  ): Partial<T> {
+    if (!requestedFields || requestedFields.length === 0) {
+      return entity;
+    }
+
+    const result: Partial<T> = {};
+    for (const field of requestedFields) {
+      if (field in (entity as object)) {
+        (result as any)[field] = (entity as any)[field];
+      }
+    }
+    return result;
+  }
+
+  // Sparse fieldsets (JSON:API style)
+  applySparseFieldsets<T>(
+    entities: T[],
+    fieldsets: Record<string, string[]>
+  ): Partial<T>[] {
+    return entities.map(entity => {
+      const type = this.getEntityType(entity);
+      const fields = fieldsets[type];
+      return fields ? this.selectFields(entity, fields) : entity;
+    });
+  }
+
+  // Remove null/undefined fields
+  compactResponse<T>(obj: T): T {
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.compactResponse(item)) as T;
+    }
+
+    if (obj && typeof obj === 'object') {
+      const result: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value !== null && value !== undefined) {
+          result[key] = this.compactResponse(value);
+        }
+      }
+      return result;
+    }
+
+    return obj;
+  }
+}
+```
+
+================================================================================
+SECCIÓN 7: MOBILE PERFORMANCE
+================================================================================
+
+7.1 MOBILE-SPECIFIC OPTIMIZATIONS
+---------------------------------
+
+```typescript
+// Mobile network optimization
+class MobileNetworkOptimizer {
+  // Adaptive content based on network
+  async getContentForNetwork<T>(
+    highQuality: () => Promise<T>,
+    lowQuality: () => Promise<T>
+  ): Promise<T> {
+    const connection = (navigator as any).connection;
+
+    if (!connection) {
+      return highQuality();
+    }
+
+    const slowNetwork =
+      connection.effectiveType === 'slow-2g' ||
+      connection.effectiveType === '2g' ||
+      connection.saveData === true;
+
+    return slowNetwork ? lowQuality() : highQuality();
+  }
+
+  // Image quality based on network
+  getImageQuality(): 'high' | 'medium' | 'low' {
+    const connection = (navigator as any).connection;
+
+    if (!connection) return 'high';
+
+    switch (connection.effectiveType) {
+      case 'slow-2g':
+      case '2g':
+        return 'low';
+      case '3g':
+        return 'medium';
+      default:
+        return 'high';
+    }
+  }
+
+  // Request batching for mobile
+  private pendingRequests: Map<string, Promise<any>> = new Map();
+  private batchQueue: BatchRequest[] = [];
+  private batchTimer: NodeJS.Timeout | null = null;
+
+  async batchedRequest<T>(
+    endpoint: string,
+    method: string,
+    body?: any
+  ): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.batchQueue.push({
+        endpoint,
+        method,
+        body,
+        resolve,
+        reject,
+      });
+
+      if (!this.batchTimer) {
+        this.batchTimer = setTimeout(() => this.flushBatch(), 50);
+      }
+    });
+  }
+
+  private async flushBatch(): Promise<void> {
+    this.batchTimer = null;
+    const requests = [...this.batchQueue];
+    this.batchQueue = [];
+
+    try {
+      const response = await fetch('/api/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requests }),
+      });
+
+      const results = await response.json();
+
+      requests.forEach((req, i) => {
+        if (results[i].error) {
+          req.reject(new Error(results[i].error));
+        } else {
+          req.resolve(results[i].data);
+        }
+      });
+    } catch (error) {
+      requests.forEach(req => req.reject(error));
+    }
+  }
+}
+
+// React Native performance patterns
+class ReactNativeOptimizations {
+  // FlatList optimization
+  flatListConfig = {
+    // Performance props
+    removeClippedSubviews: true,
+    maxToRenderPerBatch: 10,
+    updateCellsBatchingPeriod: 50,
+    initialNumToRender: 10,
+    windowSize: 21, // 10 screens above + current + 10 screens below
+
+    // Memory optimization
+    getItemLayout: (data: any[], index: number) => ({
+      length: 100, // Fixed item height
+      offset: 100 * index,
+      index,
+    }),
+  };
+
+  // Hermes optimizations
+  hermesConfig = {
+    // Enable Hermes in app.json
+    android: {
+      jsEngine: 'hermes',
+    },
+    ios: {
+      jsEngine: 'hermes',
+    },
+  };
+
+  // Image caching
+  imageCacheConfig = {
+    // Using react-native-fast-image
+    priority: 'high' as const,
+    cache: 'immutable' as const,
+  };
+}
+```
+
+================================================================================
+SECCIÓN 8: INFRASTRUCTURE EFFICIENCY
+================================================================================
+
+8.1 RESOURCE OPTIMIZATION
+-------------------------
+
+```typescript
+// Auto-scaling configuration
+interface AutoScalingConfig {
+  minInstances: number;
+  maxInstances: number;
+  targetCPU: number;
+  targetMemory: number;
+  scaleUpCooldown: number;
+  scaleDownCooldown: number;
+  predictiveScaling: boolean;
+}
+
+class InfrastructureOptimizer {
+  // Right-sizing recommendations
+  async analyzeResourceUsage(): Promise<ResourceRecommendation[]> {
+    const metrics = await this.getMetrics();
+    const recommendations: ResourceRecommendation[] = [];
+
+    for (const instance of metrics.instances) {
+      const avgCPU = this.average(instance.cpuUsage);
+      const avgMemory = this.average(instance.memoryUsage);
+      const peakCPU = Math.max(...instance.cpuUsage);
+      const peakMemory = Math.max(...instance.memoryUsage);
+
+      // Undersized detection
+      if (peakCPU > 80 || peakMemory > 85) {
+        recommendations.push({
+          instanceId: instance.id,
+          type: 'scale_up',
+          reason: `Peak utilization too high (CPU: ${peakCPU}%, Memory: ${peakMemory}%)`,
+          suggestedSize: this.getNextSize(instance.size),
+          estimatedCostImpact: '+20%',
+        });
+      }
+
+      // Oversized detection
+      if (avgCPU < 20 && avgMemory < 30 && peakCPU < 50) {
+        recommendations.push({
+          instanceId: instance.id,
+          type: 'scale_down',
+          reason: `Average utilization very low (CPU: ${avgCPU}%, Memory: ${avgMemory}%)`,
+          suggestedSize: this.getPreviousSize(instance.size),
+          estimatedCostImpact: '-30%',
+        });
+      }
+    }
+
+    return recommendations;
+  }
+
+  // Spot instance strategy
+  getSpotInstanceStrategy(workload: WorkloadType): SpotStrategy {
+    switch (workload) {
+      case 'stateless-web':
+        return {
+          useSpot: true,
+          spotPercentage: 70,
+          diversifyAZs: true,
+          interruptionBehavior: 'terminate',
+        };
+      case 'batch-processing':
+        return {
+          useSpot: true,
+          spotPercentage: 90,
+          checkpointingEnabled: true,
+          interruptionBehavior: 'hibernate',
+        };
+      case 'stateful':
+        return {
+          useSpot: false,
+          reason: 'Stateful workloads should use on-demand for reliability',
+        };
+      default:
+        return { useSpot: false };
+    }
+  }
+
+  // Reserved capacity planning
+  async calculateReservedCapacity(): Promise<ReservationPlan> {
+    const usage = await this.getHistoricalUsage(90); // 90 days
+
+    // Find baseline (P10 usage)
+    const baseline = this.percentile(usage.hourlyUsage, 10);
+
+    // Find peak (P95 usage)
+    const peak = this.percentile(usage.hourlyUsage, 95);
+
+    return {
+      reservedInstances: Math.floor(baseline * 0.9), // Reserve 90% of baseline
+      onDemandBuffer: peak - baseline,
+      estimatedSavings: this.calculateSavings(baseline, usage.currentCost),
+      commitment: '1-year',
+    };
+  }
+}
+
+// Cost allocation and monitoring
+class CostMonitor {
+  async generateCostReport(): Promise<CostReport> {
+    const costs = await this.cloudProvider.getCosts();
+
+    return {
+      summary: {
+        total: costs.total,
+        byService: this.groupByService(costs),
+        byTag: this.groupByTag(costs),
+        trend: this.calculateTrend(costs),
+      },
+      anomalies: this.detectAnomalies(costs),
+      optimizations: await this.getOptimizationOpportunities(costs),
+      forecast: this.forecastNextMonth(costs),
+    };
+  }
+
+  private detectAnomalies(costs: Cost[]): Anomaly[] {
+    const anomalies: Anomaly[] = [];
+    const baseline = this.calculateBaseline(costs);
+
+    for (const cost of costs) {
+      const deviation = (cost.amount - baseline.mean) / baseline.stdDev;
+
+      if (Math.abs(deviation) > 2) {
+        anomalies.push({
+          service: cost.service,
+          amount: cost.amount,
+          deviation,
+          expectedRange: {
+            min: baseline.mean - baseline.stdDev,
+            max: baseline.mean + baseline.stdDev,
+          },
+          possibleCauses: this.identifyCauses(cost, baseline),
+        });
+      }
+    }
+
+    return anomalies;
+  }
+}
+```
+
+================================================================================
+SECCIÓN 9: ANTI-PATTERNS Y CORRECCIONES
+================================================================================
+
+9.1 PREMATURE OPTIMIZATION
+--------------------------
+
+```typescript
+// ❌ BAD: Optimizing without data
+class ProductService_Bad {
+  private cache = new Map<string, Product>();
+
+  async getProduct(id: string): Promise<Product> {
+    // Premature caching without knowing if this is a hotspot
+    if (this.cache.has(id)) {
+      return this.cache.get(id)!;
+    }
+
+    const product = await this.db.findById(id);
+    this.cache.set(id, product);
+
+    // No TTL, no invalidation, no size limit
+    // Potential memory leak and stale data
+
+    return product;
+  }
+}
+
+// ✅ GOOD: Measure first, then optimize
+class ProductService_Good {
+  constructor(
+    private db: Database,
+    private metrics: MetricsCollector,
+    private cache?: CacheService // Optional, enabled after profiling
+  ) {}
+
+  async getProduct(id: string): Promise<Product> {
+    const startTime = Date.now();
+
+    try {
+      // Only use cache if profiling showed this is a hotspot
+      if (this.cache) {
+        const cached = await this.cache.get(`product:${id}`);
+        if (cached) {
+          this.metrics.increment('product.cache.hit');
+          return cached;
+        }
+        this.metrics.increment('product.cache.miss');
+      }
+
+      const product = await this.db.findById(id);
+
+      if (this.cache && product) {
+        await this.cache.set(`product:${id}`, product, { ttl: 300 });
+      }
+
+      return product;
+
+    } finally {
+      this.metrics.histogram('product.get.duration', Date.now() - startTime);
+    }
+  }
+}
+```
+
+9.2 CACHE INVALIDATION BUGS
+---------------------------
+
+```typescript
+// ❌ BAD: Inconsistent cache invalidation
+class OrderService_Bad {
+  async updateOrder(id: string, data: UpdateOrderDTO): Promise<Order> {
+    const order = await this.db.orders.update(id, data);
+
+    // BUG: Forgot to invalidate cache
+    // Cache still has stale data
+
+    return order;
+  }
+
+  async getOrder(id: string): Promise<Order> {
+    const cached = await this.cache.get(`order:${id}`);
+    if (cached) return cached; // Returns stale data!
+
+    const order = await this.db.orders.findById(id);
+    await this.cache.set(`order:${id}`, order);
+    return order;
+  }
+}
+
+// ✅ GOOD: Centralized cache management with proper invalidation
+class OrderService_Good {
+  private readonly cacheKey = (id: string) => `order:${id}`;
+  private readonly listCachePattern = 'orders:list:*';
+
+  async updateOrder(id: string, data: UpdateOrderDTO): Promise<Order> {
+    // Use transaction to ensure atomicity
+    return this.db.transaction(async (tx) => {
+      const order = await tx.orders.update(id, data);
+
+      // Invalidate all related caches
+      await this.invalidateOrderCaches(id);
+
+      // Emit event for other services
+      this.events.emit('order:updated', order);
+
+      return order;
+    });
+  }
+
+  private async invalidateOrderCaches(orderId: string): Promise<void> {
+    await Promise.all([
+      this.cache.invalidate(this.cacheKey(orderId)),
+      this.cache.invalidatePattern(this.listCachePattern),
+      this.cache.invalidatePattern(`user:*:orders`),
+    ]);
+  }
+
+  async getOrder(id: string): Promise<Order> {
+    return this.cache.getOrSet(
+      this.cacheKey(id),
+      () => this.db.orders.findById(id),
+      { ttl: 300 }
+    );
+  }
+}
+```
+
+9.3 BLOCKING THE EVENT LOOP
+---------------------------
+
+```typescript
+// ❌ BAD: Blocking event loop with synchronous operations
+class ReportService_Bad {
+  generateReport(data: ReportData): string {
+    // Synchronous JSON stringify of large object - blocks event loop
+    const json = JSON.stringify(data, null, 2);
+
+    // Synchronous file write
+    fs.writeFileSync('/reports/output.json', json);
+
+    // Synchronous CSV generation
+    let csv = 'header1,header2,header3\n';
+    for (const row of data.rows) { // Could be millions of rows
+      csv += `${row.col1},${row.col2},${row.col3}\n`;
+    }
+
+    return csv;
+  }
+}
+
+// ✅ GOOD: Non-blocking with streaming
+class ReportService_Good {
+  async generateReport(data: ReportData): Promise<string> {
+    const outputPath = '/reports/output.json';
+
+    // Use streaming for large JSON
+    await this.streamJsonToFile(data, outputPath);
+
+    // Generate CSV with streaming
+    const csvPath = '/reports/output.csv';
+    await this.streamCsvToFile(data.rows, csvPath);
+
+    return csvPath;
+  }
+
+  private async streamJsonToFile(data: any, path: string): Promise<void> {
+    const writeStream = fs.createWriteStream(path);
+    const jsonStream = new JsonStreamStringify(data);
+
+    return new Promise((resolve, reject) => {
+      jsonStream.pipe(writeStream);
+      writeStream.on('finish', resolve);
+      writeStream.on('error', reject);
+    });
+  }
+
+  private async streamCsvToFile(
+    rows: AsyncIterable<Row>,
+    path: string
+  ): Promise<void> {
+    const writeStream = fs.createWriteStream(path);
+
+    // Write header
+    writeStream.write('header1,header2,header3\n');
+
+    // Stream rows with backpressure handling
+    for await (const row of rows) {
+      const line = `${row.col1},${row.col2},${row.col3}\n`;
+
+      if (!writeStream.write(line)) {
+        // Handle backpressure
+        await new Promise(resolve => writeStream.once('drain', resolve));
+      }
+    }
+
+    writeStream.end();
+    await new Promise(resolve => writeStream.on('finish', resolve));
+  }
+}
+```
+
+9.4 MEMORY LEAKS
+----------------
+
+```typescript
+// ❌ BAD: Memory leaks from event listeners and closures
+class WebSocketManager_Bad {
+  private connections: WebSocket[] = [];
+
+  addConnection(ws: WebSocket): void {
+    this.connections.push(ws);
+
+    // Memory leak: listener never removed
+    ws.on('message', (data) => {
+      this.broadcast(data);
+    });
+
+    // Memory leak: closure keeps reference
+    const interval = setInterval(() => {
+      ws.ping();
+    }, 30000);
+
+    // No cleanup on close
+  }
+}
+
+// ✅ GOOD: Proper cleanup and weak references
+class WebSocketManager_Good {
+  private connections: Set<WebSocket> = new Set();
+  private cleanupHandlers: Map<WebSocket, () => void> = new Map();
+
+  addConnection(ws: WebSocket): void {
+    this.connections.add(ws);
+
+    // Create bound handlers for cleanup
+    const messageHandler = (data: Buffer) => this.broadcast(data);
+    const closeHandler = () => this.removeConnection(ws);
+    const errorHandler = (err: Error) => {
+      console.error('WebSocket error:', err);
+      this.removeConnection(ws);
+    };
+
+    // Attach listeners
+    ws.on('message', messageHandler);
+    ws.on('close', closeHandler);
+    ws.on('error', errorHandler);
+
+    // Setup ping interval
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.ping();
+      }
+    }, 30000);
+
+    // Store cleanup function
+    this.cleanupHandlers.set(ws, () => {
+      clearInterval(pingInterval);
+      ws.off('message', messageHandler);
+      ws.off('close', closeHandler);
+      ws.off('error', errorHandler);
+    });
+  }
+
+  removeConnection(ws: WebSocket): void {
+    // Run cleanup
+    const cleanup = this.cleanupHandlers.get(ws);
+    if (cleanup) {
+      cleanup();
+      this.cleanupHandlers.delete(ws);
+    }
+
+    this.connections.delete(ws);
+
+    // Close if still open
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.close();
+    }
+  }
+
+  // Periodic cleanup of stale connections
+  startCleanupInterval(): void {
+    setInterval(() => {
+      for (const ws of this.connections) {
+        if (ws.readyState !== WebSocket.OPEN) {
+          this.removeConnection(ws);
+        }
+      }
+    }, 60000);
+  }
+}
+```
+
+================================================================================
+SECCIÓN 10: PERFORMANCE TESTING
+================================================================================
+
+10.1 LOAD TESTING
+-----------------
+
+```typescript
+// k6 load test script example
+const loadTestScript = `
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate, Trend } from 'k6/metrics';
+
+// Custom metrics
+const errorRate = new Rate('errors');
+const apiDuration = new Trend('api_duration');
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 100 },   // Ramp up
+    { duration: '5m', target: 100 },   // Steady state
+    { duration: '2m', target: 200 },   // Stress test
+    { duration: '5m', target: 200 },   // Steady at peak
+    { duration: '2m', target: 0 },     // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<200', 'p(99)<500'],
+    errors: ['rate<0.01'],
+  },
+};
+
+export default function() {
+  const res = http.get('https://api.example.com/products');
+
+  apiDuration.add(res.timings.duration);
+
+  const success = check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 200ms': (r) => r.timings.duration < 200,
+    'body contains products': (r) => r.body.includes('products'),
+  });
+
+  errorRate.add(!success);
+
+  sleep(Math.random() * 3);
+}
+`;
+
+// Performance test runner
+class PerformanceTestRunner {
+  async runBaseline(): Promise<BaselineResult> {
+    const result = await this.runK6({
+      vus: 10,
+      duration: '5m',
+      script: 'baseline.js',
+    });
+
+    return {
+      p50: result.metrics.http_req_duration.p50,
+      p95: result.metrics.http_req_duration.p95,
+      p99: result.metrics.http_req_duration.p99,
+      throughput: result.metrics.http_reqs.rate,
+      errorRate: result.metrics.errors.rate,
+    };
+  }
+
+  async runStressTest(): Promise<StressTestResult> {
+    let breakingPoint = 0;
+    let currentVus = 10;
+
+    while (true) {
+      const result = await this.runK6({
+        vus: currentVus,
+        duration: '2m',
+        script: 'stress.js',
+      });
+
+      if (result.metrics.http_req_duration.p95 > 1000 ||
+          result.metrics.errors.rate > 0.05) {
+        breakingPoint = currentVus - 10;
+        break;
+      }
+
+      currentVus += 10;
+
+      if (currentVus > 500) {
+        breakingPoint = 500;
+        break;
+      }
+    }
+
+    return {
+      breakingPoint,
+      maxThroughput: result.metrics.http_reqs.rate,
+      degradationPattern: this.analyzeDegradation(results),
+    };
+  }
+}
+```
+
+================================================================================
+SECCIÓN 11: PERFORMANCE BUDGETS
+================================================================================
+
+```typescript
+// Performance budget definition
+interface PerformanceBudget {
+  web: {
+    lcp: number;           // ms
+    fid: number;           // ms
+    cls: number;           // score
+    ttfb: number;          // ms
+    totalBundleSize: number; // KB
+    initialJsSize: number;   // KB
+    imageSize: number;       // KB per image
+  };
+  api: {
+    p50Latency: number;    // ms
+    p95Latency: number;    // ms
+    p99Latency: number;    // ms
+    errorRate: number;     // percentage
+    throughput: number;    // requests/second
+  };
+  database: {
+    queryP95: number;      // ms
+    connectionPoolWait: number; // ms
+    slowQueryThreshold: number; // ms
+  };
+  infrastructure: {
+    cpuUtilization: number;   // percentage
+    memoryUtilization: number; // percentage
+    costPerRequest: number;    // dollars
+  };
+}
+
+const defaultBudget: PerformanceBudget = {
+  web: {
+    lcp: 2500,
+    fid: 100,
+    cls: 0.1,
+    ttfb: 200,
+    totalBundleSize: 500,
+    initialJsSize: 150,
+    imageSize: 200,
+  },
+  api: {
+    p50Latency: 50,
+    p95Latency: 200,
+    p99Latency: 500,
+    errorRate: 0.1,
+    throughput: 1000,
+  },
+  database: {
+    queryP95: 100,
+    connectionPoolWait: 50,
+    slowQueryThreshold: 500,
+  },
+  infrastructure: {
+    cpuUtilization: 70,
+    memoryUtilization: 80,
+    costPerRequest: 0.0001,
+  },
+};
+
+// Budget enforcement in CI/CD
+class PerformanceBudgetChecker {
+  async checkBudget(
+    metrics: PerformanceMetrics,
+    budget: PerformanceBudget
+  ): Promise<BudgetCheckResult> {
+    const violations: BudgetViolation[] = [];
+
+    // Web vitals
+    if (metrics.frontend.coreWebVitals.LCP > budget.web.lcp) {
+      violations.push({
+        metric: 'LCP',
+        actual: metrics.frontend.coreWebVitals.LCP,
+        budget: budget.web.lcp,
+        severity: 'error',
+      });
+    }
+
+    // API latency
+    if (metrics.backend.latency.p95 > budget.api.p95Latency) {
+      violations.push({
+        metric: 'API P95 Latency',
+        actual: metrics.backend.latency.p95,
+        budget: budget.api.p95Latency,
+        severity: 'error',
+      });
+    }
+
+    // Bundle size
+    if (metrics.frontend.resources.totalSize > budget.web.totalBundleSize * 1024) {
+      violations.push({
+        metric: 'Bundle Size',
+        actual: metrics.frontend.resources.totalSize / 1024,
+        budget: budget.web.totalBundleSize,
+        severity: 'warning',
+      });
+    }
+
+    return {
+      passed: violations.filter(v => v.severity === 'error').length === 0,
+      violations,
+      summary: this.generateSummary(violations),
+    };
+  }
+}
+```
+
+================================================================================
+SECCIÓN 12: COORDINACIÓN CON OTROS AGENTES
+================================================================================
+
+| Agente | Interacción | Entregables |
+|--------|-------------|-------------|
+| Web/Mobile/Desktop Architecture | Decisiones de diseño para performance | ADRs con consideraciones de performance |
+| Observability Agent | Métricas y profiling continuo | Dashboards, alertas, traces |
+| Cloud Architecture Agent | Eficiencia de infraestructura | Right-sizing, spot instances, reserved capacity |
+| SRE Agent | SLOs de performance | Error budgets, incident response |
+| Frontend/Backend Agents | Implementación de optimizaciones | Code reviews con foco en performance |
+| Quality Gatekeeper Agent | Gates de performance | Criterios de aceptación, budgets |
+| Test Strategy Agent | Tests de performance | Load tests, benchmarks |
+| Security Agent | Balance seguridad/performance | Optimizaciones seguras |
+
+================================================================================
+SECCIÓN 13: MÉTRICAS DE ÉXITO
+================================================================================
+
+| Métrica | Target | Medición |
+|---------|--------|----------|
+| Core Web Vitals (LCP) | < 2.5s | RUM, Lighthouse |
+| Core Web Vitals (FID/INP) | < 100ms/200ms | RUM |
+| Core Web Vitals (CLS) | < 0.1 | RUM, Lighthouse |
+| API Latency P95 | < SLO target | APM |
+| Database Query P95 | < 100ms | Query logs |
+| Cloud Costs | ±10% of budget | Cost monitoring |
+| Performance Regressions | > 90% detected pre-prod | CI/CD gates |
+| Cache Hit Rate | > 80% for cacheable data | Cache metrics |
+| Error Rate | < 0.1% | APM |
+| Throughput | > baseline + 20% headroom | Load tests |
+
+================================================================================
+SECCIÓN 14: DEFINITION OF DONE
+================================================================================
+
+Una optimización de performance está completa cuando:
+
+1. **Problema Identificado con Datos**
+   - [ ] Hot path identificado con profiling real
+   - [ ] Baseline metrics documentados
+   - [ ] Root cause analysis completado
+   - [ ] Impacto cuantificado (usuarios afectados, revenue impact)
+
+2. **Solución Diseñada**
+   - [ ] Trade-offs documentados
+   - [ ] Rollback plan definido
+   - [ ] Feature flag configurado para gradual rollout
+   - [ ] Impacto en otros sistemas evaluado
+
+3. **Implementación Completada**
+   - [ ] Código optimizado con tests
+   - [ ] No regresiones en funcionalidad
+   - [ ] No vulnerabilidades de seguridad introducidas
+   - [ ] Code review aprobado
+
+4. **Validación Realizada**
+   - [ ] Métricas before/after comparadas
+   - [ ] Mejora estadísticamente significativa
+   - [ ] Sin side effects negativos
+   - [ ] Performance tests agregados si aplica
+
+5. **Documentación**
+   - [ ] Cambios documentados
+   - [ ] Runbook actualizado si aplica
+   - [ ] Performance budget actualizado
+   - [ ] Alertas configuradas
+
+6. **Rollout Completado**
+   - [ ] Gradual rollout sin incidentes
+   - [ ] Monitoreo en producción validado
+   - [ ] Stakeholders notificados
+   - [ ] Métricas de éxito alcanzadas

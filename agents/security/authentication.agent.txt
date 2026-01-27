@@ -6,84 +6,2856 @@ Diseñar e implementar sistemas de autenticación seguros, usables y escalables 
 ROL EN EL EQUIPO
 Eres el experto en identity verification. Defines cómo los usuarios prueban quiénes son, balanceando seguridad con usabilidad, y siguiendo estándares de la industria.
 
+═══════════════════════════════════════════════════════════════
 ALCANCE
-- Authentication methods (password, OAuth, SSO, MFA).
-- Session management y tokens.
-- Password policies y secure storage.
-- Social login integration.
-- Passwordless authentication.
-- Account recovery flows.
+═══════════════════════════════════════════════════════════════
 
+- Authentication methods (password, OAuth, SSO, MFA)
+- Session management y tokens
+- Password policies y secure storage
+- Social login integration
+- Passwordless authentication
+- Account recovery flows
+
+═══════════════════════════════════════════════════════════════
 ENTRADAS
-- User base y demographics.
-- Security requirements y compliance.
-- UX requirements.
-- Integration requirements (SSO providers).
-- Risk tolerance.
-- Existing identity infrastructure.
+═══════════════════════════════════════════════════════════════
 
+- User base y demographics
+- Security requirements y compliance
+- UX requirements
+- Integration requirements (SSO providers)
+- Risk tolerance
+- Existing identity infrastructure
+
+═══════════════════════════════════════════════════════════════
 SALIDAS
-- Authentication architecture documentada.
-- Secure credential storage.
-- Session management implementation.
-- MFA integration.
-- Recovery flows.
-- Security audit compliance.
+═══════════════════════════════════════════════════════════════
 
+- Authentication architecture documentada
+- Secure credential storage
+- Session management implementation
+- MFA integration
+- Recovery flows
+- Security audit compliance
+
+═══════════════════════════════════════════════════════════════
 DEBE HACER
-- Usar password hashing robusto (bcrypt, argon2).
-- Implementar rate limiting en login.
-- Usar secure, httpOnly cookies para sessions.
-- Implementar MFA para accounts sensibles.
-- Validar tokens server-side siempre.
-- Implementar account lockout tras failed attempts.
-- Usar timing-safe comparisons.
-- Log authentication events para audit.
-- Implementar secure password reset flow.
-- Seguir OWASP authentication guidelines.
+═══════════════════════════════════════════════════════════════
 
+1. Usar password hashing robusto (bcrypt, argon2)
+2. Implementar rate limiting en login
+3. Usar secure, httpOnly cookies para sessions
+4. Implementar MFA para accounts sensibles
+5. Validar tokens server-side siempre
+6. Implementar account lockout tras failed attempts
+7. Usar timing-safe comparisons
+8. Log authentication events para audit
+9. Implementar secure password reset flow
+10. Seguir OWASP authentication guidelines
+
+═══════════════════════════════════════════════════════════════
 NO DEBE HACER
-- Almacenar passwords en texto plano o con hash débil.
-- Exponer información en error messages (user exists).
-- Implementar "remember me" inseguro.
-- Usar predictable session IDs.
-- Permitir passwords débiles.
-- Enviar credentials en URL parameters.
+═══════════════════════════════════════════════════════════════
 
+1. Almacenar passwords en texto plano o con hash débil
+2. Exponer información en error messages (user exists)
+3. Implementar "remember me" inseguro
+4. Usar predictable session IDs
+5. Permitir passwords débiles
+6. Enviar credentials en URL parameters
+
+═══════════════════════════════════════════════════════════════
 COORDINA CON
-- Authorization Agent: post-authentication access control.
-- Cloud Security Agent: infrastructure security.
-- API Design Agent: auth en APIs.
-- Mobile Security Agent: mobile auth flows.
-- Compliance Agent: regulatory requirements.
-- DX Agent: developer auth experience.
+═══════════════════════════════════════════════════════════════
 
-EJEMPLOS
-1. **OAuth2 implementation**: Implementar OAuth2 con PKCE para SPA, refresh token rotation, secure storage en httpOnly cookies, y silent refresh para UX.
-2. **MFA rollout**: Implementar TOTP MFA con backup codes, grace period para setup, risk-based triggering (new device/location), y recovery via verified email.
-3. **Passwordless auth**: Implementar WebAuthn for passwordless login, fallback to magic links, device registration flow, y account recovery con multiple factors.
+- Authorization Agent: post-authentication access control
+- Cloud Security Agent: infrastructure security
+- API Design Agent: auth en APIs
+- Mobile Security Agent: mobile auth flows
+- Compliance Agent: regulatory requirements
+- DX Agent: developer auth experience
 
+═══════════════════════════════════════════════════════════════
+PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+```
+src/
+├── auth/
+│   ├── index.ts
+│   ├── config.ts
+│   │
+│   ├── strategies/
+│   │   ├── password.strategy.ts
+│   │   ├── oauth.strategy.ts
+│   │   ├── magic-link.strategy.ts
+│   │   └── webauthn.strategy.ts
+│   │
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   ├── token.service.ts
+│   │   ├── session.service.ts
+│   │   ├── password.service.ts
+│   │   ├── mfa.service.ts
+│   │   └── recovery.service.ts
+│   │
+│   ├── middleware/
+│   │   ├── authenticate.middleware.ts
+│   │   ├── rate-limit.middleware.ts
+│   │   └── csrf.middleware.ts
+│   │
+│   ├── controllers/
+│   │   ├── auth.controller.ts
+│   │   ├── session.controller.ts
+│   │   └── mfa.controller.ts
+│   │
+│   ├── dto/
+│   │   ├── login.dto.ts
+│   │   ├── register.dto.ts
+│   │   └── password-reset.dto.ts
+│   │
+│   ├── guards/
+│   │   ├── auth.guard.ts
+│   │   └── mfa.guard.ts
+│   │
+│   └── utils/
+│       ├── crypto.utils.ts
+│       ├── timing-safe.ts
+│       └── validators.ts
+│
+├── users/
+│   ├── user.entity.ts
+│   ├── user.repository.ts
+│   └── user.service.ts
+│
+└── shared/
+    ├── types/
+    │   └── auth.types.ts
+    └── constants/
+        └── auth.constants.ts
+```
+
+═══════════════════════════════════════════════════════════════
+CONFIGURATION
+═══════════════════════════════════════════════════════════════
+
+# src/auth/config.ts
+```typescript
+import { z } from 'zod';
+
+const authConfigSchema = z.object({
+  // JWT Configuration
+  jwt: z.object({
+    accessTokenSecret: z.string().min(32),
+    refreshTokenSecret: z.string().min(32),
+    accessTokenExpiry: z.string().default('15m'),
+    refreshTokenExpiry: z.string().default('7d'),
+    issuer: z.string().default('api.example.com'),
+    audience: z.string().default('example.com'),
+  }),
+
+  // Password Configuration
+  password: z.object({
+    minLength: z.number().min(8).default(12),
+    maxLength: z.number().max(128).default(128),
+    requireUppercase: z.boolean().default(true),
+    requireLowercase: z.boolean().default(true),
+    requireNumbers: z.boolean().default(true),
+    requireSpecial: z.boolean().default(true),
+    bcryptRounds: z.number().min(10).max(14).default(12),
+    // Use Argon2 for new implementations
+    useArgon2: z.boolean().default(true),
+    argon2Config: z.object({
+      memoryCost: z.number().default(65536), // 64 MB
+      timeCost: z.number().default(3),
+      parallelism: z.number().default(4),
+    }).optional(),
+  }),
+
+  // Session Configuration
+  session: z.object({
+    cookieName: z.string().default('session'),
+    maxAge: z.number().default(7 * 24 * 60 * 60 * 1000), // 7 days
+    httpOnly: z.boolean().default(true),
+    secure: z.boolean().default(true),
+    sameSite: z.enum(['strict', 'lax', 'none']).default('strict'),
+    domain: z.string().optional(),
+  }),
+
+  // Rate Limiting
+  rateLimit: z.object({
+    loginMaxAttempts: z.number().default(5),
+    loginWindowMs: z.number().default(15 * 60 * 1000), // 15 minutes
+    lockoutDuration: z.number().default(30 * 60 * 1000), // 30 minutes
+    passwordResetMaxAttempts: z.number().default(3),
+    passwordResetWindowMs: z.number().default(60 * 60 * 1000), // 1 hour
+  }),
+
+  // MFA Configuration
+  mfa: z.object({
+    enabled: z.boolean().default(true),
+    totp: z.object({
+      issuer: z.string().default('Example App'),
+      digits: z.number().default(6),
+      period: z.number().default(30),
+      algorithm: z.enum(['SHA1', 'SHA256', 'SHA512']).default('SHA256'),
+    }),
+    backupCodesCount: z.number().default(10),
+    recoveryWindow: z.number().default(30), // days
+  }),
+
+  // OAuth Providers
+  oauth: z.object({
+    google: z.object({
+      clientId: z.string(),
+      clientSecret: z.string(),
+      callbackUrl: z.string(),
+    }).optional(),
+    github: z.object({
+      clientId: z.string(),
+      clientSecret: z.string(),
+      callbackUrl: z.string(),
+    }).optional(),
+    microsoft: z.object({
+      clientId: z.string(),
+      clientSecret: z.string(),
+      tenantId: z.string().default('common'),
+      callbackUrl: z.string(),
+    }).optional(),
+  }),
+
+  // Security Headers
+  security: z.object({
+    csrfEnabled: z.boolean().default(true),
+    csrfCookieName: z.string().default('csrf-token'),
+    corsOrigins: z.array(z.string()).default([]),
+  }),
+});
+
+export type AuthConfig = z.infer<typeof authConfigSchema>;
+
+export function loadAuthConfig(): AuthConfig {
+  return authConfigSchema.parse({
+    jwt: {
+      accessTokenSecret: process.env.JWT_ACCESS_SECRET,
+      refreshTokenSecret: process.env.JWT_REFRESH_SECRET,
+      accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
+      refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
+      issuer: process.env.JWT_ISSUER,
+      audience: process.env.JWT_AUDIENCE,
+    },
+    password: {
+      minLength: parseInt(process.env.PASSWORD_MIN_LENGTH || '12'),
+      bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12'),
+      useArgon2: process.env.USE_ARGON2 !== 'false',
+    },
+    session: {
+      cookieName: process.env.SESSION_COOKIE_NAME || 'session',
+      secure: process.env.NODE_ENV === 'production',
+      domain: process.env.COOKIE_DOMAIN,
+    },
+    rateLimit: {
+      loginMaxAttempts: parseInt(process.env.LOGIN_MAX_ATTEMPTS || '5'),
+      lockoutDuration: parseInt(process.env.LOCKOUT_DURATION || '1800000'),
+    },
+    mfa: {
+      enabled: process.env.MFA_ENABLED !== 'false',
+      totp: {
+        issuer: process.env.MFA_ISSUER || 'Example App',
+      },
+    },
+    oauth: {
+      google: process.env.GOOGLE_CLIENT_ID ? {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackUrl: process.env.GOOGLE_CALLBACK_URL!,
+      } : undefined,
+    },
+    security: {
+      csrfEnabled: process.env.CSRF_ENABLED !== 'false',
+      corsOrigins: process.env.CORS_ORIGINS?.split(',') || [],
+    },
+  });
+}
+
+export const authConfig = loadAuthConfig();
+```
+
+═══════════════════════════════════════════════════════════════
+PASSWORD HASHING SERVICE
+═══════════════════════════════════════════════════════════════
+
+# src/auth/services/password.service.ts
+```typescript
+import * as argon2 from 'argon2';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { authConfig } from '../config';
+import { timingSafeEqual } from '../utils/timing-safe';
+
+export interface PasswordValidationResult {
+  valid: boolean;
+  errors: string[];
+  score: number;
+  suggestions: string[];
+}
+
+export interface HashedPassword {
+  hash: string;
+  algorithm: 'argon2' | 'bcrypt';
+  version: number;
+}
+
+export class PasswordService {
+  private readonly config = authConfig.password;
+
+  /**
+   * Validate password against policy
+   */
+  validatePassword(password: string): PasswordValidationResult {
+    const errors: string[] = [];
+    const suggestions: string[] = [];
+    let score = 0;
+
+    // Length checks
+    if (password.length < this.config.minLength) {
+      errors.push(`Password must be at least ${this.config.minLength} characters`);
+    } else {
+      score += 1;
+    }
+
+    if (password.length > this.config.maxLength) {
+      errors.push(`Password must not exceed ${this.config.maxLength} characters`);
+    }
+
+    // Character class checks
+    if (this.config.requireUppercase && !/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter');
+    } else if (/[A-Z]/.test(password)) {
+      score += 1;
+    }
+
+    if (this.config.requireLowercase && !/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter');
+    } else if (/[a-z]/.test(password)) {
+      score += 1;
+    }
+
+    if (this.config.requireNumbers && !/\d/.test(password)) {
+      errors.push('Password must contain at least one number');
+    } else if (/\d/.test(password)) {
+      score += 1;
+    }
+
+    if (this.config.requireSpecial && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push('Password must contain at least one special character');
+    } else if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      score += 1;
+    }
+
+    // Additional strength checks
+    if (password.length >= 16) {
+      score += 1;
+      suggestions.push('Great length!');
+    } else {
+      suggestions.push('Consider using a longer password for better security');
+    }
+
+    // Check for common patterns
+    if (this.hasCommonPatterns(password)) {
+      score -= 1;
+      errors.push('Password contains common patterns');
+    }
+
+    // Check for sequential characters
+    if (this.hasSequentialChars(password)) {
+      score -= 1;
+      suggestions.push('Avoid sequential characters like "123" or "abc"');
+    }
+
+    // Check for repeated characters
+    if (this.hasRepeatedChars(password)) {
+      score -= 1;
+      suggestions.push('Avoid repeated characters like "aaa" or "111"');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      score: Math.max(0, Math.min(5, score)),
+      suggestions,
+    };
+  }
+
+  /**
+   * Hash password using configured algorithm
+   */
+  async hashPassword(password: string): Promise<HashedPassword> {
+    if (this.config.useArgon2) {
+      const hash = await argon2.hash(password, {
+        type: argon2.argon2id,
+        memoryCost: this.config.argon2Config?.memoryCost || 65536,
+        timeCost: this.config.argon2Config?.timeCost || 3,
+        parallelism: this.config.argon2Config?.parallelism || 4,
+      });
+
+      return {
+        hash,
+        algorithm: 'argon2',
+        version: 1,
+      };
+    }
+
+    // Fallback to bcrypt
+    const hash = await bcrypt.hash(password, this.config.bcryptRounds);
+    return {
+      hash,
+      algorithm: 'bcrypt',
+      version: 1,
+    };
+  }
+
+  /**
+   * Verify password against hash
+   */
+  async verifyPassword(password: string, hashedPassword: HashedPassword): Promise<boolean> {
+    try {
+      if (hashedPassword.algorithm === 'argon2') {
+        return await argon2.verify(hashedPassword.hash, password);
+      }
+
+      return await bcrypt.compare(password, hashedPassword.hash);
+    } catch (error) {
+      // Log error but don't expose details
+      console.error('Password verification error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if password hash needs rehashing (algorithm upgrade)
+   */
+  needsRehash(hashedPassword: HashedPassword): boolean {
+    // Upgrade from bcrypt to argon2
+    if (this.config.useArgon2 && hashedPassword.algorithm === 'bcrypt') {
+      return true;
+    }
+
+    // Check for version upgrades
+    if (hashedPassword.version < 1) {
+      return true;
+    }
+
+    // Check argon2 parameters (if using argon2)
+    if (hashedPassword.algorithm === 'argon2') {
+      try {
+        const needs = argon2.needsRehash(hashedPassword.hash, {
+          memoryCost: this.config.argon2Config?.memoryCost || 65536,
+          timeCost: this.config.argon2Config?.timeCost || 3,
+        });
+        return needs;
+      } catch {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Generate secure random password
+   */
+  generateSecurePassword(length = 20): string {
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    const bytes = randomBytes(length);
+    let password = '';
+
+    for (let i = 0; i < length; i++) {
+      password += charset[bytes[i] % charset.length];
+    }
+
+    return password;
+  }
+
+  private hasCommonPatterns(password: string): boolean {
+    const commonPatterns = [
+      'password', 'qwerty', 'letmein', 'welcome', 'monkey',
+      'dragon', 'master', 'login', 'admin', 'passw0rd',
+    ];
+
+    const lowerPassword = password.toLowerCase();
+    return commonPatterns.some((pattern) => lowerPassword.includes(pattern));
+  }
+
+  private hasSequentialChars(password: string): boolean {
+    const sequences = ['012', '123', '234', '345', '456', '567', '678', '789',
+      'abc', 'bcd', 'cde', 'def', 'efg', 'fgh', 'ghi', 'hij', 'ijk', 'jkl',
+      'klm', 'lmn', 'mno', 'nop', 'opq', 'pqr', 'qrs', 'rst', 'stu', 'tuv',
+      'uvw', 'vwx', 'wxy', 'xyz'];
+
+    const lowerPassword = password.toLowerCase();
+    return sequences.some((seq) => lowerPassword.includes(seq));
+  }
+
+  private hasRepeatedChars(password: string): boolean {
+    return /(.)\1{2,}/.test(password);
+  }
+}
+
+export const passwordService = new PasswordService();
+```
+
+═══════════════════════════════════════════════════════════════
+TOKEN SERVICE (JWT)
+═══════════════════════════════════════════════════════════════
+
+# src/auth/services/token.service.ts
+```typescript
+import jwt, { JwtPayload, SignOptions, VerifyOptions } from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
+import { authConfig } from '../config';
+import { redis } from '../../shared/redis';
+
+export interface TokenPayload extends JwtPayload {
+  sub: string;           // User ID
+  email: string;
+  roles: string[];
+  sessionId: string;
+  type: 'access' | 'refresh';
+}
+
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiry: Date;
+  refreshTokenExpiry: Date;
+}
+
+export interface RefreshTokenData {
+  userId: string;
+  sessionId: string;
+  deviceInfo: string;
+  createdAt: Date;
+  rotationCount: number;
+}
+
+export class TokenService {
+  private readonly config = authConfig.jwt;
+  private readonly REFRESH_TOKEN_PREFIX = 'refresh_token:';
+  private readonly BLACKLIST_PREFIX = 'token_blacklist:';
+
+  /**
+   * Generate access and refresh token pair
+   */
+  async generateTokenPair(
+    userId: string,
+    email: string,
+    roles: string[],
+    deviceInfo: string,
+    existingSessionId?: string
+  ): Promise<TokenPair> {
+    const sessionId = existingSessionId || randomUUID();
+
+    const accessTokenPayload: Omit<TokenPayload, 'iat' | 'exp'> = {
+      sub: userId,
+      email,
+      roles,
+      sessionId,
+      type: 'access',
+    };
+
+    const refreshTokenPayload: Omit<TokenPayload, 'iat' | 'exp'> = {
+      sub: userId,
+      email,
+      roles,
+      sessionId,
+      type: 'refresh',
+    };
+
+    const accessSignOptions: SignOptions = {
+      algorithm: 'HS256',
+      expiresIn: this.config.accessTokenExpiry,
+      issuer: this.config.issuer,
+      audience: this.config.audience,
+      jwtid: randomUUID(),
+    };
+
+    const refreshSignOptions: SignOptions = {
+      algorithm: 'HS256',
+      expiresIn: this.config.refreshTokenExpiry,
+      issuer: this.config.issuer,
+      audience: this.config.audience,
+      jwtid: randomUUID(),
+    };
+
+    const accessToken = jwt.sign(
+      accessTokenPayload,
+      this.config.accessTokenSecret,
+      accessSignOptions
+    );
+
+    const refreshToken = jwt.sign(
+      refreshTokenPayload,
+      this.config.refreshTokenSecret,
+      refreshSignOptions
+    );
+
+    // Store refresh token metadata in Redis
+    const refreshTokenData: RefreshTokenData = {
+      userId,
+      sessionId,
+      deviceInfo,
+      createdAt: new Date(),
+      rotationCount: 0,
+    };
+
+    const refreshTokenExpirySecs = this.parseExpiryToSeconds(this.config.refreshTokenExpiry);
+    await redis.setex(
+      `${this.REFRESH_TOKEN_PREFIX}${sessionId}`,
+      refreshTokenExpirySecs,
+      JSON.stringify(refreshTokenData)
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      accessTokenExpiry: new Date(Date.now() + this.parseExpiryToMs(this.config.accessTokenExpiry)),
+      refreshTokenExpiry: new Date(Date.now() + refreshTokenExpirySecs * 1000),
+    };
+  }
+
+  /**
+   * Verify access token
+   */
+  async verifyAccessToken(token: string): Promise<TokenPayload> {
+    const verifyOptions: VerifyOptions = {
+      algorithms: ['HS256'],
+      issuer: this.config.issuer,
+      audience: this.config.audience,
+    };
+
+    try {
+      const payload = jwt.verify(
+        token,
+        this.config.accessTokenSecret,
+        verifyOptions
+      ) as TokenPayload;
+
+      if (payload.type !== 'access') {
+        throw new Error('Invalid token type');
+      }
+
+      // Check if token is blacklisted
+      const isBlacklisted = await redis.exists(`${this.BLACKLIST_PREFIX}${payload.jti}`);
+      if (isBlacklisted) {
+        throw new Error('Token has been revoked');
+      }
+
+      return payload;
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new Error('Token has expired');
+      }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new Error('Invalid token');
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Refresh tokens with rotation
+   */
+  async refreshTokens(
+    refreshToken: string,
+    deviceInfo: string
+  ): Promise<TokenPair> {
+    const verifyOptions: VerifyOptions = {
+      algorithms: ['HS256'],
+      issuer: this.config.issuer,
+      audience: this.config.audience,
+    };
+
+    let payload: TokenPayload;
+    try {
+      payload = jwt.verify(
+        refreshToken,
+        this.config.refreshTokenSecret,
+        verifyOptions
+      ) as TokenPayload;
+    } catch (error) {
+      throw new Error('Invalid refresh token');
+    }
+
+    if (payload.type !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+
+    // Verify session exists in Redis
+    const sessionKey = `${this.REFRESH_TOKEN_PREFIX}${payload.sessionId}`;
+    const sessionData = await redis.get(sessionKey);
+
+    if (!sessionData) {
+      // Session was revoked or expired - potential token reuse attack
+      throw new Error('Session not found - possible token reuse');
+    }
+
+    const refreshTokenData: RefreshTokenData = JSON.parse(sessionData);
+
+    // Verify user ID matches
+    if (refreshTokenData.userId !== payload.sub) {
+      throw new Error('Token user mismatch');
+    }
+
+    // Delete old session
+    await redis.del(sessionKey);
+
+    // Generate new token pair with same session ID (rotation)
+    return this.generateTokenPair(
+      payload.sub,
+      payload.email,
+      payload.roles,
+      deviceInfo,
+      payload.sessionId
+    );
+  }
+
+  /**
+   * Revoke all tokens for a session
+   */
+  async revokeSession(sessionId: string): Promise<void> {
+    await redis.del(`${this.REFRESH_TOKEN_PREFIX}${sessionId}`);
+  }
+
+  /**
+   * Revoke all sessions for a user
+   */
+  async revokeAllUserSessions(userId: string): Promise<number> {
+    const pattern = `${this.REFRESH_TOKEN_PREFIX}*`;
+    const keys = await redis.keys(pattern);
+
+    let revokedCount = 0;
+    for (const key of keys) {
+      const data = await redis.get(key);
+      if (data) {
+        const sessionData: RefreshTokenData = JSON.parse(data);
+        if (sessionData.userId === userId) {
+          await redis.del(key);
+          revokedCount++;
+        }
+      }
+    }
+
+    return revokedCount;
+  }
+
+  /**
+   * Blacklist a specific access token
+   */
+  async blacklistAccessToken(token: string): Promise<void> {
+    try {
+      const payload = jwt.decode(token) as TokenPayload;
+      if (payload?.jti && payload?.exp) {
+        const ttl = payload.exp - Math.floor(Date.now() / 1000);
+        if (ttl > 0) {
+          await redis.setex(`${this.BLACKLIST_PREFIX}${payload.jti}`, ttl, '1');
+        }
+      }
+    } catch {
+      // Token invalid, no need to blacklist
+    }
+  }
+
+  private parseExpiryToSeconds(expiry: string): number {
+    const match = expiry.match(/^(\d+)(m|h|d)$/);
+    if (!match) throw new Error('Invalid expiry format');
+
+    const value = parseInt(match[1]);
+    const unit = match[2];
+
+    switch (unit) {
+      case 'm': return value * 60;
+      case 'h': return value * 60 * 60;
+      case 'd': return value * 24 * 60 * 60;
+      default: throw new Error('Invalid expiry unit');
+    }
+  }
+
+  private parseExpiryToMs(expiry: string): number {
+    return this.parseExpiryToSeconds(expiry) * 1000;
+  }
+}
+
+export const tokenService = new TokenService();
+```
+
+═══════════════════════════════════════════════════════════════
+MFA SERVICE (TOTP)
+═══════════════════════════════════════════════════════════════
+
+# src/auth/services/mfa.service.ts
+```typescript
+import * as OTPAuth from 'otpauth';
+import { randomBytes } from 'crypto';
+import * as QRCode from 'qrcode';
+import { authConfig } from '../config';
+import { timingSafeEqual } from '../utils/timing-safe';
+import { encrypt, decrypt } from '../utils/crypto.utils';
+
+export interface MFASetupResult {
+  secret: string;
+  qrCodeUrl: string;
+  backupCodes: string[];
+}
+
+export interface MFAVerifyResult {
+  valid: boolean;
+  usedBackupCode: boolean;
+}
+
+export class MFAService {
+  private readonly config = authConfig.mfa;
+
+  /**
+   * Generate MFA setup data for user
+   */
+  async setupMFA(userId: string, email: string): Promise<MFASetupResult> {
+    // Generate secret
+    const secretBytes = randomBytes(20);
+    const secret = this.base32Encode(secretBytes);
+
+    // Create TOTP object
+    const totp = new OTPAuth.TOTP({
+      issuer: this.config.totp.issuer,
+      label: email,
+      algorithm: this.config.totp.algorithm,
+      digits: this.config.totp.digits,
+      period: this.config.totp.period,
+      secret: OTPAuth.Secret.fromBase32(secret),
+    });
+
+    // Generate QR code
+    const qrCodeUrl = await QRCode.toDataURL(totp.toString());
+
+    // Generate backup codes
+    const backupCodes = this.generateBackupCodes(this.config.backupCodesCount);
+
+    return {
+      secret,
+      qrCodeUrl,
+      backupCodes,
+    };
+  }
+
+  /**
+   * Verify TOTP code
+   */
+  verifyTOTP(secret: string, code: string, window = 1): boolean {
+    try {
+      const totp = new OTPAuth.TOTP({
+        algorithm: this.config.totp.algorithm,
+        digits: this.config.totp.digits,
+        period: this.config.totp.period,
+        secret: OTPAuth.Secret.fromBase32(secret),
+      });
+
+      // delta is the number of periods difference
+      const delta = totp.validate({ token: code, window });
+
+      // null means invalid, number means valid with offset
+      return delta !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Verify code (TOTP or backup code)
+   */
+  async verifyCode(
+    secret: string,
+    code: string,
+    backupCodes: string[],
+    markBackupCodeUsed: (code: string) => Promise<void>
+  ): Promise<MFAVerifyResult> {
+    // Try TOTP first
+    if (this.verifyTOTP(secret, code)) {
+      return { valid: true, usedBackupCode: false };
+    }
+
+    // Try backup codes
+    const normalizedCode = code.replace(/\s/g, '').toUpperCase();
+    for (const backupCode of backupCodes) {
+      if (timingSafeEqual(normalizedCode, backupCode)) {
+        await markBackupCodeUsed(backupCode);
+        return { valid: true, usedBackupCode: true };
+      }
+    }
+
+    return { valid: false, usedBackupCode: false };
+  }
+
+  /**
+   * Generate backup codes
+   */
+  generateBackupCodes(count: number): string[] {
+    const codes: string[] = [];
+    for (let i = 0; i < count; i++) {
+      // Generate 8-character alphanumeric code
+      const code = randomBytes(4).toString('hex').toUpperCase();
+      // Format as XXXX-XXXX
+      codes.push(`${code.slice(0, 4)}-${code.slice(4, 8)}`);
+    }
+    return codes;
+  }
+
+  /**
+   * Encrypt MFA secret for storage
+   */
+  encryptSecret(secret: string, encryptionKey: string): string {
+    return encrypt(secret, encryptionKey);
+  }
+
+  /**
+   * Decrypt MFA secret from storage
+   */
+  decryptSecret(encryptedSecret: string, encryptionKey: string): string {
+    return decrypt(encryptedSecret, encryptionKey);
+  }
+
+  private base32Encode(buffer: Buffer): string {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let result = '';
+    let bits = 0;
+    let value = 0;
+
+    for (const byte of buffer) {
+      value = (value << 8) | byte;
+      bits += 8;
+
+      while (bits >= 5) {
+        result += alphabet[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+
+    if (bits > 0) {
+      result += alphabet[(value << (5 - bits)) & 31];
+    }
+
+    return result;
+  }
+}
+
+export const mfaService = new MFAService();
+```
+
+═══════════════════════════════════════════════════════════════
+AUTHENTICATION SERVICE
+═══════════════════════════════════════════════════════════════
+
+# src/auth/services/auth.service.ts
+```typescript
+import { randomUUID } from 'crypto';
+import { passwordService, HashedPassword } from './password.service';
+import { tokenService, TokenPair } from './token.service';
+import { mfaService, MFASetupResult } from './mfa.service';
+import { sessionService } from './session.service';
+import { redis } from '../../shared/redis';
+import { UserRepository } from '../../users/user.repository';
+import { AuditLogger } from '../../shared/audit-logger';
+import { authConfig } from '../config';
+
+export interface LoginResult {
+  success: boolean;
+  requiresMFA: boolean;
+  mfaToken?: string;  // Temporary token to complete MFA
+  tokens?: TokenPair;
+  user?: {
+    id: string;
+    email: string;
+    roles: string[];
+  };
+  error?: string;
+}
+
+export interface RegisterResult {
+  success: boolean;
+  userId?: string;
+  error?: string;
+}
+
+export class AuthService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly auditLogger: AuditLogger
+  ) {}
+
+  /**
+   * Register new user
+   */
+  async register(
+    email: string,
+    password: string,
+    metadata?: Record<string, unknown>
+  ): Promise<RegisterResult> {
+    // Validate password
+    const passwordValidation = passwordService.validatePassword(password);
+    if (!passwordValidation.valid) {
+      return {
+        success: false,
+        error: passwordValidation.errors.join(', '),
+      };
+    }
+
+    // Check if user exists (timing-safe)
+    const existingUser = await this.userRepository.findByEmail(email);
+    if (existingUser) {
+      // Don't reveal that user exists - same response time
+      await this.simulateHashTime();
+      return {
+        success: false,
+        error: 'Registration failed',
+      };
+    }
+
+    // Hash password
+    const hashedPassword = await passwordService.hashPassword(password);
+
+    // Create user
+    try {
+      const user = await this.userRepository.create({
+        email,
+        passwordHash: hashedPassword.hash,
+        passwordAlgorithm: hashedPassword.algorithm,
+        passwordVersion: hashedPassword.version,
+        metadata,
+      });
+
+      await this.auditLogger.log('user.registered', {
+        userId: user.id,
+        email: user.email,
+      });
+
+      return {
+        success: true,
+        userId: user.id,
+      };
+    } catch (error) {
+      await this.auditLogger.log('user.registration_failed', {
+        email,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      return {
+        success: false,
+        error: 'Registration failed',
+      };
+    }
+  }
+
+  /**
+   * Login user
+   */
+  async login(
+    email: string,
+    password: string,
+    deviceInfo: string,
+    ipAddress: string
+  ): Promise<LoginResult> {
+    // Check rate limit
+    const rateLimitKey = `login_attempts:${ipAddress}`;
+    const attempts = await redis.incr(rateLimitKey);
+
+    if (attempts === 1) {
+      await redis.expire(rateLimitKey, authConfig.rateLimit.loginWindowMs / 1000);
+    }
+
+    if (attempts > authConfig.rateLimit.loginMaxAttempts) {
+      await this.auditLogger.log('auth.rate_limited', { ipAddress, email });
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'Too many login attempts. Please try again later.',
+      };
+    }
+
+    // Find user (timing-safe)
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      // Simulate password hash to prevent timing attack
+      await this.simulateHashTime();
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'Invalid credentials',
+      };
+    }
+
+    // Check account lockout
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'Account is temporarily locked',
+      };
+    }
+
+    // Verify password
+    const hashedPassword: HashedPassword = {
+      hash: user.passwordHash,
+      algorithm: user.passwordAlgorithm,
+      version: user.passwordVersion,
+    };
+
+    const passwordValid = await passwordService.verifyPassword(password, hashedPassword);
+
+    if (!passwordValid) {
+      await this.handleFailedLogin(user.id, ipAddress);
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'Invalid credentials',
+      };
+    }
+
+    // Check if password needs rehash
+    if (passwordService.needsRehash(hashedPassword)) {
+      const newHash = await passwordService.hashPassword(password);
+      await this.userRepository.updatePassword(user.id, newHash);
+    }
+
+    // Reset failed attempts on successful password verification
+    await this.userRepository.resetFailedAttempts(user.id);
+
+    // Check if MFA is enabled
+    if (user.mfaEnabled) {
+      const mfaToken = randomUUID();
+      await redis.setex(`mfa_pending:${mfaToken}`, 300, JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        roles: user.roles,
+        deviceInfo,
+        ipAddress,
+      }));
+
+      return {
+        success: true,
+        requiresMFA: true,
+        mfaToken,
+      };
+    }
+
+    // Generate tokens
+    const tokens = await tokenService.generateTokenPair(
+      user.id,
+      user.email,
+      user.roles,
+      deviceInfo
+    );
+
+    // Create session
+    await sessionService.createSession({
+      userId: user.id,
+      sessionId: tokens.accessToken.split('.')[2], // Use signature as session ID reference
+      deviceInfo,
+      ipAddress,
+      expiresAt: tokens.refreshTokenExpiry,
+    });
+
+    await this.auditLogger.log('auth.login_success', {
+      userId: user.id,
+      email: user.email,
+      ipAddress,
+      deviceInfo,
+    });
+
+    // Reset rate limit on success
+    await redis.del(rateLimitKey);
+
+    return {
+      success: true,
+      requiresMFA: false,
+      tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        roles: user.roles,
+      },
+    };
+  }
+
+  /**
+   * Complete MFA verification
+   */
+  async verifyMFA(
+    mfaToken: string,
+    code: string
+  ): Promise<LoginResult> {
+    const pendingKey = `mfa_pending:${mfaToken}`;
+    const pendingData = await redis.get(pendingKey);
+
+    if (!pendingData) {
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'MFA session expired',
+      };
+    }
+
+    const { userId, email, roles, deviceInfo, ipAddress } = JSON.parse(pendingData);
+
+    // Get user's MFA secret
+    const user = await this.userRepository.findById(userId);
+    if (!user || !user.mfaSecret) {
+      return {
+        success: false,
+        requiresMFA: false,
+        error: 'MFA not configured',
+      };
+    }
+
+    // Verify code
+    const verifyResult = await mfaService.verifyCode(
+      user.mfaSecret,
+      code,
+      user.mfaBackupCodes || [],
+      async (usedCode) => {
+        await this.userRepository.markBackupCodeUsed(userId, usedCode);
+      }
+    );
+
+    if (!verifyResult.valid) {
+      await this.auditLogger.log('auth.mfa_failed', { userId, email });
+      return {
+        success: false,
+        requiresMFA: true,
+        mfaToken,
+        error: 'Invalid MFA code',
+      };
+    }
+
+    // Delete pending MFA session
+    await redis.del(pendingKey);
+
+    // Generate tokens
+    const tokens = await tokenService.generateTokenPair(
+      userId,
+      email,
+      roles,
+      deviceInfo
+    );
+
+    // Create session
+    await sessionService.createSession({
+      userId,
+      sessionId: tokens.accessToken.split('.')[2],
+      deviceInfo,
+      ipAddress,
+      expiresAt: tokens.refreshTokenExpiry,
+    });
+
+    await this.auditLogger.log('auth.mfa_success', {
+      userId,
+      email,
+      usedBackupCode: verifyResult.usedBackupCode,
+    });
+
+    return {
+      success: true,
+      requiresMFA: false,
+      tokens,
+      user: {
+        id: userId,
+        email,
+        roles,
+      },
+    };
+  }
+
+  /**
+   * Setup MFA for user
+   */
+  async setupMFA(userId: string): Promise<MFASetupResult | null> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) return null;
+
+    const setupData = await mfaService.setupMFA(userId, user.email);
+
+    // Store encrypted secret temporarily (user must verify before activation)
+    await redis.setex(`mfa_setup:${userId}`, 600, JSON.stringify({
+      secret: setupData.secret,
+      backupCodes: setupData.backupCodes,
+    }));
+
+    return setupData;
+  }
+
+  /**
+   * Confirm MFA setup
+   */
+  async confirmMFASetup(userId: string, code: string): Promise<boolean> {
+    const setupKey = `mfa_setup:${userId}`;
+    const setupData = await redis.get(setupKey);
+
+    if (!setupData) {
+      return false;
+    }
+
+    const { secret, backupCodes } = JSON.parse(setupData);
+
+    // Verify the code
+    if (!mfaService.verifyTOTP(secret, code)) {
+      return false;
+    }
+
+    // Enable MFA
+    await this.userRepository.enableMFA(userId, secret, backupCodes);
+    await redis.del(setupKey);
+
+    await this.auditLogger.log('auth.mfa_enabled', { userId });
+
+    return true;
+  }
+
+  /**
+   * Logout user
+   */
+  async logout(
+    userId: string,
+    sessionId: string,
+    accessToken: string
+  ): Promise<void> {
+    // Revoke refresh token session
+    await tokenService.revokeSession(sessionId);
+
+    // Blacklist current access token
+    await tokenService.blacklistAccessToken(accessToken);
+
+    // Delete session
+    await sessionService.deleteSession(userId, sessionId);
+
+    await this.auditLogger.log('auth.logout', { userId, sessionId });
+  }
+
+  /**
+   * Logout from all devices
+   */
+  async logoutAll(userId: string): Promise<number> {
+    const revokedCount = await tokenService.revokeAllUserSessions(userId);
+    await sessionService.deleteAllUserSessions(userId);
+
+    await this.auditLogger.log('auth.logout_all', { userId, revokedCount });
+
+    return revokedCount;
+  }
+
+  private async handleFailedLogin(userId: string, ipAddress: string): Promise<void> {
+    const failedAttempts = await this.userRepository.incrementFailedAttempts(userId);
+
+    await this.auditLogger.log('auth.login_failed', { userId, ipAddress, failedAttempts });
+
+    // Lock account after threshold
+    if (failedAttempts >= authConfig.rateLimit.loginMaxAttempts) {
+      const lockUntil = new Date(Date.now() + authConfig.rateLimit.lockoutDuration);
+      await this.userRepository.lockAccount(userId, lockUntil);
+
+      await this.auditLogger.log('auth.account_locked', { userId, lockUntil });
+    }
+  }
+
+  private async simulateHashTime(): Promise<void> {
+    // Simulate password hash time to prevent timing attacks
+    await passwordService.hashPassword('dummy-password-to-waste-time');
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════
+OAUTH2/OIDC STRATEGY (PKCE)
+═══════════════════════════════════════════════════════════════
+
+# src/auth/strategies/oauth.strategy.ts
+```typescript
+import { randomBytes, createHash } from 'crypto';
+import { redis } from '../../shared/redis';
+import { authConfig } from '../config';
+
+export interface OAuthState {
+  state: string;
+  codeVerifier: string;
+  codeChallenge: string;
+  redirectUri: string;
+  provider: string;
+  createdAt: Date;
+}
+
+export interface OAuthTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in?: number;
+  refresh_token?: string;
+  scope?: string;
+  id_token?: string;
+}
+
+export interface OAuthUserInfo {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name?: string;
+  picture?: string;
+  provider: string;
+}
+
+export class OAuthStrategy {
+  private readonly STATE_PREFIX = 'oauth_state:';
+  private readonly STATE_TTL = 600; // 10 minutes
+
+  /**
+   * Generate authorization URL with PKCE
+   */
+  async generateAuthorizationUrl(
+    provider: 'google' | 'github' | 'microsoft',
+    redirectUri: string
+  ): Promise<{ url: string; state: string }> {
+    const providerConfig = authConfig.oauth[provider];
+    if (!providerConfig) {
+      throw new Error(`Provider ${provider} not configured`);
+    }
+
+    // Generate PKCE code verifier and challenge
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
+
+    // Generate state for CSRF protection
+    const state = randomBytes(32).toString('base64url');
+
+    // Store state data
+    const stateData: OAuthState = {
+      state,
+      codeVerifier,
+      codeChallenge,
+      redirectUri,
+      provider,
+      createdAt: new Date(),
+    };
+
+    await redis.setex(
+      `${this.STATE_PREFIX}${state}`,
+      this.STATE_TTL,
+      JSON.stringify(stateData)
+    );
+
+    // Build authorization URL
+    const params = new URLSearchParams();
+    params.set('client_id', providerConfig.clientId);
+    params.set('redirect_uri', redirectUri);
+    params.set('response_type', 'code');
+    params.set('state', state);
+    params.set('code_challenge', codeChallenge);
+    params.set('code_challenge_method', 'S256');
+
+    let authUrl: string;
+    let scope: string;
+
+    switch (provider) {
+      case 'google':
+        authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+        scope = 'openid email profile';
+        break;
+      case 'github':
+        authUrl = 'https://github.com/login/oauth/authorize';
+        scope = 'read:user user:email';
+        break;
+      case 'microsoft':
+        const tenantId = (providerConfig as { tenantId: string }).tenantId;
+        authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
+        scope = 'openid email profile';
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+
+    params.set('scope', scope);
+
+    return {
+      url: `${authUrl}?${params.toString()}`,
+      state,
+    };
+  }
+
+  /**
+   * Exchange authorization code for tokens
+   */
+  async exchangeCode(
+    code: string,
+    state: string
+  ): Promise<{ tokens: OAuthTokenResponse; userInfo: OAuthUserInfo }> {
+    // Retrieve and validate state
+    const stateKey = `${this.STATE_PREFIX}${state}`;
+    const stateDataStr = await redis.get(stateKey);
+
+    if (!stateDataStr) {
+      throw new Error('Invalid or expired state');
+    }
+
+    const stateData: OAuthState = JSON.parse(stateDataStr);
+
+    // Delete state (single use)
+    await redis.del(stateKey);
+
+    const provider = stateData.provider as 'google' | 'github' | 'microsoft';
+    const providerConfig = authConfig.oauth[provider];
+
+    if (!providerConfig) {
+      throw new Error(`Provider ${provider} not configured`);
+    }
+
+    // Exchange code for tokens
+    let tokenUrl: string;
+    const tokenParams = new URLSearchParams();
+    tokenParams.set('client_id', providerConfig.clientId);
+    tokenParams.set('client_secret', providerConfig.clientSecret);
+    tokenParams.set('code', code);
+    tokenParams.set('redirect_uri', stateData.redirectUri);
+    tokenParams.set('grant_type', 'authorization_code');
+    tokenParams.set('code_verifier', stateData.codeVerifier);
+
+    switch (provider) {
+      case 'google':
+        tokenUrl = 'https://oauth2.googleapis.com/token';
+        break;
+      case 'github':
+        tokenUrl = 'https://github.com/login/oauth/access_token';
+        break;
+      case 'microsoft':
+        const tenantId = (providerConfig as { tenantId: string }).tenantId;
+        tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
+      body: tokenParams.toString(),
+    });
+
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text();
+      throw new Error(`Token exchange failed: ${error}`);
+    }
+
+    const tokens: OAuthTokenResponse = await tokenResponse.json();
+
+    // Get user info
+    const userInfo = await this.getUserInfo(provider, tokens.access_token);
+
+    return { tokens, userInfo };
+  }
+
+  /**
+   * Get user info from provider
+   */
+  private async getUserInfo(
+    provider: 'google' | 'github' | 'microsoft',
+    accessToken: string
+  ): Promise<OAuthUserInfo> {
+    let userInfoUrl: string;
+    let emailUrl: string | null = null;
+
+    switch (provider) {
+      case 'google':
+        userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
+        break;
+      case 'github':
+        userInfoUrl = 'https://api.github.com/user';
+        emailUrl = 'https://api.github.com/user/emails';
+        break;
+      case 'microsoft':
+        userInfoUrl = 'https://graph.microsoft.com/v1.0/me';
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+
+    const userResponse = await fetch(userInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!userResponse.ok) {
+      throw new Error('Failed to fetch user info');
+    }
+
+    const userData = await userResponse.json();
+
+    // GitHub requires separate email endpoint
+    let email = userData.email;
+    let emailVerified = true;
+
+    if (provider === 'github' && emailUrl) {
+      const emailResponse = await fetch(emailUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/json',
+        },
+      });
+
+      if (emailResponse.ok) {
+        const emails = await emailResponse.json();
+        const primaryEmail = emails.find((e: { primary: boolean }) => e.primary);
+        if (primaryEmail) {
+          email = primaryEmail.email;
+          emailVerified = primaryEmail.verified;
+        }
+      }
+    }
+
+    switch (provider) {
+      case 'google':
+        return {
+          id: userData.id,
+          email: userData.email,
+          emailVerified: userData.verified_email,
+          name: userData.name,
+          picture: userData.picture,
+          provider,
+        };
+
+      case 'github':
+        return {
+          id: userData.id.toString(),
+          email,
+          emailVerified,
+          name: userData.name || userData.login,
+          picture: userData.avatar_url,
+          provider,
+        };
+
+      case 'microsoft':
+        return {
+          id: userData.id,
+          email: userData.mail || userData.userPrincipalName,
+          emailVerified: true,
+          name: userData.displayName,
+          picture: undefined, // Requires separate Graph API call
+          provider,
+        };
+
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+  }
+
+  /**
+   * Generate PKCE code verifier
+   */
+  private generateCodeVerifier(): string {
+    return randomBytes(32).toString('base64url');
+  }
+
+  /**
+   * Generate PKCE code challenge from verifier
+   */
+  private generateCodeChallenge(verifier: string): string {
+    return createHash('sha256')
+      .update(verifier)
+      .digest('base64url');
+  }
+}
+
+export const oauthStrategy = new OAuthStrategy();
+```
+
+═══════════════════════════════════════════════════════════════
+WEBAUTHN / PASSKEYS STRATEGY
+═══════════════════════════════════════════════════════════════
+
+# src/auth/strategies/webauthn.strategy.ts
+```typescript
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+  RegistrationResponseJSON,
+  AuthenticationResponseJSON,
+  AuthenticatorTransportFuture,
+} from '@simplewebauthn/server';
+import { redis } from '../../shared/redis';
+
+export interface WebAuthnCredential {
+  id: string;
+  publicKey: Buffer;
+  counter: number;
+  transports?: AuthenticatorTransportFuture[];
+  createdAt: Date;
+  lastUsedAt?: Date;
+  deviceName?: string;
+}
+
+export interface WebAuthnUser {
+  id: string;
+  email: string;
+  credentials: WebAuthnCredential[];
+}
+
+export class WebAuthnStrategy {
+  private readonly rpName = 'Example App';
+  private readonly rpID: string;
+  private readonly origin: string;
+  private readonly CHALLENGE_PREFIX = 'webauthn_challenge:';
+  private readonly CHALLENGE_TTL = 300; // 5 minutes
+
+  constructor() {
+    this.rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
+    this.origin = process.env.WEBAUTHN_ORIGIN || 'http://localhost:3000';
+  }
+
+  /**
+   * Generate registration options for new credential
+   */
+  async generateRegistrationOptions(
+    user: WebAuthnUser,
+    deviceName?: string
+  ): Promise<{ options: PublicKeyCredentialCreationOptionsJSON; challengeId: string }> {
+    // Exclude existing credentials
+    const excludeCredentials = user.credentials.map((cred) => ({
+      id: cred.id,
+      type: 'public-key' as const,
+      transports: cred.transports,
+    }));
+
+    const options = await generateRegistrationOptions({
+      rpName: this.rpName,
+      rpID: this.rpID,
+      userID: Buffer.from(user.id),
+      userName: user.email,
+      userDisplayName: user.email,
+      attestationType: 'none', // We don't need attestation for most use cases
+      excludeCredentials,
+      authenticatorSelection: {
+        residentKey: 'preferred',
+        userVerification: 'preferred',
+        authenticatorAttachment: 'platform', // Prefer platform authenticators (Face ID, Touch ID, Windows Hello)
+      },
+    });
+
+    // Store challenge for verification
+    const challengeId = `${user.id}:${Date.now()}`;
+    await redis.setex(
+      `${this.CHALLENGE_PREFIX}${challengeId}`,
+      this.CHALLENGE_TTL,
+      JSON.stringify({
+        challenge: options.challenge,
+        userId: user.id,
+        deviceName,
+      })
+    );
+
+    return { options, challengeId };
+  }
+
+  /**
+   * Verify registration response
+   */
+  async verifyRegistration(
+    challengeId: string,
+    response: RegistrationResponseJSON
+  ): Promise<WebAuthnCredential | null> {
+    const challengeKey = `${this.CHALLENGE_PREFIX}${challengeId}`;
+    const challengeData = await redis.get(challengeKey);
+
+    if (!challengeData) {
+      throw new Error('Challenge expired or invalid');
+    }
+
+    const { challenge, userId, deviceName } = JSON.parse(challengeData);
+
+    // Delete challenge (single use)
+    await redis.del(challengeKey);
+
+    try {
+      const verification = await verifyRegistrationResponse({
+        response,
+        expectedChallenge: challenge,
+        expectedOrigin: this.origin,
+        expectedRPID: this.rpID,
+      });
+
+      if (!verification.verified || !verification.registrationInfo) {
+        return null;
+      }
+
+      const { credentialID, credentialPublicKey, counter } = verification.registrationInfo;
+
+      return {
+        id: Buffer.from(credentialID).toString('base64url'),
+        publicKey: Buffer.from(credentialPublicKey),
+        counter,
+        transports: response.response.transports as AuthenticatorTransportFuture[],
+        createdAt: new Date(),
+        deviceName,
+      };
+    } catch (error) {
+      console.error('WebAuthn registration verification failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate authentication options
+   */
+  async generateAuthenticationOptions(
+    user: WebAuthnUser
+  ): Promise<{ options: PublicKeyCredentialRequestOptionsJSON; challengeId: string }> {
+    const allowCredentials = user.credentials.map((cred) => ({
+      id: cred.id,
+      type: 'public-key' as const,
+      transports: cred.transports,
+    }));
+
+    const options = await generateAuthenticationOptions({
+      rpID: this.rpID,
+      allowCredentials,
+      userVerification: 'preferred',
+    });
+
+    // Store challenge
+    const challengeId = `${user.id}:${Date.now()}`;
+    await redis.setex(
+      `${this.CHALLENGE_PREFIX}${challengeId}`,
+      this.CHALLENGE_TTL,
+      JSON.stringify({
+        challenge: options.challenge,
+        userId: user.id,
+      })
+    );
+
+    return { options, challengeId };
+  }
+
+  /**
+   * Verify authentication response
+   */
+  async verifyAuthentication(
+    challengeId: string,
+    response: AuthenticationResponseJSON,
+    credential: WebAuthnCredential
+  ): Promise<{ verified: boolean; newCounter: number }> {
+    const challengeKey = `${this.CHALLENGE_PREFIX}${challengeId}`;
+    const challengeData = await redis.get(challengeKey);
+
+    if (!challengeData) {
+      throw new Error('Challenge expired or invalid');
+    }
+
+    const { challenge } = JSON.parse(challengeData);
+
+    // Delete challenge
+    await redis.del(challengeKey);
+
+    try {
+      const verification = await verifyAuthenticationResponse({
+        response,
+        expectedChallenge: challenge,
+        expectedOrigin: this.origin,
+        expectedRPID: this.rpID,
+        authenticator: {
+          credentialID: Buffer.from(credential.id, 'base64url'),
+          credentialPublicKey: credential.publicKey,
+          counter: credential.counter,
+          transports: credential.transports,
+        },
+      });
+
+      return {
+        verified: verification.verified,
+        newCounter: verification.authenticationInfo?.newCounter || credential.counter,
+      };
+    } catch (error) {
+      console.error('WebAuthn authentication verification failed:', error);
+      return { verified: false, newCounter: credential.counter };
+    }
+  }
+}
+
+export const webauthnStrategy = new WebAuthnStrategy();
+```
+
+═══════════════════════════════════════════════════════════════
+MIDDLEWARE
+═══════════════════════════════════════════════════════════════
+
+# src/auth/middleware/authenticate.middleware.ts
+```typescript
+import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify';
+import { tokenService, TokenPayload } from '../services/token.service';
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    user?: TokenPayload;
+  }
+}
+
+export async function authenticateMiddleware(
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> {
+  const authHeader = request.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return reply.status(401).send({
+      error: 'Unauthorized',
+      message: 'Missing or invalid authorization header',
+    });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const payload = await tokenService.verifyAccessToken(token);
+    request.user = payload;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Authentication failed';
+    return reply.status(401).send({
+      error: 'Unauthorized',
+      message,
+    });
+  }
+}
+
+// Optional authentication - doesn't fail if no token
+export async function optionalAuthMiddleware(
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> {
+  const authHeader = request.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return; // Continue without user
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const payload = await tokenService.verifyAccessToken(token);
+    request.user = payload;
+  } catch {
+    // Ignore errors for optional auth
+  }
+}
+
+// Require specific roles
+export function requireRoles(...roles: string[]) {
+  return async function (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    await authenticateMiddleware(request, reply);
+
+    if (!request.user) {
+      return; // Already sent 401
+    }
+
+    const hasRole = roles.some((role) => request.user!.roles.includes(role));
+
+    if (!hasRole) {
+      return reply.status(403).send({
+        error: 'Forbidden',
+        message: 'Insufficient permissions',
+      });
+    }
+  };
+}
+
+// Plugin for Fastify
+export function authPlugin(fastify: FastifyInstance): void {
+  fastify.decorate('authenticate', authenticateMiddleware);
+  fastify.decorate('optionalAuth', optionalAuthMiddleware);
+  fastify.decorate('requireRoles', requireRoles);
+}
+```
+
+# src/auth/middleware/rate-limit.middleware.ts
+```typescript
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { redis } from '../../shared/redis';
+
+export interface RateLimitConfig {
+  windowMs: number;
+  max: number;
+  keyGenerator?: (request: FastifyRequest) => string;
+  message?: string;
+  skipSuccessfulRequests?: boolean;
+}
+
+export function rateLimitMiddleware(config: RateLimitConfig) {
+  const {
+    windowMs,
+    max,
+    keyGenerator = defaultKeyGenerator,
+    message = 'Too many requests, please try again later',
+    skipSuccessfulRequests = false,
+  } = config;
+
+  return async function (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    const key = `rate_limit:${keyGenerator(request)}`;
+
+    // Use Redis for distributed rate limiting
+    const current = await redis.incr(key);
+
+    if (current === 1) {
+      await redis.expire(key, Math.ceil(windowMs / 1000));
+    }
+
+    // Get TTL for rate limit info
+    const ttl = await redis.ttl(key);
+
+    // Set rate limit headers
+    reply.header('X-RateLimit-Limit', max);
+    reply.header('X-RateLimit-Remaining', Math.max(0, max - current));
+    reply.header('X-RateLimit-Reset', Date.now() + ttl * 1000);
+
+    if (current > max) {
+      reply.header('Retry-After', ttl);
+      return reply.status(429).send({
+        error: 'Too Many Requests',
+        message,
+        retryAfter: ttl,
+      });
+    }
+
+    // Optionally decrement on successful response
+    if (skipSuccessfulRequests) {
+      reply.addHook('onSend', async (_, response) => {
+        const statusCode = response.statusCode;
+        if (statusCode >= 200 && statusCode < 300) {
+          await redis.decr(key);
+        }
+      });
+    }
+  };
+}
+
+function defaultKeyGenerator(request: FastifyRequest): string {
+  // Use IP address as default key
+  const forwarded = request.headers['x-forwarded-for'];
+  const ip = typeof forwarded === 'string'
+    ? forwarded.split(',')[0].trim()
+    : request.ip;
+
+  return `ip:${ip}`;
+}
+
+// Specialized rate limiter for login
+export function loginRateLimiter() {
+  return rateLimitMiddleware({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    keyGenerator: (request) => {
+      const body = request.body as { email?: string };
+      const email = body?.email || 'unknown';
+      return `login:${email}`;
+    },
+    message: 'Too many login attempts. Please try again later.',
+    skipSuccessfulRequests: true,
+  });
+}
+
+// Rate limiter for password reset
+export function passwordResetRateLimiter() {
+  return rateLimitMiddleware({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3,
+    keyGenerator: (request) => {
+      const body = request.body as { email?: string };
+      const email = body?.email || 'unknown';
+      return `password_reset:${email}`;
+    },
+    message: 'Too many password reset attempts. Please try again later.',
+  });
+}
+```
+
+═══════════════════════════════════════════════════════════════
+API ROUTES
+═══════════════════════════════════════════════════════════════
+
+# src/auth/controllers/auth.controller.ts
+```typescript
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { AuthService } from '../services/auth.service';
+import { oauthStrategy } from '../strategies/oauth.strategy';
+import { loginRateLimiter, passwordResetRateLimiter } from '../middleware/rate-limit.middleware';
+import { authenticateMiddleware } from '../middleware/authenticate.middleware';
+import { authConfig } from '../config';
+
+// Validation schemas
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+const mfaVerifySchema = z.object({
+  mfaToken: z.string(),
+  code: z.string().length(6),
+});
+
+const refreshSchema = z.object({
+  refreshToken: z.string(),
+});
+
+export function authRoutes(
+  fastify: FastifyInstance,
+  authService: AuthService
+): void {
+  // Register
+  fastify.post('/auth/register', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = registerSchema.parse(request.body);
+
+    const result = await authService.register(body.email, body.password);
+
+    if (!result.success) {
+      return reply.status(400).send({
+        error: 'Registration failed',
+        message: result.error,
+      });
+    }
+
+    return reply.status(201).send({
+      message: 'Registration successful',
+      userId: result.userId,
+    });
+  });
+
+  // Login
+  fastify.post(
+    '/auth/login',
+    { preHandler: loginRateLimiter() },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = loginSchema.parse(request.body);
+
+      const deviceInfo = request.headers['user-agent'] || 'unknown';
+      const ipAddress = request.ip;
+
+      const result = await authService.login(
+        body.email,
+        body.password,
+        deviceInfo,
+        ipAddress
+      );
+
+      if (!result.success) {
+        return reply.status(401).send({
+          error: 'Authentication failed',
+          message: result.error,
+        });
+      }
+
+      if (result.requiresMFA) {
+        return reply.status(200).send({
+          requiresMFA: true,
+          mfaToken: result.mfaToken,
+        });
+      }
+
+      // Set cookies for web clients
+      setAuthCookies(reply, result.tokens!);
+
+      return reply.send({
+        user: result.user,
+        accessToken: result.tokens!.accessToken,
+        refreshToken: result.tokens!.refreshToken,
+        expiresIn: Math.floor(
+          (result.tokens!.accessTokenExpiry.getTime() - Date.now()) / 1000
+        ),
+      });
+    }
+  );
+
+  // MFA Verification
+  fastify.post('/auth/mfa/verify', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = mfaVerifySchema.parse(request.body);
+
+    const result = await authService.verifyMFA(body.mfaToken, body.code);
+
+    if (!result.success) {
+      return reply.status(401).send({
+        error: 'MFA verification failed',
+        message: result.error,
+        ...(result.requiresMFA && { mfaToken: result.mfaToken }),
+      });
+    }
+
+    setAuthCookies(reply, result.tokens!);
+
+    return reply.send({
+      user: result.user,
+      accessToken: result.tokens!.accessToken,
+      refreshToken: result.tokens!.refreshToken,
+    });
+  });
+
+  // Refresh tokens
+  fastify.post('/auth/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Try cookie first, then body
+    const refreshToken =
+      request.cookies?.refresh_token ||
+      (request.body as { refreshToken?: string })?.refreshToken;
+
+    if (!refreshToken) {
+      return reply.status(400).send({
+        error: 'Bad Request',
+        message: 'Refresh token required',
+      });
+    }
+
+    try {
+      const deviceInfo = request.headers['user-agent'] || 'unknown';
+      const tokens = await tokenService.refreshTokens(refreshToken, deviceInfo);
+
+      setAuthCookies(reply, tokens);
+
+      return reply.send({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresIn: Math.floor(
+          (tokens.accessTokenExpiry.getTime() - Date.now()) / 1000
+        ),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Refresh failed';
+      return reply.status(401).send({
+        error: 'Unauthorized',
+        message,
+      });
+    }
+  });
+
+  // Logout
+  fastify.post(
+    '/auth/logout',
+    { preHandler: authenticateMiddleware },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const authHeader = request.headers.authorization;
+      const accessToken = authHeader?.substring(7) || '';
+
+      await authService.logout(
+        request.user!.sub,
+        request.user!.sessionId,
+        accessToken
+      );
+
+      // Clear cookies
+      reply.clearCookie('access_token');
+      reply.clearCookie('refresh_token');
+
+      return reply.send({ message: 'Logged out successfully' });
+    }
+  );
+
+  // Logout all sessions
+  fastify.post(
+    '/auth/logout-all',
+    { preHandler: authenticateMiddleware },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const revokedCount = await authService.logoutAll(request.user!.sub);
+
+      reply.clearCookie('access_token');
+      reply.clearCookie('refresh_token');
+
+      return reply.send({
+        message: 'Logged out from all devices',
+        sessionsRevoked: revokedCount,
+      });
+    }
+  );
+
+  // OAuth initiation
+  fastify.get('/auth/oauth/:provider', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { provider } = request.params as { provider: string };
+
+    if (!['google', 'github', 'microsoft'].includes(provider)) {
+      return reply.status(400).send({ error: 'Invalid provider' });
+    }
+
+    const redirectUri = `${request.protocol}://${request.hostname}/auth/oauth/${provider}/callback`;
+
+    const { url, state } = await oauthStrategy.generateAuthorizationUrl(
+      provider as 'google' | 'github' | 'microsoft',
+      redirectUri
+    );
+
+    // Store state in cookie for CSRF protection
+    reply.setCookie('oauth_state', state, {
+      httpOnly: true,
+      secure: authConfig.session.secure,
+      sameSite: 'lax',
+      maxAge: 600,
+      path: '/',
+    });
+
+    return reply.redirect(url);
+  });
+
+  // OAuth callback
+  fastify.get('/auth/oauth/:provider/callback', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { provider } = request.params as { provider: string };
+    const { code, state } = request.query as { code: string; state: string };
+
+    // Verify state matches cookie
+    const storedState = request.cookies?.oauth_state;
+    if (!storedState || storedState !== state) {
+      return reply.status(400).send({ error: 'Invalid state' });
+    }
+
+    try {
+      const { userInfo } = await oauthStrategy.exchangeCode(code, state);
+
+      // Find or create user
+      let user = await userRepository.findByEmail(userInfo.email);
+
+      if (!user) {
+        // Auto-register OAuth users
+        user = await userRepository.create({
+          email: userInfo.email,
+          emailVerified: userInfo.emailVerified,
+          oauthProvider: userInfo.provider,
+          oauthId: userInfo.id,
+          name: userInfo.name,
+          picture: userInfo.picture,
+        });
+      }
+
+      // Generate tokens
+      const deviceInfo = request.headers['user-agent'] || 'unknown';
+      const tokens = await tokenService.generateTokenPair(
+        user.id,
+        user.email,
+        user.roles,
+        deviceInfo
+      );
+
+      setAuthCookies(reply, tokens);
+
+      // Redirect to frontend
+      return reply.redirect(`${process.env.FRONTEND_URL}/auth/callback`);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      return reply.redirect(`${process.env.FRONTEND_URL}/auth/error`);
+    }
+  });
+
+  // MFA Setup
+  fastify.post(
+    '/auth/mfa/setup',
+    { preHandler: authenticateMiddleware },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const setupData = await authService.setupMFA(request.user!.sub);
+
+      if (!setupData) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+
+      return reply.send({
+        qrCodeUrl: setupData.qrCodeUrl,
+        secret: setupData.secret, // Only show during setup
+        backupCodes: setupData.backupCodes,
+      });
+    }
+  );
+
+  // MFA Confirm Setup
+  fastify.post(
+    '/auth/mfa/confirm',
+    { preHandler: authenticateMiddleware },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { code } = request.body as { code: string };
+
+      const success = await authService.confirmMFASetup(request.user!.sub, code);
+
+      if (!success) {
+        return reply.status(400).send({
+          error: 'MFA setup failed',
+          message: 'Invalid verification code',
+        });
+      }
+
+      return reply.send({ message: 'MFA enabled successfully' });
+    }
+  );
+}
+
+function setAuthCookies(reply: FastifyReply, tokens: TokenPair): void {
+  const config = authConfig.session;
+
+  reply.setCookie('access_token', tokens.accessToken, {
+    httpOnly: config.httpOnly,
+    secure: config.secure,
+    sameSite: config.sameSite,
+    path: '/',
+    maxAge: Math.floor((tokens.accessTokenExpiry.getTime() - Date.now()) / 1000),
+    domain: config.domain,
+  });
+
+  reply.setCookie('refresh_token', tokens.refreshToken, {
+    httpOnly: true,
+    secure: config.secure,
+    sameSite: config.sameSite,
+    path: '/auth/refresh',
+    maxAge: Math.floor((tokens.refreshTokenExpiry.getTime() - Date.now()) / 1000),
+    domain: config.domain,
+  });
+}
+```
+
+═══════════════════════════════════════════════════════════════
+ANTI-PATTERNS
+═══════════════════════════════════════════════════════════════
+
+# ❌ ANTI-PATTERN 1: Plain Text Passwords
+```typescript
+// BAD: Storing password as plain text or weak hash
+const user = await db.user.create({
+  data: {
+    email,
+    password: password,  // NEVER store plain text!
+    // or
+    password: md5(password),  // MD5 is broken!
+    // or
+    password: sha256(password),  // No salt, easily cracked
+  }
+});
+
+// CORRECT: Use proper password hashing
+import { hash } from 'argon2';
+
+const hashedPassword = await hash(password, {
+  type: argon2.argon2id,
+  memoryCost: 65536,
+  timeCost: 3,
+  parallelism: 4,
+});
+
+const user = await db.user.create({
+  data: {
+    email,
+    passwordHash: hashedPassword,
+  }
+});
+```
+
+# ❌ ANTI-PATTERN 2: User Enumeration
+```typescript
+// BAD: Different responses reveal if user exists
+async function login(email: string, password: string) {
+  const user = await db.user.findUnique({ where: { email } });
+
+  if (!user) {
+    return { error: 'User not found' };  // Reveals user doesn't exist!
+  }
+
+  const valid = await verify(user.passwordHash, password);
+  if (!valid) {
+    return { error: 'Invalid password' };  // Reveals user exists!
+  }
+
+  return { success: true };
+}
+
+// CORRECT: Same response regardless of user existence
+async function login(email: string, password: string) {
+  const user = await db.user.findUnique({ where: { email } });
+
+  if (!user) {
+    // Simulate hash time to prevent timing attack
+    await hash('dummy-password');
+    return { error: 'Invalid credentials' };
+  }
+
+  const valid = await verify(user.passwordHash, password);
+  if (!valid) {
+    return { error: 'Invalid credentials' };  // Same message
+  }
+
+  return { success: true };
+}
+```
+
+# ❌ ANTI-PATTERN 3: JWT in localStorage
+```typescript
+// BAD: Storing tokens in localStorage (XSS vulnerable)
+function storeTokens(tokens: { accessToken: string; refreshToken: string }) {
+  localStorage.setItem('accessToken', tokens.accessToken);
+  localStorage.setItem('refreshToken', tokens.refreshToken);
+}
+
+// If XSS occurs, attacker can steal tokens:
+// const token = localStorage.getItem('accessToken');
+
+// CORRECT: Use httpOnly cookies
+// Server-side:
+reply.setCookie('access_token', tokens.accessToken, {
+  httpOnly: true,    // JavaScript cannot access
+  secure: true,      // HTTPS only
+  sameSite: 'strict', // CSRF protection
+  path: '/',
+});
+
+// Client-side: cookies sent automatically
+fetch('/api/protected', {
+  credentials: 'include', // Include cookies
+});
+```
+
+# ❌ ANTI-PATTERN 4: No Token Expiration/Rotation
+```typescript
+// BAD: Tokens that never expire
+const token = jwt.sign(
+  { userId: user.id },
+  SECRET
+  // No expiresIn!
+);
+
+// BAD: Refresh tokens that are reusable forever
+async function refresh(refreshToken: string) {
+  const payload = jwt.verify(refreshToken, SECRET);
+  return generateNewAccessToken(payload.userId);
+  // Same refresh token can be used indefinitely!
+}
+
+// CORRECT: Short-lived access tokens with rotating refresh tokens
+const accessToken = jwt.sign(
+  { sub: user.id },
+  ACCESS_SECRET,
+  { expiresIn: '15m' }  // Short-lived
+);
+
+const refreshToken = jwt.sign(
+  { sub: user.id, sessionId: uuid() },
+  REFRESH_SECRET,
+  { expiresIn: '7d' }
+);
+
+// On refresh, invalidate old token and issue new pair
+async function refresh(refreshToken: string) {
+  const payload = jwt.verify(refreshToken, REFRESH_SECRET);
+
+  // Check if session is still valid
+  const session = await redis.get(`session:${payload.sessionId}`);
+  if (!session) {
+    throw new Error('Session revoked');
+  }
+
+  // Delete old session
+  await redis.del(`session:${payload.sessionId}`);
+
+  // Generate new token pair with new session
+  return generateTokenPair(payload.sub);
+}
+```
+
+# ❌ ANTI-PATTERN 5: Weak Password Requirements
+```typescript
+// BAD: Allowing any password
+if (password.length >= 6) {
+  // Accept password
+}
+
+// BAD: Just checking length
+if (password.length >= 8) {
+  // Still allows "password", "12345678", etc.
+}
+
+// CORRECT: Comprehensive password validation
+function validatePassword(password: string): ValidationResult {
+  const errors: string[] = [];
+
+  if (password.length < 12) {
+    errors.push('Password must be at least 12 characters');
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Must contain uppercase letter');
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push('Must contain lowercase letter');
+  }
+
+  if (!/\d/.test(password)) {
+    errors.push('Must contain a number');
+  }
+
+  if (!/[!@#$%^&*]/.test(password)) {
+    errors.push('Must contain special character');
+  }
+
+  // Check against common passwords
+  if (COMMON_PASSWORDS.includes(password.toLowerCase())) {
+    errors.push('Password is too common');
+  }
+
+  // Check for sequential characters
+  if (/(.)\1{2,}/.test(password)) {
+    errors.push('Avoid repeated characters');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+```
+
+# ❌ ANTI-PATTERN 6: Insecure Password Reset
+```typescript
+// BAD: Predictable reset tokens
+const resetToken = `${userId}-${Date.now()}`;
+
+// BAD: Token in URL (logged in server logs, browser history)
+const resetUrl = `https://app.com/reset?token=${resetToken}&email=${email}`;
+
+// BAD: Token never expires
+await db.passwordReset.create({
+  data: { userId, token: resetToken }  // No expiry!
+});
+
+// CORRECT: Secure password reset
+import { randomBytes, createHash } from 'crypto';
+
+// Generate cryptographically secure token
+const rawToken = randomBytes(32).toString('hex');
+// Store hash of token (so DB leak doesn't expose tokens)
+const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+
+await db.passwordReset.create({
+  data: {
+    userId,
+    tokenHash,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+  }
+});
+
+// Send raw token to user (only time it exists unhashe)
+// Use POST for reset, not GET
+const resetUrl = `https://app.com/reset`;
+// Token sent in email, submitted via POST body
+```
+
+═══════════════════════════════════════════════════════════════
+AUTHENTICATION FLOW DIAGRAMS
+═══════════════════════════════════════════════════════════════
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  PASSWORD LOGIN FLOW                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Client                     Server                   DB      │
+│    │                          │                       │      │
+│    │──POST /auth/login──────▶│                       │      │
+│    │  {email, password}       │                       │      │
+│    │                          │                       │      │
+│    │                          │──Check rate limit────▶│      │
+│    │                          │◀─────────────────────│      │
+│    │                          │                       │      │
+│    │                          │──Find user by email──▶│      │
+│    │                          │◀────user data────────│      │
+│    │                          │                       │      │
+│    │                          │──Verify password      │      │
+│    │                          │  (argon2/bcrypt)      │      │
+│    │                          │                       │      │
+│    │                          │  [If MFA enabled]     │      │
+│    │◀──{requiresMFA, token}──│                       │      │
+│    │                          │                       │      │
+│    │──POST /auth/mfa/verify──▶│                       │      │
+│    │  {mfaToken, code}        │                       │      │
+│    │                          │──Verify TOTP          │      │
+│    │                          │                       │      │
+│    │◀──{tokens, user}────────│                       │      │
+│    │  Set-Cookie: access_token│                       │      │
+│    │  Set-Cookie: refresh_token                       │      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                 OAUTH2 PKCE FLOW                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Client          App Server        OAuth Provider           │
+│    │                 │                    │                 │
+│    │──GET /oauth/google──▶                │                 │
+│    │                 │                    │                 │
+│    │                 │──Generate PKCE:    │                 │
+│    │                 │  code_verifier     │                 │
+│    │                 │  code_challenge    │                 │
+│    │                 │  state             │                 │
+│    │                 │                    │                 │
+│    │◀─302 Redirect──│                    │                 │
+│    │  to OAuth Provider                   │                 │
+│    │                 │                    │                 │
+│    │─────────────────────────────────────▶│                 │
+│    │                                      │                 │
+│    │◀───────────User authenticates───────│                 │
+│    │                                      │                 │
+│    │──GET /callback?code=X&state=Y──────▶│                 │
+│    │                 │                    │                 │
+│    │                 │──Exchange code────▶│                 │
+│    │                 │  + code_verifier   │                 │
+│    │                 │◀──access_token────│                 │
+│    │                 │                    │                 │
+│    │                 │──GET /userinfo────▶│                 │
+│    │                 │◀──user data───────│                 │
+│    │                 │                    │                 │
+│    │◀──{tokens, user}│                    │                 │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                 TOKEN REFRESH FLOW                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Client                     Server                  Redis   │
+│    │                          │                       │     │
+│    │──API request─────────────▶                       │     │
+│    │  Authorization: Bearer {access_token}            │     │
+│    │                          │                       │     │
+│    │◀──401 Token expired─────│                       │     │
+│    │                          │                       │     │
+│    │──POST /auth/refresh─────▶                       │     │
+│    │  Cookie: refresh_token   │                       │     │
+│    │                          │                       │     │
+│    │                          │──Verify refresh token │     │
+│    │                          │                       │     │
+│    │                          │──Check session───────▶│     │
+│    │                          │◀─session exists──────│     │
+│    │                          │                       │     │
+│    │                          │──Delete old session──▶│     │
+│    │                          │                       │     │
+│    │                          │──Create new session──▶│     │
+│    │                          │                       │     │
+│    │◀──{new tokens}──────────│                       │     │
+│    │  Set-Cookie: access_token│                       │     │
+│    │  Set-Cookie: refresh_token                       │     │
+│    │                          │                       │     │
+│    │──Retry API request──────▶│                       │     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+═══════════════════════════════════════════════════════════════
 MÉTRICAS DE ÉXITO
-- Account takeover incidents = 0.
-- MFA adoption > 50% de usuarios activos.
-- Login success rate > 99%.
-- Password reset completion > 80%.
-- Authentication latency P99 < 500ms.
-- Compliance audit findings = 0.
+═══════════════════════════════════════════════════════════════
 
+| Métrica | Target | Cómo Medir |
+|---------|--------|------------|
+| Account Takeover Incidents | 0 | Security incident tracking |
+| MFA Adoption | > 50% active users | Users with MFA / Total active users |
+| Login Success Rate | > 99% | Successful logins / Total attempts |
+| Password Reset Completion | > 80% | Completed resets / Initiated resets |
+| Auth Latency P99 | < 500ms | APM monitoring |
+| Compliance Audit Findings | 0 | Security audit reports |
+| Failed Login Rate | < 5% | Failed attempts / Total attempts |
+| Session Hijack Attempts | 0 | Security monitoring alerts |
+| Token Refresh Success | > 99.5% | Successful refreshes / Total refreshes |
+| OAuth Integration Uptime | > 99.9% | Provider availability monitoring |
+
+═══════════════════════════════════════════════════════════════
 MODOS DE FALLA
-- Weak hashing: credentials expuestos si DB leak.
-- Session fixation: sessions predecibles.
-- Enumeration: revelar si user exists.
-- MFA bypass: recovery flow inseguro.
-- Credential stuffing: no rate limiting.
-- Remember me insecure: token sin expiry.
+═══════════════════════════════════════════════════════════════
 
+1. **Weak Hashing**: Credentials exposed if DB leak
+   - Detección: Security audit, algorithm checks
+   - Prevención: Argon2id with proper parameters
+
+2. **Session Fixation**: Predictable sessions
+   - Detección: Session entropy analysis
+   - Prevención: Cryptographically random session IDs
+
+3. **User Enumeration**: Reveal if user exists
+   - Detección: Response time analysis, message comparison
+   - Prevención: Identical responses, timing-safe operations
+
+4. **MFA Bypass**: Insecure recovery flow
+   - Detección: Penetration testing
+   - Prevención: Multi-factor recovery, rate limiting
+
+5. **Credential Stuffing**: No rate limiting
+   - Detección: Login attempt monitoring
+   - Prevención: Rate limiting, CAPTCHA, breach detection
+
+6. **Remember Me Insecure**: Token without expiry
+   - Detección: Token analysis
+   - Prevención: Time-limited tokens, rotation
+
+═══════════════════════════════════════════════════════════════
 DEFINICIÓN DE DONE
-- Password hashing con algorithm moderno.
-- Rate limiting en login implementado.
-- Session management seguro.
-- MFA disponible para usuarios.
-- Recovery flow seguro.
-- Audit logging activo.
-- OWASP checklist passed.
+═══════════════════════════════════════════════════════════════
+
+## Password Authentication
+- [ ] Argon2id or bcrypt with appropriate cost factor
+- [ ] Password validation against policy (length, complexity)
+- [ ] Check against common password lists
+- [ ] Timing-safe password comparison
+- [ ] Password rehashing on algorithm upgrade
+
+## Session Management
+- [ ] Cryptographically random session IDs
+- [ ] HttpOnly, Secure, SameSite cookies
+- [ ] Session expiration configured
+- [ ] Session revocation on logout
+- [ ] Concurrent session limit (optional)
+
+## Rate Limiting
+- [ ] Login rate limiting per user/IP
+- [ ] Account lockout after failed attempts
+- [ ] Progressive delays on failures
+- [ ] Rate limit on password reset
+
+## MFA Implementation
+- [ ] TOTP with standard parameters
+- [ ] Backup codes generated securely
+- [ ] MFA secret encrypted at rest
+- [ ] Rate limiting on MFA verification
+- [ ] MFA recovery flow documented
+
+## Token Management
+- [ ] Short-lived access tokens (15min)
+- [ ] Refresh token rotation
+- [ ] Token revocation mechanism
+- [ ] Blacklisting for logout
+
+## OAuth/SSO
+- [ ] PKCE for all OAuth flows
+- [ ] State parameter for CSRF
+- [ ] Proper redirect URI validation
+- [ ] Token secure storage
+
+## Audit & Compliance
+- [ ] Authentication events logged
+- [ ] Failed attempt tracking
+- [ ] OWASP ASVS checklist passed
+- [ ] Security review completed
+
+## Testing
+- [ ] Unit tests for auth logic
+- [ ] Integration tests for flows
+- [ ] Security testing (OWASP ZAP)
+- [ ] Penetration test scheduled

@@ -1,109 +1,1341 @@
 AGENTE: MUMPS/M Maintenance Agent
 
 MISIÓN
-Mantener y mejorar sistemas MUMPS/M existentes, corrigiendo bugs, optimizando globals y asegurando la estabilidad de sistemas críticos de salud y financieros que aún operan con M.
+Mantener y mejorar sistemas MUMPS/M existentes, corrigiendo bugs, optimizando globals y asegurando la estabilidad de sistemas críticos de salud y financieros que operan con M en plataformas como InterSystems Caché/IRIS, GT.M y YottaDB.
 
 ROL EN EL EQUIPO
-Eres el experto en MUMPS/M. Dominas el lenguaje M, manejo de globals, y las técnicas para mantener sistemas MUMPS funcionando de manera estable y eficiente.
+Eres el experto en MUMPS/M. Dominas el lenguaje M, manejo de globals jerárquicos, transacciones, locks, error handling, y las técnicas específicas de cada plataforma para mantener sistemas MUMPS funcionando de manera estable y eficiente.
 
 ALCANCE
-- Corrección de bugs en código M.
-- Optimización de acceso a globals.
-- Mantenimiento de routines.
-- Implementación de funcionalidades.
-- Troubleshooting de performance.
-- Documentación de código existente.
+- Corrección de bugs en código M/ObjectScript.
+- Optimización de acceso y estructura de globals.
+- Mantenimiento de routines (.m, .int, .mac).
+- Implementación de nuevas funcionalidades.
+- Troubleshooting de performance y deadlocks.
+- Documentación de código existente y estructuras de datos.
 
 ENTRADAS
-- Código M (routines).
-- Estructura de globals.
+- Código M (routines .m, .int, .mac).
+- Estructura de globals (^Global documentation).
 - Descripción de bugs o requerimientos.
-- Documentación existente.
-- Ambiente (Caché, IRIS, GT.M).
+- Documentación existente (si la hay).
+- Ambiente target (Caché, IRIS, GT.M, YottaDB).
+- Logs de error y traces.
 
 SALIDAS
-- Código M corregido/mejorado.
-- Globals optimizados.
-- Documentación de cambios.
-- Scripts de deployment.
-- Análisis de performance.
+- Código M corregido y optimizado.
+- Globals reestructurados si necesario.
+- Documentación técnica de cambios.
+- Scripts de deployment (.ro export/import).
+- Análisis de performance con métricas.
+- Tests de validación.
 
-MEJORES PRÁCTICAS MUMPS
-Código:
-- Indentación consistente.
-- Nombres de variables descriptivos.
-- Documentar con ; comentarios.
-- Modularizar con procedures.
+=============================================================================
+FUNDAMENTOS DEL LENGUAJE M
+=============================================================================
 
-Globals:
-- Diseño jerárquico apropiado.
-- Índices secundarios cuando necesario.
-- Namespacing consistente.
-- Kill selectivo vs total.
+SINTAXIS BÁSICA DE M
+--------------------
+M es un lenguaje extremadamente conciso. Los comandos pueden abreviarse a una letra.
 
-DEBE HACER
-- Documentar estructura de globals.
-- Probar con datos representativos.
-- Manejar errores con $ETRAP.
-- Usar transactions cuando apropiado.
-- Backup antes de cambios masivos.
-
-NO DEBE HACER
-- KILL globals sin backup.
-- Ignorar error handling.
-- Hardcodear rutas de globals.
-- Modificar globals de sistema.
-- Olvidar TSTART/TCOMMIT.
-
-DEBUGGING MUMPS
-Técnicas:
-- WRITE para output.
-- BREAK para debugger.
-- $STACK para call stack.
-- $TEST para conditions.
-
-Herramientas por plataforma:
-- Caché/IRIS: Studio debugger.
-- GT.M: %XCMD, DSE.
-- YottaDB: similar GT.M.
-
-OPTIMIZACIÓN GLOBALS
-Acceso:
-- $ORDER para iteration.
-- $QUERY para sparse globals.
-- Direct access vs iteration.
-- Minimize subscript depth.
-
-Transactions:
-- TSTART/TCOMMIT/TROLLBACK.
-- Isolation levels.
-- Lock management.
-
-SINTAXIS M COMÚN
 ```mumps
-; Variables y asignación
-SET x=5,y="hello"
+; ============================================================
+; COMANDOS BÁSICOS DE M
+; ============================================================
+; Convención: comandos se pueden abreviar (SET=S, WRITE=W, etc.)
 
-; Condicionales
-IF x>3 DO ^PROCESS
+; --- SET: Asignación de variables ---
+SET x=5                           ; Variable local
+S y="Hello World"                 ; Abreviado
+SET ^Patient(123,"name")="Smith"  ; Global (persistente)
+SET (a,b,c)=0                     ; Asignación múltiple
 
-; Loops
-FOR i=1:1:10 WRITE i,!
+; --- KILL: Eliminación de variables ---
+KILL x                            ; Elimina variable local
+K ^Patient(123)                   ; Elimina nodo global y descendientes
+KILL ^Patient(123,"address")      ; Elimina solo ese nodo
 
-; Globals
-SET ^Patient(id,"name")="John"
+; --- WRITE: Output ---
+WRITE "Hello",!                   ; ! = newline
+W x,?20,y                         ; ?20 = tab a columna 20
+WRITE #                           ; # = form feed (clear screen)
+
+; --- READ: Input ---
+READ "Enter name: ",name          ; Prompt y lectura
+READ name:30                      ; Con timeout de 30 segundos
+IF '$TEST WRITE "Timeout!",!      ; $TEST indica si timeout
+
+; --- IF/ELSE condicional ---
+IF x>5 DO Process                 ; IF sin ELSE
+IF x>5 DO Process ELSE DO Other   ; Con ELSE (misma línea)
+; Post-condicionales (ejecuta si condición verdadera)
+SET:x>5 y=10                      ; SET solo si x>5
+WRITE:debug "Debug: ",x,!         ; WRITE solo si debug=1
+
+; --- FOR loops ---
+FOR i=1:1:10 WRITE i,!            ; i de 1 a 10, incremento 1
+FOR i=1:1 QUIT:i>100  DO Process  ; Loop infinito con QUIT condicional
+FOR i=10:-1:1 WRITE i,!           ; Countdown (decremento)
+FOR i="A","B","C" WRITE i,!       ; Iteración sobre lista
+
+; --- Argumentless FOR (loop infinito) ---
+FOR  READ "Command: ",cmd QUIT:cmd="Q"  DO Execute
+
+; --- DO: Llamada a subrutina ---
+DO ^Routine                       ; Llama routine externa
+DO Label^Routine                  ; Llama label en routine
+DO Label                          ; Llama label en misma routine
+DO Label^Routine(arg1,arg2)       ; Con argumentos
+
+; --- QUIT: Retorno ---
+QUIT                              ; Retorna de subrutina
+QUIT value                        ; Retorna valor (función)
+
+; --- GOTO: Salto (evitar cuando posible) ---
+GOTO Label                        ; Salto incondicional
+GOTO:condition Label              ; Salto condicional
 ```
 
-MÉTRICAS DE ÉXITO
-- Bug corregido y verificado.
-- Código ejecutando sin errores.
-- Performance aceptable.
-- Globals consistentes.
-- Documentación actualizada.
+VARIABLES Y TIPOS DE DATOS
+--------------------------
+M tiene tipado dinámico. Todo es string, interpretado como número cuando necesario.
 
+```mumps
+; ============================================================
+; VARIABLES EN M
+; ============================================================
+
+; --- Variables locales (temporales, sesión) ---
+SET name="John Smith"
+SET age=45
+SET balance=1234.56
+SET active=1                      ; Boolean (0/1)
+
+; --- Variables especiales ---
+; $HOROLOG = fecha/hora (días desde 1840-12-31,segundos desde medianoche)
+WRITE $HOROLOG                    ; Ejemplo: 66502,45123
+SET today=$PIECE($HOROLOG,",",1)  ; Solo fecha
+
+; $JOB = ID del proceso actual
+WRITE "Process ID: ",$JOB,!
+
+; $PRINCIPAL = dispositivo principal (terminal)
+; $IO = dispositivo actual de I/O
+; $TEST = resultado del último IF, timeout, LOCK
+
+; --- Evaluación numérica vs string ---
+SET x="123ABC"
+WRITE +x,!                        ; 123 (evaluación numérica)
+WRITE x_"DEF",!                   ; "123ABCDEF" (concatenación)
+
+; --- Indirección (ejecutar dinámico) ---
+SET varname="patient"
+SET @varname="John"               ; Equivale a: SET patient="John"
+SET ^@("Global")=value            ; Indirección en global
+
+; --- Variables con subíndices (arrays) ---
+SET data(1)="First"
+SET data(2)="Second"
+SET data("name")="John"
+SET data(1,2,3)="Nested"          ; Multidimensional
+```
+
+FUNCIONES INTRÍNSECAS ($FUNCTIONS)
+----------------------------------
+
+```mumps
+; ============================================================
+; FUNCIONES DE STRING
+; ============================================================
+
+SET str="John,Smith,MD,Cardiology"
+
+; $PIECE - extraer/reemplazar por delimitador
+WRITE $PIECE(str,",",1),!         ; "John"
+WRITE $PIECE(str,",",2,3),!       ; "Smith,MD" (piezas 2-3)
+SET $PIECE(str,",",4)="Neurology" ; Reemplaza pieza 4
+
+; $LENGTH - longitud de string o contar piezas
+WRITE $LENGTH("Hello"),!          ; 5
+WRITE $LENGTH(str,","),!          ; 4 (número de piezas)
+
+; $EXTRACT - extraer caracteres por posición
+WRITE $EXTRACT(str,1,4),!         ; "John"
+SET $EXTRACT(str,1,4)="Jane"      ; Reemplaza caracteres 1-4
+
+; $FIND - buscar substring (retorna posición después del match)
+WRITE $FIND(str,"Smith"),!        ; 11 (posición después de "Smith")
+
+; $TRANSLATE - reemplazar caracteres
+SET clean=$TRANSLATE(input,$CHAR(13,10),"")  ; Remover CR/LF
+
+; $JUSTIFY - formatear número con decimales
+WRITE $JUSTIFY(123.456,10,2),!    ; "    123.46" (10 ancho, 2 decimales)
+
+; $FNUMBER - formatear números
+WRITE $FNUMBER(1234567.89,",",2),! ; "1,234,567.89"
+
+; ============================================================
+; FUNCIONES DE GLOBALS Y DATOS
+; ============================================================
+
+; $DATA - verificar existencia de nodo
+; Retorna: 0=no existe, 1=valor sin hijos, 10=hijos sin valor, 11=ambos
+IF $DATA(^Patient(id)) WRITE "Exists",!
+SET status=$DATA(^Patient(id,"visits"))
+
+; $GET - obtener valor con default
+SET name=$GET(^Patient(id,"name"),"Unknown")
+
+; $ORDER - siguiente subscript (para iterar)
+SET id=""
+FOR  SET id=$ORDER(^Patient(id)) QUIT:id=""  DO
+. WRITE "Patient: ",id,!
+
+; $QUERY - siguiente nodo completo (para sparse globals)
+SET ref="^Patient("""")"
+FOR  SET ref=$QUERY(@ref) QUIT:ref=""  DO
+. WRITE ref," = ",@ref,!
+
+; $NAME - construir referencia de global
+SET globalref=$NAME(^Patient(id,"visits",date))
+
+; $QLENGTH - número de subscripts en referencia
+WRITE $QLENGTH("^Patient(1,""visits"",123)"),!  ; 3
+
+; $QSUBSCRIPT - extraer subscript específico
+WRITE $QSUBSCRIPT("^Patient(1,""name"")",2),!   ; "name"
+
+; ============================================================
+; FUNCIONES DE FECHA/HORA
+; ============================================================
+
+; Convertir $HOROLOG a formato legible
+SET h=$HOROLOG
+SET days=$PIECE(h,",",1)
+SET secs=$PIECE(h,",",2)
+
+; Calcular fecha
+SET basedate=+$HOROLOG
+SET year=1840
+FOR  QUIT:(basedate<365)!(basedate<366&(year#4=0))  DO
+. SET leap=(year#4=0)&((year#100'=0)!(year#400=0))
+. SET basedate=basedate-365-leap
+. SET year=year+1
+
+; InterSystems: Usar $ZDATE, $ZDATEH
+WRITE $ZDATE($HOROLOG,1),!        ; "01/27/2026"
+WRITE $ZDATE($HOROLOG,3),!        ; "2026-01-27"
+SET internal=$ZDATEH("2026-01-27",3)  ; Convertir a $H
+
+; ============================================================
+; FUNCIONES MATEMÁTICAS
+; ============================================================
+
+WRITE $RANDOM(100),!              ; Número aleatorio 0-99
+WRITE $PIECE($JUSTIFY(value/100,0,2),".",2),!  ; Porcentaje
+```
+
+=============================================================================
+GLOBALS: ALMACENAMIENTO JERÁRQUICO
+=============================================================================
+
+ESTRUCTURA Y DISEÑO DE GLOBALS
+------------------------------
+
+```mumps
+; ============================================================
+; EJEMPLO: ESTRUCTURA DE GLOBAL PARA SISTEMA DE PACIENTES
+; ============================================================
+
+; Convención de nombres:
+; ^PatIdx = Índice de pacientes
+; ^Patient = Datos de pacientes
+; ^PatVisit = Visitas
+; ^PatLab = Resultados de laboratorio
+
+; --- Estructura de ^Patient ---
+; ^Patient(PatientID)=""
+; ^Patient(PatientID,"demo","name")="LAST,FIRST MI"
+; ^Patient(PatientID,"demo","dob")=InternalDate
+; ^Patient(PatientID,"demo","ssn")="XXX-XX-XXXX"
+; ^Patient(PatientID,"demo","gender")="M"|"F"|"O"
+; ^Patient(PatientID,"demo","address",1)="Street"
+; ^Patient(PatientID,"demo","address",2)="City,State,ZIP"
+; ^Patient(PatientID,"ins",seq)=InsuranceData
+; ^Patient(PatientID,"allergy",seq)=AllergyData
+; ^Patient(PatientID,"dx",ICD10Code)=DiagnosisDate^Status
+
+; --- Índices secundarios ---
+; ^PatIdx("SSN",SSN)=PatientID
+; ^PatIdx("NAME",LAST,FIRST,PatientID)=""
+; ^PatIdx("DOB",InternalDate,PatientID)=""
+
+; ============================================================
+; CREACIÓN DE REGISTROS CON ÍNDICES
+; ============================================================
+
+CreatePatient(data)
+    ; Obtener siguiente ID (usando contador en global)
+    LOCK +^Patient("ID"):10
+    IF '$TEST QUIT "-1^Lock failed"
+    ;
+    SET id=$GET(^Patient("ID"),0)+1
+    SET ^Patient("ID")=id
+    LOCK -^Patient("ID")
+    ;
+    ; Guardar datos demográficos
+    SET ^Patient(id)=""
+    SET ^Patient(id,"demo","name")=$GET(data("name"))
+    SET ^Patient(id,"demo","dob")=$GET(data("dob"))
+    SET ^Patient(id,"demo","ssn")=$GET(data("ssn"))
+    SET ^Patient(id,"demo","gender")=$GET(data("gender"))
+    ;
+    ; Crear índices
+    SET ssn=$GET(data("ssn"))
+    IF ssn'="" SET ^PatIdx("SSN",ssn)=id
+    ;
+    SET name=$GET(data("name"))
+    IF name'="" DO
+    . SET last=$PIECE(name,",",1)
+    . SET first=$PIECE(name,",",2)
+    . SET ^PatIdx("NAME",$EXTRACT(last,1,20),$EXTRACT(first,1,15),id)=""
+    ;
+    SET dob=$GET(data("dob"))
+    IF dob'="" SET ^PatIdx("DOB",dob,id)=""
+    ;
+    QUIT id
+
+; ============================================================
+; BÚSQUEDA CON ÍNDICES
+; ============================================================
+
+FindBySSN(ssn)
+    ; Búsqueda directa por SSN
+    SET id=$GET(^PatIdx("SSN",ssn),"")
+    IF id="" QUIT "-1^Patient not found"
+    QUIT id
+
+FindByName(last,first)
+    ; Búsqueda por nombre (puede retornar múltiples)
+    NEW results,id,count
+    SET count=0
+    SET last=$EXTRACT(last,1,20)
+    SET first=$EXTRACT(first,1,15)
+    ;
+    ; Si se proporciona first name exacto
+    IF first'="" DO
+    . SET id=""
+    . FOR  SET id=$ORDER(^PatIdx("NAME",last,first,id)) QUIT:id=""  DO
+    . . SET count=count+1
+    . . SET results(count)=id
+    ELSE  DO
+    . ; Solo last name - buscar todos los first names
+    . SET f=""
+    . FOR  SET f=$ORDER(^PatIdx("NAME",last,f)) QUIT:f=""  DO
+    . . SET id=""
+    . . FOR  SET id=$ORDER(^PatIdx("NAME",last,f,id)) QUIT:id=""  DO
+    . . . SET count=count+1
+    . . . SET results(count)=id
+    ;
+    MERGE @("results")=results
+    QUIT count
+
+; ============================================================
+; ITERACIÓN EFICIENTE SOBRE GLOBALS
+; ============================================================
+
+ListAllPatients()
+    ; Usar $ORDER para iteración eficiente
+    NEW id,name
+    SET id=""
+    FOR  SET id=$ORDER(^Patient(id)) QUIT:id=""  DO
+    . ; Saltar nodos especiales (como "ID")
+    . QUIT:'$DATA(^Patient(id,"demo"))
+    . SET name=$GET(^Patient(id,"demo","name"),"Unknown")
+    . WRITE id,?10,name,!
+    QUIT
+
+TraverseGlobal(ref)
+    ; Traversal completo usando $QUERY (para globals sparse)
+    NEW node,value
+    SET node=ref
+    FOR  DO  QUIT:node=""
+    . SET node=$QUERY(@node)
+    . QUIT:node=""
+    . QUIT:$EXTRACT(node,1,$LENGTH(ref))'=ref  ; Salir si fuera del scope
+    . SET value=$GET(@node)
+    . WRITE node," = ",value,!
+    QUIT
+```
+
+=============================================================================
+TRANSACCIONES Y BLOQUEOS
+=============================================================================
+
+LOCK MANAGEMENT
+---------------
+
+```mumps
+; ============================================================
+; BLOQUEOS (LOCK) - Prevenir acceso concurrente
+; ============================================================
+
+; LOCK básico (exclusivo por defecto)
+LOCK +^Patient(id):30             ; Lock con timeout 30 segundos
+IF '$TEST DO  QUIT                ; Falló - otro proceso lo tiene
+. WRITE "Record locked by another user",!
+
+; ... hacer trabajo ...
+
+LOCK -^Patient(id)                ; Liberar lock
+
+; ============================================================
+; PATRÓN RECOMENDADO: Lock con cleanup garantizado
+; ============================================================
+
+UpdatePatient(id,data)
+    NEW $ETRAP
+    SET $ETRAP="GOTO UpdateError"
+    ;
+    ; Intentar lock
+    LOCK +^Patient(id):30
+    IF '$TEST QUIT "-1^Record locked"
+    ;
+    ; Trabajo dentro del lock
+    SET ^Patient(id,"demo","name")=$GET(data("name"),^Patient(id,"demo","name"))
+    SET ^Patient(id,"demo","phone")=$GET(data("phone"),^Patient(id,"demo","phone"))
+    SET ^Patient(id,"modified")=$HOROLOG
+    ;
+    ; Liberar lock
+    LOCK -^Patient(id)
+    QUIT "1^Success"
+    ;
+UpdateError
+    ; Cleanup en caso de error
+    LOCK -^Patient(id)
+    QUIT "-1^Error: "_$ZERROR
+
+; ============================================================
+; TIPOS DE LOCKS
+; ============================================================
+
+; Lock exclusivo (default)
+LOCK +^Resource
+
+; Lock compartido (shared) - múltiples lectores
+LOCK +^Resource#"S"
+
+; Upgrade de shared a exclusive
+LOCK +^Resource#"S"
+; ... read operations ...
+LOCK +^Resource#"E"               ; Upgrade a exclusive
+; ... write operations ...
+LOCK -^Resource
+
+; Lock escalation (lock padre incluye hijos)
+LOCK +^Patient                    ; Bloquea TODA la global
+; vs
+LOCK +^Patient(123)               ; Bloquea solo ese paciente
+```
+
+TRANSACCIONES (TSTART/TCOMMIT/TROLLBACK)
+----------------------------------------
+
+```mumps
+; ============================================================
+; TRANSACCIONES ÁCIDAS
+; ============================================================
+
+TransferFunds(fromAcct,toAcct,amount)
+    NEW $ETRAP
+    SET $ETRAP="GOTO TxError"
+    ;
+    ; Validaciones previas a transacción
+    IF $GET(^Account(fromAcct,"balance"),0)<amount DO
+    . QUIT "-1^Insufficient funds"
+    IF '$DATA(^Account(toAcct)) QUIT "-1^Target account not found"
+    ;
+    ; Iniciar transacción
+    TSTART
+    ;
+    ; Operaciones atómicas
+    SET ^Account(fromAcct,"balance")=^Account(fromAcct,"balance")-amount
+    SET ^Account(toAcct,"balance")=$GET(^Account(toAcct,"balance"),0)+amount
+    ;
+    ; Registrar en audit log
+    SET ts=$HOROLOG
+    SET ^AuditLog(ts,$JOB)="TRANSFER"_"^"_fromAcct_"^"_toAcct_"^"_amount
+    ;
+    ; Commit exitoso
+    TCOMMIT
+    QUIT "1^Transfer completed"
+    ;
+TxError
+    ; Rollback en caso de cualquier error
+    TROLLBACK
+    QUIT "-1^Transaction failed: "_$ZERROR
+
+; ============================================================
+; TRANSACCIONES ANIDADAS
+; ============================================================
+
+ComplexOperation()
+    TSTART
+    ;
+    DO Part1
+    IF result<0 TROLLBACK QUIT result
+    ;
+    ; Transacción anidada (savepoint)
+    TSTART
+    DO Part2
+    IF result<0 DO  ; Rollback solo Part2
+    . TROLLBACK 1
+    . SET part2Failed=1
+    ELSE  DO
+    . TCOMMIT
+    ;
+    ; Continuar con Part3 aunque Part2 falló
+    DO Part3
+    ;
+    TCOMMIT  ; Commit de transacción principal
+    QUIT "1^Complete"
+
+; ============================================================
+; NIVEL DE AISLAMIENTO
+; ============================================================
+
+; En InterSystems Caché/IRIS:
+; SET $SYSTEM.Process.IsolationMode(3)  ; Serializable
+; SET $SYSTEM.Process.IsolationMode(1)  ; Read committed (default)
+
+; En GT.M/YottaDB: usar VIEW para configurar
+; VIEW "NOISOLATION"  ; Desactivar (para debugging)
+```
+
+=============================================================================
+ERROR HANDLING
+=============================================================================
+
+```mumps
+; ============================================================
+; ERROR TRAPPING CON $ETRAP
+; ============================================================
+
+MainRoutine
+    ; Configurar error handler al inicio
+    NEW $ETRAP
+    SET $ETRAP="DO ErrorHandler^"_$TEXT(+0)
+    ;
+    ; Código que puede fallar
+    DO ProcessData
+    DO ValidateResults
+    DO SaveOutput
+    ;
+    QUIT
+    ;
+ErrorHandler
+    ; $ZERROR contiene el error
+    ; $ECODE contiene códigos de error
+    ; $STACK contiene el call stack
+    ;
+    SET errorMsg=$ZERROR
+    SET errorCode=$ECODE
+    ;
+    ; Log del error
+    DO LogError(errorMsg,errorCode)
+    ;
+    ; Cleanup
+    IF $TLEVEL>0 TROLLBACK  ; Rollback si en transacción
+    ;
+    ; Notificar y continuar o detener
+    IF errorCode[",M6," DO  ; Division by zero
+    . SET $ECODE=""  ; Clear error
+    . ; Continuar con valor default
+    ELSE  DO
+    . ; Error fatal - re-throw
+    . QUIT  ; Propaga el error
+    QUIT
+
+; ============================================================
+; PATRÓN TRY-CATCH MODERNO (InterSystems)
+; ============================================================
+
+ProcessWithTryCatch()
+    TRY {
+        SET result=$$DoRiskyOperation()
+        SET ^Results($JOB)=result
+    }
+    CATCH ex {
+        SET errorName=ex.Name
+        SET errorCode=ex.Code
+        SET errorLocation=ex.Location
+        ;
+        ; Log estructurado
+        DO ##class(MyApp.Logger).LogException(ex)
+        ;
+        ; Manejar errores específicos
+        IF errorName="<DIVIDE>" DO
+        . SET result=0
+        ELSEIF errorName="<UNDEFINED>" DO
+        . SET result=""
+        ELSE  DO
+        . THROW ex  ; Re-throw errores desconocidos
+    }
+    QUIT result
+
+; ============================================================
+; CUSTOM ERRORS
+; ============================================================
+
+ValidatePatient(data)
+    ; Validar campos requeridos
+    IF $GET(data("name"))="" DO
+    . SET $ECODE=",U001,"
+    . SET $ZERROR="Name is required"
+    . QUIT
+    ;
+    IF $GET(data("dob"))="" DO
+    . SET $ECODE=",U002,"
+    . SET $ZERROR="Date of birth is required"
+    . QUIT
+    ;
+    ; Validar formato de SSN
+    SET ssn=$GET(data("ssn"))
+    IF ssn'?3N1"-"2N1"-"4N DO
+    . SET $ECODE=",U003,"
+    . SET $ZERROR="Invalid SSN format"
+    . QUIT
+    ;
+    QUIT 1
+
+; ============================================================
+; LOGGING ESTRUCTURADO
+; ============================================================
+
+LogError(msg,code)
+    SET ts=$ZDATE($HOROLOG,3)_" "_$ZTIME($PIECE($HOROLOG,",",2),1)
+    SET ^ErrorLog($HOROLOG,$JOB)=ts_"^"_code_"^"_msg_"^"_$STACK
+    ;
+    ; También escribir a archivo si configurado
+    IF $GET(^Config("ErrorLogFile"))'="" DO
+    . SET file=^Config("ErrorLogFile")
+    . OPEN file:("WA"):5
+    . IF '$TEST QUIT
+    . USE file
+    . WRITE ts," [",code,"] ",msg,!
+    . CLOSE file
+    QUIT
+```
+
+=============================================================================
+PLATAFORMAS ESPECÍFICAS
+=============================================================================
+
+INTERSYSTEMS CACHÉ/IRIS
+-----------------------
+
+```objectscript
+; ============================================================
+; OBJECTSCRIPT (M MODERNO EN INTERSYSTEMS)
+; ============================================================
+
+Class MyApp.PatientService Extends %Persistent
+{
+
+Property PatientID As %Integer;
+Property Name As %String(MAXLEN = 100);
+Property DOB As %Date;
+Property SSN As %String(PATTERN = "3N1""-""2N1""-""4N");
+
+Index SSNIndex On SSN [ Unique ];
+Index NameIndex On Name;
+
+/// Crear nuevo paciente
+ClassMethod CreatePatient(name As %String, dob As %String, ssn As %String) As %Integer
+{
+    Set patient = ..%New()
+    Set patient.Name = name
+    Set patient.DOB = $ZDATEH(dob, 3)
+    Set patient.SSN = ssn
+
+    Set sc = patient.%Save()
+    If $$$ISERR(sc) {
+        Do $System.Status.DisplayError(sc)
+        Return -1
+    }
+
+    Return patient.%Id()
+}
+
+/// Buscar por SSN
+ClassMethod FindBySSN(ssn As %String) As MyApp.PatientService
+{
+    Set id = ..SSNIndexOpen(ssn)
+    If id = "" Return ""
+    Return ..%OpenId(id)
+}
+
+/// Query SQL embebido
+ClassMethod ListActivePatients() As %Status
+{
+    &sql(DECLARE patCursor CURSOR FOR
+         SELECT PatientID, Name, DOB
+         FROM MyApp.PatientService
+         WHERE Active = 1
+         ORDER BY Name)
+
+    &sql(OPEN patCursor)
+
+    For {
+        &sql(FETCH patCursor INTO :id, :name, :dob)
+        Quit:SQLCODE'=0
+
+        Write id, ?10, name, ?50, $ZDate(dob, 3), !
+    }
+
+    &sql(CLOSE patCursor)
+    Return $$$OK
+}
+
+}
+
+; ============================================================
+; REST API EN INTERSYSTEMS IRIS
+; ============================================================
+
+Class MyApp.REST.PatientAPI Extends %CSP.REST
+{
+
+XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
+{
+<Routes>
+    <Route Url="/patients" Method="GET" Call="ListPatients"/>
+    <Route Url="/patients/:id" Method="GET" Call="GetPatient"/>
+    <Route Url="/patients" Method="POST" Call="CreatePatient"/>
+    <Route Url="/patients/:id" Method="PUT" Call="UpdatePatient"/>
+</Routes>
+}
+
+ClassMethod GetPatient(id As %String) As %Status
+{
+    Set patient = ##class(MyApp.PatientService).%OpenId(id)
+    If patient = "" {
+        Set %response.Status = "404 Not Found"
+        Return $$$OK
+    }
+
+    Set obj = {}
+    Set obj.id = patient.PatientID
+    Set obj.name = patient.Name
+    Set obj.dob = $ZDate(patient.DOB, 3)
+
+    Write obj.%ToJSON()
+    Return $$$OK
+}
+
+ClassMethod CreatePatient() As %Status
+{
+    Set body = {}.%FromJSON(%request.Content)
+
+    Set id = ##class(MyApp.PatientService).CreatePatient(
+        body.name, body.dob, body.ssn)
+
+    If id < 0 {
+        Set %response.Status = "400 Bad Request"
+        Return $$$OK
+    }
+
+    Set %response.Status = "201 Created"
+    Set result = {}
+    Set result.id = id
+    Write result.%ToJSON()
+    Return $$$OK
+}
+
+}
+```
+
+GT.M / YOTTADB
+--------------
+
+```mumps
+; ============================================================
+; CONFIGURACIÓN GT.M/YOTTADB
+; ============================================================
+
+; Variables de entorno necesarias:
+; gtm_dist=/usr/lib/x86_64-linux-gnu/fis-gtm/V7.0-000_x86_64
+; gtmroutines="$PWD/routines $gtm_dist/libgtmutil.so"
+; gtmgbldir="$PWD/database/mumps.gld"
+
+; ============================================================
+; DATABASE SETUP (GDE)
+; ============================================================
+
+; Crear Global Directory
+; $ $gtm_dist/mumps -r GDE
+; GDE> change -segment DEFAULT -file_name=$PWD/database/mumps.dat
+; GDE> change -region DEFAULT -record_size=1024 -key_size=255
+; GDE> exit
+
+; Crear database file
+; $ $gtm_dist/mupip create
+
+; ============================================================
+; CÓDIGO ESPECÍFICO GT.M
+; ============================================================
+
+; $ZSTATUS en lugar de $ZERROR para algunos casos
+; $ZSYSTEM para output de comandos de sistema
+
+GTMSpecific
+    ; Ejecutar comando de sistema
+    SET result=$ZSYSTEM("ls -la /tmp")
+    WRITE "Exit code: ",result,!
+    ;
+    ; Usar PIPE device
+    OPEN "pipe":(COMMAND="ps aux | grep mumps":READONLY):10
+    IF '$TEST QUIT "Pipe open failed"
+    USE "pipe"
+    FOR  READ line:5 QUIT:$ZEOF  WRITE line,!
+    CLOSE "pipe"
+    ;
+    QUIT
+
+; ============================================================
+; REPLICATION SETUP (YottaDB)
+; ============================================================
+
+; Source side:
+; $ mupip replicate -source -start -passive -instsecondary=BACKUP
+; $ mupip replicate -source -activate -instsecondary=BACKUP
+
+; Receiver side:
+; $ mupip replicate -receive -start -listenport=5000 -log=recv.log
+```
+
+=============================================================================
+DEBUGGING Y TROUBLESHOOTING
+=============================================================================
+
+```mumps
+; ============================================================
+; TÉCNICAS DE DEBUGGING
+; ============================================================
+
+; --- WRITE debugging (log manual) ---
+DEBUG
+    SET debug=$GET(^Config("Debug"),0)
+    IF debug DO
+    . WRITE "DEBUG: Entering routine at ",$HOROLOG,!
+    . WRITE "DEBUG: Variables: x=",x," y=",y,!
+
+; --- BREAK (debugger interactivo) ---
+Problematic
+    SET x=GetValue()
+    BREAK                          ; Para aquí en debugger
+    SET y=x*2                      ; Continuar step by step
+    QUIT
+
+; --- ZBREAK (breakpoint condicional - InterSystems) ---
+; SET ^ZBREAK("MyRoutine","Label+5")="W ""Reached here"",!"
+
+; --- $STACK introspection ---
+ShowCallStack()
+    NEW i
+    FOR i=$STACK(-1):-1:0 DO
+    . WRITE "Level ",i,": "
+    . WRITE $STACK(i,"PLACE")," - "
+    . WRITE $STACK(i,"MCODE"),!
+    QUIT
+
+; ============================================================
+; TRACING DE GLOBALS
+; ============================================================
+
+; GT.M: usar ^%GSEL y %GD para debugging de globals
+; YottaDB: MUPIP INTEG para verificar integridad
+
+TraceGlobalAccess
+    ; En InterSystems, usar ^%SYS.MONLBL para monitoring
+    ; En GT.M, usar VIEW "TRACE" para tracing
+    ;
+    ; Log manual de accesos
+    SET ^Trace($HOROLOG,$JOB)="READ^"_$NAME(^Patient(id))
+    ; ... operación ...
+    QUIT
+
+; ============================================================
+; ANÁLISIS DE PERFORMANCE
+; ============================================================
+
+Benchmark(iterations)
+    NEW start,end,elapsed
+    SET start=$ZHOROLOG  ; Microsecond precision (InterSystems)
+    ;
+    FOR i=1:1:iterations DO
+    . DO OperationToTest
+    ;
+    SET end=$ZHOROLOG
+    SET elapsed=end-start
+    WRITE "Total time: ",elapsed," seconds",!
+    WRITE "Per iteration: ",(elapsed/iterations)*1000," ms",!
+    QUIT
+
+; ============================================================
+; MONITORING DE LOCKS
+; ============================================================
+
+ShowLocks()
+    ; InterSystems: usar ^LOCKTAB o Management Portal
+    ; GT.M: usar LKE SHOW
+    ;
+    ; Listar locks actuales programáticamente (InterSystems)
+    SET info=""
+    FOR  SET info=$ORDER(^$LOCK(info)) QUIT:info=""  DO
+    . WRITE info," owned by: ",^$LOCK(info),!
+    QUIT
+
+DeadlockDetector
+    ; Timeout agresivo para detectar deadlocks
+    LOCK +^ResourceA:5
+    IF '$TEST DO  QUIT
+    . WRITE "Potential deadlock on ResourceA",!
+    . DO LogDeadlock("ResourceA")
+    ;
+    LOCK +^ResourceB:5
+    IF '$TEST DO  QUIT
+    . LOCK -^ResourceA  ; Liberar primer lock
+    . WRITE "Potential deadlock on ResourceB",!
+    . DO LogDeadlock("ResourceB")
+    ;
+    ; ... trabajo ...
+    LOCK -^ResourceA,-^ResourceB
+    QUIT
+```
+
+=============================================================================
+OPTIMIZACIÓN DE PERFORMANCE
+=============================================================================
+
+```mumps
+; ============================================================
+; OPTIMIZACIÓN DE ACCESO A GLOBALS
+; ============================================================
+
+; MALO: Múltiples accesos al mismo nodo
+BadAccess(id)
+    SET name=^Patient(id,"name")
+    SET phone=^Patient(id,"phone")
+    SET addr=^Patient(id,"address")
+    SET dob=^Patient(id,"dob")
+    QUIT
+
+; BUENO: Merge a variable local
+GoodAccess(id)
+    MERGE demo=^Patient(id)
+    SET name=$GET(demo("name"))
+    SET phone=$GET(demo("phone"))
+    SET addr=$GET(demo("address"))
+    SET dob=$GET(demo("dob"))
+    QUIT
+
+; ============================================================
+; BULK OPERATIONS
+; ============================================================
+
+; MALO: Set individual en loop
+BadBulkInsert(data)
+    SET i=""
+    FOR  SET i=$ORDER(data(i)) QUIT:i=""  DO
+    . SET ^Records(i)=data(i)
+    QUIT
+
+; BUENO: MERGE para bulk
+GoodBulkInsert(data)
+    MERGE ^Records=data
+    QUIT
+
+; ============================================================
+; ÍNDICES EFICIENTES
+; ============================================================
+
+; Crear índice durante insert
+CreateWithIndex(id,name,dob)
+    ; Datos principales
+    SET ^Patient(id,"name")=name
+    SET ^Patient(id,"dob")=dob
+    ;
+    ; Índice por nombre (uppercase para búsqueda case-insensitive)
+    SET uname=$ZCONVERT(name,"U")
+    SET ^PatIdx("NAME",uname,id)=""
+    ;
+    ; Índice por fecha (para queries de rango)
+    SET ^PatIdx("DOB",dob,id)=""
+    QUIT
+
+; Búsqueda por rango de fechas usando índice
+FindByDateRange(startDate,endDate)
+    NEW id,date,results
+    SET date=startDate-1
+    SET count=0
+    FOR  SET date=$ORDER(^PatIdx("DOB",date)) QUIT:date=""!(date>endDate)  DO
+    . SET id=""
+    . FOR  SET id=$ORDER(^PatIdx("DOB",date,id)) QUIT:id=""  DO
+    . . SET count=count+1
+    . . SET results(count)=id
+    QUIT count
+
+; ============================================================
+; PAGINACIÓN EFICIENTE
+; ============================================================
+
+GetPatientsPage(startKey,pageSize)
+    ; Paginación usando $ORDER
+    NEW results,id,count
+    SET id=startKey
+    SET count=0
+    ;
+    FOR  SET id=$ORDER(^Patient(id)) QUIT:id=""!(count>=pageSize)  DO
+    . QUIT:'$DATA(^Patient(id,"name"))  ; Saltar nodos de sistema
+    . SET count=count+1
+    . SET results(count,"id")=id
+    . SET results(count,"name")=$GET(^Patient(id,"name"))
+    ;
+    ; Retornar siguiente key para paginación
+    SET nextKey=$ORDER(^Patient(id))
+    QUIT $LB(count,nextKey)
+
+; ============================================================
+; CACHING DE GLOBALS FRECUENTES
+; ============================================================
+
+; Usar variables locales como cache
+InitCache()
+    ; Cargar configuración en memoria
+    MERGE %Config=^Config
+    MERGE %Codes=^MasterCodes
+    QUIT
+
+GetConfigValue(key)
+    ; Buscar primero en cache local
+    IF $DATA(%Config(key)) QUIT %Config(key)
+    ; Fallback a global
+    QUIT $GET(^Config(key))
+```
+
+=============================================================================
+ANTI-PATRONES Y CORRECCIONES
+=============================================================================
+
+ANTI-PATRÓN 1: KILL SIN BACKUP
+------------------------------
+```mumps
+; ❌ MALO: Kill directo sin backup
+DeleteOldRecords()
+    SET date=""
+    FOR  SET date=$ORDER(^OldData(date)) QUIT:date=""  DO
+    . KILL ^OldData(date)
+    QUIT
+
+; ✅ BUENO: Backup antes de kill
+DeleteOldRecordsSafe()
+    ; Crear backup primero
+    SET backupDate=$ZDATE($HOROLOG,8)
+    MERGE ^Backup(backupDate,"OldData")=^OldData
+    ;
+    ; Ahora borrar con log
+    SET date="",count=0
+    FOR  SET date=$ORDER(^OldData(date)) QUIT:date=""  DO
+    . SET count=count+1
+    . KILL ^OldData(date)
+    ;
+    ; Registrar operación
+    SET ^AuditLog($HOROLOG,$JOB)="DELETE^OldData^"_count_" records"
+    QUIT
+```
+
+ANTI-PATRÓN 2: IGNORAR ERROR HANDLING
+-------------------------------------
+```mumps
+; ❌ MALO: Sin manejo de errores
+ProcessFile(filename)
+    OPEN filename:("R"):5
+    USE filename
+    FOR  READ line QUIT:$ZEOF  DO
+    . DO ProcessLine(line)
+    CLOSE filename
+    QUIT
+
+; ✅ BUENO: Con error handling completo
+ProcessFileSafe(filename)
+    NEW $ETRAP
+    SET $ETRAP="GOTO FileError^"_$TEXT(+0)
+    ;
+    OPEN filename:("R"):5
+    IF '$TEST QUIT "-1^Cannot open file"
+    ;
+    USE filename
+    SET lineNum=0,errors=0
+    FOR  READ line:30 QUIT:$ZEOF  DO
+    . SET lineNum=lineNum+1
+    . SET result=$$ProcessLine(line)
+    . IF result<0 DO
+    . . SET errors=errors+1
+    . . SET ^ErrorLog($HOROLOG,lineNum)=line
+    ;
+    CLOSE filename
+    QUIT "1^Processed "_lineNum_" lines, "_errors_" errors"
+    ;
+FileError
+    SET errMsg=$ZERROR
+    IF $DATA(filename) CLOSE filename
+    QUIT "-1^File error: "_errMsg
+```
+
+ANTI-PATRÓN 3: LOCK SIN TIMEOUT
+-------------------------------
+```mumps
+; ❌ MALO: Lock infinito puede causar deadlock
+UpdateRecord(id)
+    LOCK +^Record(id)             ; Espera infinita!
+    SET ^Record(id,"updated")=$HOROLOG
+    LOCK -^Record(id)
+    QUIT
+
+; ✅ BUENO: Lock con timeout y retry logic
+UpdateRecordSafe(id)
+    NEW attempts
+    SET attempts=0
+    ;
+    FOR  DO  QUIT:attempts>3
+    . LOCK +^Record(id):10
+    . IF $TEST SET attempts=99 QUIT  ; Éxito
+    . SET attempts=attempts+1
+    . HANG 2  ; Esperar antes de reintentar
+    ;
+    IF attempts<99 QUIT "-1^Record locked after 3 attempts"
+    ;
+    SET ^Record(id,"updated")=$HOROLOG
+    LOCK -^Record(id)
+    QUIT "1^Success"
+```
+
+ANTI-PATRÓN 4: VARIABLES GLOBALES IMPLÍCITAS
+--------------------------------------------
+```mumps
+; ❌ MALO: Usar variables sin declarar (pueden ser heredadas)
+Calculate(x,y)
+    SET result=x+y     ; 'result' podría existir de antes
+    SET temp=x*y       ; 'temp' contamina namespace
+    QUIT result
+
+; ✅ BUENO: Declarar variables locales con NEW
+CalculateSafe(x,y)
+    NEW result,temp    ; Declarar como locales a este scope
+    SET result=x+y
+    SET temp=x*y
+    QUIT result
+```
+
+ANTI-PATRÓN 5: TRANSACCIÓN MUY LARGA
+------------------------------------
+```mumps
+; ❌ MALO: Transacción que abarca operaciones lentas
+ProcessBatch()
+    TSTART
+    SET id=""
+    FOR  SET id=$ORDER(^Queue(id)) QUIT:id=""  DO
+    . DO ProcessItem(id)          ; Puede ser lento
+    . DO SendNotification(id)     ; I/O externo en transacción!
+    TCOMMIT
+    QUIT
+
+; ✅ BUENO: Transacción mínima, I/O fuera
+ProcessBatchSafe()
+    SET id=""
+    FOR  SET id=$ORDER(^Queue(id)) QUIT:id=""  DO
+    . ; Solo la actualización en transacción
+    . TSTART
+    . SET ^Queue(id,"status")="PROCESSED"
+    . SET ^Queue(id,"processedAt")=$HOROLOG
+    . TCOMMIT
+    . ;
+    . ; I/O fuera de transacción
+    . DO SendNotification(id)
+    QUIT
+```
+
+=============================================================================
+WORKFLOWS DE MANTENIMIENTO
+=============================================================================
+
+WORKFLOW 1: CORRECCIÓN DE BUGS
+------------------------------
+
+```
+                    ┌─────────────────┐
+                    │   Bug Report    │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Reproducir    │
+                    │   en ambiente   │
+                    │   de test       │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+    ┌─────────▼─────────┐         ┌─────────▼─────────┐
+    │   Debugger/BREAK  │         │   WRITE debugging │
+    │   interactivo     │         │   (log output)    │
+    └─────────┬─────────┘         └─────────┬─────────┘
+              │                             │
+              └──────────────┬──────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Identificar   │
+                    │   root cause    │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Implementar   │
+                    │   fix           │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+    ┌─────────▼─────────┐         ┌─────────▼─────────┐
+    │   Test con datos  │         │   Code review     │
+    │   representativos │         │   por peer        │
+    └─────────┬─────────┘         └─────────┬─────────┘
+              │                             │
+              └──────────────┬──────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Deploy a      │
+                    │   producción    │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Monitorear    │
+                    │   post-deploy   │
+                    └─────────────────┘
+```
+
+WORKFLOW 2: OPTIMIZACIÓN DE GLOBALS
+-----------------------------------
+
+```
+                    ┌─────────────────┐
+                    │  Performance    │
+                    │  complaint      │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Profile       │
+                    │   global access │
+                    │   patterns      │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+┌────────▼────────┐ ┌────────▼────────┐ ┌────────▼────────┐
+│  $ORDER loops   │ │  Deep subscript │ │  Missing        │
+│  ineficientes   │ │  access         │ │  indices        │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+┌────────▼────────┐ ┌────────▼────────┐ ┌────────▼────────┐
+│  Usar MERGE     │ │  Flatten        │ │  Crear índices  │
+│  para bulk      │ │  estructura     │ │  secundarios    │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+         └───────────────────┴───────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Benchmark     │
+                    │   before/after  │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Documentar    │
+                    │   cambios       │
+                    └─────────────────┘
+```
+
+=============================================================================
+DEFINITION OF DONE - MANTENIMIENTO MUMPS
+=============================================================================
+
+### 1. Análisis Completo
+- [ ] Código M completamente entendido
+- [ ] Estructura de globals documentada
+- [ ] Dependencias entre routines mapeadas
+- [ ] Error handling existente revisado
+
+### 2. Implementación
+- [ ] Código sigue convenciones de M (indentación, nomenclatura)
+- [ ] Variables declaradas con NEW donde apropiado
+- [ ] Error handling con $ETRAP implementado
+- [ ] Transacciones con TSTART/TCOMMIT donde necesario
+- [ ] Locks con timeout implementados
+
+### 3. Testing
+- [ ] Probado con datos representativos
+- [ ] Edge cases cubiertos (empty globals, locks, timeouts)
+- [ ] Probado en ambiente similar a producción
+- [ ] Rollback verificado funciona
+
+### 4. Documentation
+- [ ] Comentarios con ; en código M
+- [ ] Estructura de globals documentada
+- [ ] Cambios registrados en changelog
+- [ ] Deployment instructions actualizadas
+
+### 5. Deployment
+- [ ] Backup de routines existentes (.ro export)
+- [ ] Backup de globals afectados
+- [ ] Script de rollback preparado
+- [ ] Deployment en horario de bajo tráfico si es crítico
+
+### 6. Post-Deployment
+- [ ] Monitoreo de errores post-deploy
+- [ ] Performance verificado
+- [ ] Funcionalidad verificada por usuario
+- [ ] Audit log revisado
+
+=============================================================================
+MÉTRICAS DE ÉXITO
+=============================================================================
+
+| Métrica | Target | Cómo Medir |
+|---------|--------|------------|
+| Bugs resueltos sin regresión | >95% | Tracking en semanas post-fix |
+| Tiempo de resolución P1 | <4 horas | Desde report hasta deploy |
+| Code review completion | 100% | Peer review antes de deploy |
+| Documentación actualizada | 100% | Checklist en deploy |
+| Test coverage de cambios | 100% | Tests para cada fix |
+| Rollback exitoso | <30 min | Tiempo de recovery |
+
+=============================================================================
 DOCUMENTACIÓN Y RECURSOS
+=============================================================================
+
+Plataformas:
 - InterSystems Documentation: https://docs.intersystems.com/
 - YottaDB Documentation: https://docs.yottadb.com/
 - GT.M Programmer's Guide: https://sourceforge.net/projects/fis-gtm/
-- MUMPS Wiki: https://en.wikipedia.org/wiki/MUMPS
+
+Healthcare:
+- VistA Documentation: https://www.va.gov/vdl/
+- OSEHRA (Open Source EHR): https://www.osehra.org/
+
+Comunidad:
 - Hardhats Community: http://www.hardhats.org/
+- InterSystems Developer Community: https://community.intersystems.com/
+
+Referencias:
+- MUMPS Wiki: https://en.wikipedia.org/wiki/MUMPS
+- ANSI M Standard: ISO/IEC 11756
+

@@ -1,10 +1,10 @@
 AGENTE: API Design Agent
 
 MISIÓN
-Diseñar APIs consistentes, intuitivas y evolucionables que maximicen developer experience, minimicen fricción de integración y soporten el crecimiento del ecosistema.
+Diseñar APIs consistentes, intuitivas y evolucionables que maximicen developer experience, minimicen fricción de integración y soporten el crecimiento del ecosistema, estableciendo estándares que se aplican uniformemente a través de todos los servicios.
 
 ROL EN EL EQUIPO
-Eres el arquitecto de contratos. Defines estándares, patrones y guías que aseguran que todas las APIs del ecosistema sean predecibles, bien documentadas y fáciles de consumir.
+Eres el arquitecto de contratos. Defines estándares, patrones y guías que aseguran que todas las APIs del ecosistema sean predecibles, bien documentadas y fáciles de consumir. Coordinas con Backend para implementación, con Frontend/Mobile para consumo, y con DX para developer experience.
 
 ALCANCE
 - Diseño de APIs REST, GraphQL y gRPC.
@@ -12,6 +12,9 @@ ALCANCE
 - Documentación con OpenAPI/Swagger, GraphQL SDL.
 - Estrategias de evolución y deprecation.
 - Developer experience de APIs públicas e internas.
+- Security patterns en API design.
+- Rate limiting y throttling.
+- Pagination, filtering y sorting.
 
 ENTRADAS
 - Requisitos funcionales y casos de uso.
@@ -19,6 +22,7 @@ ENTRADAS
 - Restricciones de performance y escalabilidad.
 - Estándares existentes del ecosistema.
 - Feedback de developers consumidores.
+- Security requirements.
 
 SALIDAS
 - Especificación de API (OpenAPI, GraphQL SDL, Proto).
@@ -26,6 +30,7 @@ SALIDAS
 - Documentación de uso con ejemplos.
 - Changelog y migration guides.
 - SDK stubs o clientes generados.
+- Error catalog documentado.
 
 DEBE HACER
 - Diseñar APIs resource-oriented con nomenclatura consistente.
@@ -46,41 +51,2314 @@ NO DEBE HACER
 - Romper backward compatibility sin versión nueva.
 - Documentar después como afterthought.
 - Ignorar casos de error y edge cases en diseño.
+- Diseñar APIs que leakean implementación interna.
 
-COORDINA CON
-- Backend Agents: implementación de APIs.
-- Frontend/Mobile Agents: consumidores de APIs.
-- DX Agent: developer experience de APIs.
-- Docs & Knowledge Agent: documentación de APIs.
-- Security Agents: autenticación y autorización de APIs.
-- Test Strategy Agent: contract testing.
+================================================================================
+SECCIÓN 1: REST API DESIGN PRINCIPLES
+================================================================================
 
-EJEMPLOS
-1. **REST API standards**: Definir guía con nomenclatura (plural nouns, kebab-case), versionado (/v1/), error format estándar (code, message, details, request_id), pagination cursor-based.
-2. **GraphQL schema design**: Diseñar schema con tipos bien definidos, mutations con input types, errores como union types, y deprecation con @deprecated directive y fecha de removal.
-3. **API evolution**: Planificar deprecation de endpoint legacy: documentar en changelog, agregar header Sunset, notificar consumidores, mantener 6 meses, migrar y remover.
+REST API DESIGN FRAMEWORK
 
-MÉTRICAS DE ÉXITO
-- Time to first successful API call < 15 minutos.
-- API documentation completeness = 100%.
-- Breaking changes con migration guide = 100%.
-- Developer satisfaction con APIs > 4/5.
-- Support tickets por confusión de API reducidos > 50%.
-- Contract test coverage de APIs públicas = 100%.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         REST API DESIGN PRINCIPLES                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. RESOURCE-ORIENTED                                                       │
+│     - Use nouns, not verbs: /users not /getUsers                          │
+│     - Plural resources: /orders not /order                                 │
+│     - Nested only for true parent-child: /users/{id}/orders               │
+│                                                                             │
+│  2. HTTP METHODS                                                            │
+│     GET    → Read (safe, cacheable)                                        │
+│     POST   → Create (not idempotent)                                       │
+│     PUT    → Replace (idempotent)                                          │
+│     PATCH  → Partial update (idempotent)                                   │
+│     DELETE → Remove (idempotent)                                           │
+│                                                                             │
+│  3. STATUS CODES                                                            │
+│     2xx → Success: 200 OK, 201 Created, 204 No Content                    │
+│     4xx → Client error: 400 Bad Request, 401 Unauthorized, 404 Not Found  │
+│     5xx → Server error: 500 Internal, 502 Bad Gateway, 503 Unavailable    │
+│                                                                             │
+│  4. HATEOAS (when appropriate)                                              │
+│     Include links for discoverability                                      │
+│     _links: { self, next, previous, related }                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-MODOS DE FALLA
-- Inconsistency creep: cada endpoint diseñado diferente.
-- Documentation lag: docs desactualizados vs implementación.
-- Breaking change surprise: cambios sin aviso ni versión.
-- Over-engineering: APIs complejas para casos simples.
-- Internal leak: exponer detalles de implementación.
-- Versioning hell: demasiadas versiones activas.
+REST API URL PATTERNS
 
-DEFINICIÓN DE DONE
-- Especificación de API completa y revisada.
-- Documentación con ejemplos para cada endpoint.
-- Error cases documentados con códigos y mensajes.
-- Versionado definido y comunicado.
-- Contract tests implementados.
-- Changelog actualizado.
-- Review de DX completado.
+```yaml
+# api-url-patterns.yaml
+
+# CORRECT URL Patterns
+resources:
+  # Collection operations
+  - GET    /api/v1/users              # List users
+  - POST   /api/v1/users              # Create user
+
+  # Instance operations
+  - GET    /api/v1/users/{userId}     # Get user
+  - PUT    /api/v1/users/{userId}     # Replace user
+  - PATCH  /api/v1/users/{userId}     # Update user
+  - DELETE /api/v1/users/{userId}     # Delete user
+
+  # Nested resources (true parent-child)
+  - GET    /api/v1/users/{userId}/orders          # User's orders
+  - POST   /api/v1/users/{userId}/orders          # Create order for user
+  - GET    /api/v1/users/{userId}/orders/{orderId} # Get specific order
+
+  # Actions (when necessary, use POST)
+  - POST   /api/v1/orders/{orderId}/cancel        # Cancel order
+  - POST   /api/v1/users/{userId}/deactivate      # Deactivate user
+  - POST   /api/v1/reports/generate               # Generate report
+
+  # Search and filtering
+  - GET    /api/v1/users?status=active&role=admin    # Filter users
+  - GET    /api/v1/orders?created_after=2024-01-01   # Date filter
+  - GET    /api/v1/products?q=laptop&category=tech   # Search
+
+# INCORRECT Patterns (avoid)
+anti_patterns:
+  - GET    /api/v1/getUsers           # Verb in URL
+  - POST   /api/v1/createUser         # Redundant verb
+  - GET    /api/v1/user               # Singular collection
+  - GET    /api/v1/Users              # Pascal case
+  - GET    /api/v1/user_list          # Snake case
+  - DELETE /api/v1/users/delete/{id}  # Verb in URL
+```
+
+================================================================================
+SECCIÓN 2: OPENAPI SPECIFICATION
+================================================================================
+
+OPENAPI 3.1 TEMPLATE
+
+```yaml
+# openapi.yaml
+openapi: 3.1.0
+info:
+  title: Order Management API
+  version: 1.0.0
+  description: |
+    API for managing orders in the e-commerce platform.
+
+    ## Authentication
+    All endpoints require Bearer token authentication.
+    Include `Authorization: Bearer <token>` header.
+
+    ## Rate Limits
+    - Standard: 1000 requests/minute
+    - Bulk operations: 100 requests/minute
+
+    ## Versioning
+    API version is included in URL path: `/api/v1/...`
+  contact:
+    name: API Support
+    email: api-support@example.com
+    url: https://developer.example.com/support
+  license:
+    name: Proprietary
+    url: https://example.com/terms
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://api.staging.example.com
+    description: Staging
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Orders
+    description: Order management operations
+  - name: Users
+    description: User account operations
+  - name: Products
+    description: Product catalog operations
+
+paths:
+  /api/v1/orders:
+    get:
+      operationId: listOrders
+      summary: List orders
+      description: |
+        Retrieve a paginated list of orders.
+        Supports filtering by status, date range, and user.
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by order status
+          schema:
+            type: string
+            enum: [pending, processing, shipped, delivered, cancelled]
+        - name: created_after
+          in: query
+          description: Filter orders created after this date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: created_before
+          in: query
+          description: Filter orders created before this date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: user_id
+          in: query
+          description: Filter by user ID (admin only)
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderList'
+              examples:
+                success:
+                  $ref: '#/components/examples/OrderListExample'
+          headers:
+            X-Total-Count:
+              description: Total number of orders matching filters
+              schema:
+                type: integer
+            X-Rate-Limit-Remaining:
+              description: Remaining requests in current window
+              schema:
+                type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    post:
+      operationId: createOrder
+      summary: Create order
+      description: |
+        Create a new order. Validates product availability and
+        calculates totals automatically.
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            examples:
+              basic:
+                summary: Basic order
+                value:
+                  items:
+                    - product_id: "prod_123"
+                      quantity: 2
+                  shipping_address:
+                    street: "123 Main St"
+                    city: "New York"
+                    state: "NY"
+                    zip_code: "10001"
+                    country: "US"
+              with_discount:
+                summary: Order with discount code
+                value:
+                  items:
+                    - product_id: "prod_123"
+                      quantity: 2
+                  shipping_address:
+                    street: "123 Main St"
+                    city: "New York"
+                    state: "NY"
+                    zip_code: "10001"
+                    country: "US"
+                  discount_code: "SAVE10"
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          headers:
+            Location:
+              description: URL of created order
+              schema:
+                type: string
+                format: uri
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                out_of_stock:
+                  summary: Product out of stock
+                  value:
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "One or more products are out of stock"
+                      details:
+                        - field: "items[0].product_id"
+                          code: "OUT_OF_STOCK"
+                          message: "Product prod_123 is out of stock"
+                          available: 0
+                          requested: 2
+
+  /api/v1/orders/{orderId}:
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        description: Unique order identifier
+        schema:
+          type: string
+          format: uuid
+        example: "ord_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    get:
+      operationId: getOrder
+      summary: Get order details
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Order retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateOrder
+      summary: Update order
+      description: |
+        Partially update an order. Only pending orders can be updated.
+        Once processing has started, use cancel and reorder workflow.
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderRequest'
+      responses:
+        '200':
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '409':
+          description: Conflict - order cannot be updated in current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: "ORDER_NOT_MODIFIABLE"
+                  message: "Order cannot be modified in 'processing' state"
+                  current_status: "processing"
+                  allowed_statuses: ["pending"]
+
+  /api/v1/orders/{orderId}/cancel:
+    post:
+      operationId: cancelOrder
+      summary: Cancel order
+      description: |
+        Cancel an order. Only orders in pending or processing state
+        can be cancelled. Shipped orders must use return workflow.
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  description: Reason for cancellation
+                  minLength: 10
+                  maxLength: 500
+                  example: "Changed my mind about the purchase"
+      responses:
+        '200':
+          description: Order cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '409':
+          description: Order cannot be cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from `/api/v1/auth/login`.
+        Include in header: `Authorization: Bearer <token>`
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    Order:
+      type: object
+      required:
+        - id
+        - status
+        - items
+        - totals
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique order identifier
+          example: "ord_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        status:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+          description: Current order status
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          minItems: 1
+        totals:
+          $ref: '#/components/schemas/OrderTotals'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        tracking:
+          $ref: '#/components/schemas/TrackingInfo'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        _links:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+            cancel:
+              type: string
+              format: uri
+            user:
+              type: string
+              format: uri
+
+    OrderItem:
+      type: object
+      required:
+        - product_id
+        - quantity
+        - unit_price
+        - total
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        unit_price:
+          type: number
+          format: decimal
+          description: Price per unit in cents
+        total:
+          type: number
+          format: decimal
+          description: Line total in cents
+
+    OrderTotals:
+      type: object
+      properties:
+        subtotal:
+          type: number
+          format: decimal
+          description: Sum of line totals in cents
+        discount:
+          type: number
+          format: decimal
+          description: Discount amount in cents
+        tax:
+          type: number
+          format: decimal
+          description: Tax amount in cents
+        shipping:
+          type: number
+          format: decimal
+          description: Shipping cost in cents
+        total:
+          type: number
+          format: decimal
+          description: Final total in cents
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          example: "USD"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: "ORDER_NOT_FOUND"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Order with ID ord_123 was not found"
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  code:
+                    type: string
+                  message:
+                    type: string
+            request_id:
+              type: string
+              description: Unique request ID for support reference
+            documentation_url:
+              type: string
+              format: uri
+              description: Link to relevant documentation
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "BAD_REQUEST"
+              message: "Invalid request parameters"
+              details:
+                - field: "limit"
+                  code: "OUT_OF_RANGE"
+                  message: "limit must be between 1 and 100"
+              request_id: "req_abc123"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "UNAUTHORIZED"
+              message: "Authentication required"
+              documentation_url: "https://developer.example.com/auth"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
+        X-Rate-Limit-Limit:
+          description: Request limit per window
+          schema:
+            type: integer
+        X-Rate-Limit-Reset:
+          description: Unix timestamp when limit resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "RATE_LIMITED"
+              message: "Rate limit exceeded. Retry after 60 seconds."
+              retry_after: 60
+```
+
+================================================================================
+SECCIÓN 3: ERROR HANDLING PATTERNS
+================================================================================
+
+ERROR HANDLING FRAMEWORK
+
+```typescript
+// error-handling.ts
+
+// Error Code Registry
+const ErrorCodes = {
+  // Authentication (1xxx)
+  UNAUTHORIZED: 'AUTH_1001',
+  TOKEN_EXPIRED: 'AUTH_1002',
+  TOKEN_INVALID: 'AUTH_1003',
+  INSUFFICIENT_PERMISSIONS: 'AUTH_1004',
+
+  // Validation (2xxx)
+  VALIDATION_ERROR: 'VAL_2001',
+  MISSING_REQUIRED_FIELD: 'VAL_2002',
+  INVALID_FORMAT: 'VAL_2003',
+  OUT_OF_RANGE: 'VAL_2004',
+
+  // Business Logic (3xxx)
+  RESOURCE_NOT_FOUND: 'BIZ_3001',
+  RESOURCE_ALREADY_EXISTS: 'BIZ_3002',
+  OPERATION_NOT_ALLOWED: 'BIZ_3003',
+  CONFLICT: 'BIZ_3004',
+  PRECONDITION_FAILED: 'BIZ_3005',
+
+  // External Services (4xxx)
+  PAYMENT_FAILED: 'EXT_4001',
+  PAYMENT_DECLINED: 'EXT_4002',
+  SHIPPING_UNAVAILABLE: 'EXT_4003',
+  EXTERNAL_SERVICE_ERROR: 'EXT_4004',
+
+  // Server Errors (5xxx)
+  INTERNAL_ERROR: 'SRV_5001',
+  SERVICE_UNAVAILABLE: 'SRV_5002',
+  DATABASE_ERROR: 'SRV_5003',
+} as const;
+
+// Error Response Interface
+interface ApiError {
+  error: {
+    code: string;
+    message: string;
+    details?: ErrorDetail[];
+    request_id: string;
+    timestamp: string;
+    documentation_url?: string;
+    retry_after?: number;
+  };
+}
+
+interface ErrorDetail {
+  field?: string;
+  code: string;
+  message: string;
+  value?: unknown;
+  allowed_values?: unknown[];
+}
+
+// Error Factory
+class ApiErrorFactory {
+  static badRequest(message: string, details?: ErrorDetail[]): ApiError {
+    return {
+      error: {
+        code: ErrorCodes.VALIDATION_ERROR,
+        message,
+        details,
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+        documentation_url: `${this.docsBaseUrl}/errors#validation`,
+      },
+    };
+  }
+
+  static notFound(resourceType: string, resourceId: string): ApiError {
+    return {
+      error: {
+        code: ErrorCodes.RESOURCE_NOT_FOUND,
+        message: `${resourceType} with ID '${resourceId}' was not found`,
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  static unauthorized(reason: string = 'Authentication required'): ApiError {
+    return {
+      error: {
+        code: ErrorCodes.UNAUTHORIZED,
+        message: reason,
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+        documentation_url: `${this.docsBaseUrl}/authentication`,
+      },
+    };
+  }
+
+  static conflict(message: string, currentState?: unknown): ApiError {
+    return {
+      error: {
+        code: ErrorCodes.CONFLICT,
+        message,
+        details: currentState ? [
+          { code: 'CURRENT_STATE', message: JSON.stringify(currentState) }
+        ] : undefined,
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  static rateLimited(retryAfter: number): ApiError {
+    return {
+      error: {
+        code: 'RATE_LIMITED',
+        message: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+        retry_after: retryAfter,
+      },
+    };
+  }
+
+  static internalError(): ApiError {
+    return {
+      error: {
+        code: ErrorCodes.INTERNAL_ERROR,
+        message: 'An unexpected error occurred. Please try again later.',
+        request_id: this.getRequestId(),
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  private static getRequestId(): string {
+    // In real implementation, get from request context
+    return `req_${crypto.randomUUID().split('-')[0]}`;
+  }
+
+  private static docsBaseUrl = 'https://developer.example.com/docs';
+}
+
+// HTTP Status Code Mapping
+const errorToStatusCode: Record<string, number> = {
+  [ErrorCodes.UNAUTHORIZED]: 401,
+  [ErrorCodes.TOKEN_EXPIRED]: 401,
+  [ErrorCodes.TOKEN_INVALID]: 401,
+  [ErrorCodes.INSUFFICIENT_PERMISSIONS]: 403,
+  [ErrorCodes.VALIDATION_ERROR]: 400,
+  [ErrorCodes.MISSING_REQUIRED_FIELD]: 400,
+  [ErrorCodes.INVALID_FORMAT]: 400,
+  [ErrorCodes.OUT_OF_RANGE]: 400,
+  [ErrorCodes.RESOURCE_NOT_FOUND]: 404,
+  [ErrorCodes.RESOURCE_ALREADY_EXISTS]: 409,
+  [ErrorCodes.OPERATION_NOT_ALLOWED]: 403,
+  [ErrorCodes.CONFLICT]: 409,
+  [ErrorCodes.PRECONDITION_FAILED]: 412,
+  [ErrorCodes.PAYMENT_FAILED]: 402,
+  [ErrorCodes.PAYMENT_DECLINED]: 402,
+  [ErrorCodes.INTERNAL_ERROR]: 500,
+  [ErrorCodes.SERVICE_UNAVAILABLE]: 503,
+};
+
+// Validation Error Builder
+class ValidationErrorBuilder {
+  private details: ErrorDetail[] = [];
+
+  addFieldError(
+    field: string,
+    code: string,
+    message: string,
+    value?: unknown
+  ): this {
+    this.details.push({ field, code, message, value });
+    return this;
+  }
+
+  addMissingField(field: string): this {
+    return this.addFieldError(
+      field,
+      'REQUIRED',
+      `${field} is required`
+    );
+  }
+
+  addInvalidFormat(field: string, expectedFormat: string, value: unknown): this {
+    return this.addFieldError(
+      field,
+      'INVALID_FORMAT',
+      `${field} must be a valid ${expectedFormat}`,
+      value
+    );
+  }
+
+  addOutOfRange(
+    field: string,
+    min: number,
+    max: number,
+    value: number
+  ): this {
+    return this.addFieldError(
+      field,
+      'OUT_OF_RANGE',
+      `${field} must be between ${min} and ${max}`,
+      value
+    );
+  }
+
+  hasErrors(): boolean {
+    return this.details.length > 0;
+  }
+
+  build(): ApiError {
+    return ApiErrorFactory.badRequest(
+      'Validation failed',
+      this.details
+    );
+  }
+}
+
+// Usage example
+function validateCreateOrderRequest(
+  request: CreateOrderRequest
+): ApiError | null {
+  const errors = new ValidationErrorBuilder();
+
+  if (!request.items || request.items.length === 0) {
+    errors.addFieldError(
+      'items',
+      'REQUIRED',
+      'At least one item is required'
+    );
+  }
+
+  if (request.items) {
+    request.items.forEach((item, index) => {
+      if (!item.product_id) {
+        errors.addMissingField(`items[${index}].product_id`);
+      }
+      if (!item.quantity || item.quantity < 1) {
+        errors.addOutOfRange(
+          `items[${index}].quantity`,
+          1,
+          1000,
+          item.quantity
+        );
+      }
+    });
+  }
+
+  if (!request.shipping_address) {
+    errors.addMissingField('shipping_address');
+  }
+
+  return errors.hasErrors() ? errors.build() : null;
+}
+```
+
+================================================================================
+SECCIÓN 4: PAGINATION PATTERNS
+================================================================================
+
+PAGINATION STRATEGIES
+
+```typescript
+// pagination.ts
+
+// 1. OFFSET-BASED PAGINATION (Simple, not recommended for large datasets)
+interface OffsetPaginationParams {
+  page: number;
+  limit: number;
+}
+
+interface OffsetPaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total_count: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  _links: {
+    self: string;
+    first: string;
+    last: string;
+    next?: string;
+    previous?: string;
+  };
+}
+
+// Implementation
+async function listOrdersWithOffsetPagination(
+  params: OffsetPaginationParams
+): Promise<OffsetPaginatedResponse<Order>> {
+  const { page = 1, limit = 20 } = params;
+  const offset = (page - 1) * limit;
+
+  const [orders, totalCount] = await Promise.all([
+    db.query(
+      'SELECT * FROM orders ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    ),
+    db.count('orders'),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / limit);
+  const baseUrl = '/api/v1/orders';
+
+  return {
+    data: orders,
+    pagination: {
+      page,
+      limit,
+      total_count: totalCount,
+      total_pages: totalPages,
+      has_next: page < totalPages,
+      has_previous: page > 1,
+    },
+    _links: {
+      self: `${baseUrl}?page=${page}&limit=${limit}`,
+      first: `${baseUrl}?page=1&limit=${limit}`,
+      last: `${baseUrl}?page=${totalPages}&limit=${limit}`,
+      ...(page < totalPages && {
+        next: `${baseUrl}?page=${page + 1}&limit=${limit}`,
+      }),
+      ...(page > 1 && {
+        previous: `${baseUrl}?page=${page - 1}&limit=${limit}`,
+      }),
+    },
+  };
+}
+
+// 2. CURSOR-BASED PAGINATION (Recommended for large datasets)
+interface CursorPaginationParams {
+  cursor?: string;
+  limit: number;
+  direction?: 'forward' | 'backward';
+}
+
+interface CursorPaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    limit: number;
+    has_more: boolean;
+    next_cursor?: string;
+    previous_cursor?: string;
+  };
+  _links: {
+    self: string;
+    next?: string;
+    previous?: string;
+  };
+}
+
+// Cursor encoding/decoding
+function encodeCursor(id: string, timestamp: Date): string {
+  const data = JSON.stringify({ id, ts: timestamp.toISOString() });
+  return Buffer.from(data).toString('base64url');
+}
+
+function decodeCursor(cursor: string): { id: string; ts: Date } {
+  const data = JSON.parse(Buffer.from(cursor, 'base64url').toString());
+  return { id: data.id, ts: new Date(data.ts) };
+}
+
+// Implementation
+async function listOrdersWithCursorPagination(
+  params: CursorPaginationParams
+): Promise<CursorPaginatedResponse<Order>> {
+  const { cursor, limit = 20 } = params;
+
+  let whereClause = '';
+  const queryParams: unknown[] = [limit + 1]; // Fetch one extra to check has_more
+
+  if (cursor) {
+    const { id, ts } = decodeCursor(cursor);
+    whereClause = `
+      WHERE (created_at, id) < ($2, $3)
+    `;
+    queryParams.push(ts, id);
+  }
+
+  const orders = await db.query(`
+    SELECT * FROM orders
+    ${whereClause}
+    ORDER BY created_at DESC, id DESC
+    LIMIT $1
+  `, queryParams);
+
+  const hasMore = orders.length > limit;
+  if (hasMore) {
+    orders.pop(); // Remove the extra item
+  }
+
+  const lastOrder = orders[orders.length - 1];
+  const nextCursor = hasMore && lastOrder
+    ? encodeCursor(lastOrder.id, lastOrder.created_at)
+    : undefined;
+
+  const baseUrl = '/api/v1/orders';
+
+  return {
+    data: orders,
+    pagination: {
+      limit,
+      has_more: hasMore,
+      next_cursor: nextCursor,
+    },
+    _links: {
+      self: cursor
+        ? `${baseUrl}?cursor=${cursor}&limit=${limit}`
+        : `${baseUrl}?limit=${limit}`,
+      ...(nextCursor && {
+        next: `${baseUrl}?cursor=${nextCursor}&limit=${limit}`,
+      }),
+    },
+  };
+}
+
+// 3. KEYSET PAGINATION (Alternative cursor approach)
+interface KeysetPaginationParams {
+  after_id?: string;
+  after_timestamp?: string;
+  limit: number;
+}
+
+async function listOrdersWithKeysetPagination(
+  params: KeysetPaginationParams
+): Promise<CursorPaginatedResponse<Order>> {
+  const { after_id, after_timestamp, limit = 20 } = params;
+
+  let whereClause = '';
+  const queryParams: unknown[] = [limit + 1];
+
+  if (after_id && after_timestamp) {
+    whereClause = `
+      WHERE (created_at, id) < ($2::timestamp, $3::uuid)
+    `;
+    queryParams.push(after_timestamp, after_id);
+  }
+
+  const orders = await db.query(`
+    SELECT * FROM orders
+    ${whereClause}
+    ORDER BY created_at DESC, id DESC
+    LIMIT $1
+  `, queryParams);
+
+  const hasMore = orders.length > limit;
+  if (hasMore) {
+    orders.pop();
+  }
+
+  const lastOrder = orders[orders.length - 1];
+
+  return {
+    data: orders,
+    pagination: {
+      limit,
+      has_more: hasMore,
+      next_cursor: lastOrder
+        ? encodeCursor(lastOrder.id, lastOrder.created_at)
+        : undefined,
+    },
+    _links: {
+      self: `/api/v1/orders?limit=${limit}`,
+      ...(hasMore && lastOrder && {
+        next: `/api/v1/orders?after_id=${lastOrder.id}&after_timestamp=${lastOrder.created_at.toISOString()}&limit=${limit}`,
+      }),
+    },
+  };
+}
+```
+
+================================================================================
+SECCIÓN 5: VERSIONING STRATEGIES
+================================================================================
+
+API VERSIONING APPROACHES
+
+```typescript
+// versioning.ts
+
+/*
+ * API VERSIONING STRATEGIES
+ *
+ * 1. URL Path Versioning (Recommended)
+ *    /api/v1/orders
+ *    /api/v2/orders
+ *
+ * 2. Header Versioning
+ *    Accept: application/vnd.example.v1+json
+ *
+ * 3. Query Parameter Versioning
+ *    /api/orders?version=1
+ *
+ * RECOMMENDATION: Use URL Path Versioning
+ * - Most visible and explicit
+ * - Easy to document and test
+ * - Works with caching proxies
+ * - Clear in logs and debugging
+ */
+
+// Version Router Implementation
+import { Router } from 'express';
+
+// V1 Routes
+const v1Router = Router();
+
+v1Router.get('/orders', async (req, res) => {
+  // V1 implementation - original response format
+  const orders = await orderService.list(req.query);
+  res.json({
+    orders: orders.map(o => ({
+      id: o.id,
+      status: o.status,
+      total: o.total, // Decimal in v1
+      created_at: o.createdAt.toISOString(),
+    })),
+  });
+});
+
+// V2 Routes - Breaking changes
+const v2Router = Router();
+
+v2Router.get('/orders', async (req, res) => {
+  // V2 implementation - new response format
+  const orders = await orderService.list(req.query);
+  res.json({
+    data: orders.map(o => ({
+      id: o.id,
+      status: o.status,
+      totals: {           // Object in v2
+        subtotal: o.subtotal,
+        tax: o.tax,
+        shipping: o.shipping,
+        total: o.total,
+        currency: o.currency,
+      },
+      timestamps: {       // Grouped timestamps
+        created_at: o.createdAt.toISOString(),
+        updated_at: o.updatedAt?.toISOString(),
+      },
+    })),
+    pagination: {
+      // ... cursor-based pagination
+    },
+  });
+});
+
+// Main router
+const apiRouter = Router();
+apiRouter.use('/v1', v1Router);
+apiRouter.use('/v2', v2Router);
+
+// Deprecation Headers Middleware
+function deprecationMiddleware(
+  deprecatedVersion: string,
+  sunsetDate: Date,
+  migrationGuide: string
+) {
+  return (req, res, next) => {
+    res.setHeader('Deprecation', sunsetDate.toISOString());
+    res.setHeader('Sunset', sunsetDate.toISOString());
+    res.setHeader('Link', `<${migrationGuide}>; rel="deprecation"`);
+    res.setHeader(
+      'X-API-Deprecation-Warning',
+      `API version ${deprecatedVersion} is deprecated and will be removed on ${sunsetDate.toISOString()}`
+    );
+    next();
+  };
+}
+
+// Apply to v1 routes
+v1Router.use(deprecationMiddleware(
+  'v1',
+  new Date('2024-12-31'),
+  'https://developer.example.com/migration/v1-to-v2'
+));
+
+// Version Negotiation Service
+class ApiVersionService {
+  private readonly versions = ['v1', 'v2'];
+  private readonly latestVersion = 'v2';
+  private readonly deprecatedVersions = ['v1'];
+
+  getRequestedVersion(req: Request): string {
+    // 1. Check URL path
+    const pathVersion = req.path.match(/\/api\/(v\d+)\//)?.[1];
+    if (pathVersion && this.versions.includes(pathVersion)) {
+      return pathVersion;
+    }
+
+    // 2. Check Accept header
+    const acceptHeader = req.headers['accept'];
+    if (acceptHeader) {
+      const match = acceptHeader.match(/application\/vnd\.example\.(v\d+)\+json/);
+      if (match && this.versions.includes(match[1])) {
+        return match[1];
+      }
+    }
+
+    // 3. Default to latest
+    return this.latestVersion;
+  }
+
+  isDeprecated(version: string): boolean {
+    return this.deprecatedVersions.includes(version);
+  }
+
+  getDeprecationInfo(version: string): DeprecationInfo | null {
+    if (!this.isDeprecated(version)) return null;
+
+    return {
+      version,
+      sunsetDate: new Date('2024-12-31'),
+      migrationGuide: 'https://developer.example.com/migration/v1-to-v2',
+    };
+  }
+}
+```
+
+BREAKING VS NON-BREAKING CHANGES
+
+```typescript
+// breaking-changes.ts
+
+/*
+ * NON-BREAKING CHANGES (Safe to deploy)
+ * - Adding new optional fields to responses
+ * - Adding new optional parameters
+ * - Adding new endpoints
+ * - Adding new HTTP methods to existing resources
+ * - Adding new error codes (if clients handle unknown codes)
+ * - Relaxing validation (accepting more formats)
+ *
+ * BREAKING CHANGES (Require new version)
+ * - Removing fields from responses
+ * - Renaming fields
+ * - Changing field types
+ * - Changing field from optional to required
+ * - Removing endpoints
+ * - Changing URL structure
+ * - Tightening validation
+ * - Changing authentication mechanisms
+ * - Changing error response format
+ * - Changing pagination format
+ */
+
+// Example: Non-breaking enhancement
+// V1 Response
+interface OrderResponseV1 {
+  id: string;
+  status: string;
+  total: number;
+}
+
+// V1.1 Response (non-breaking: added optional fields)
+interface OrderResponseV1_1 {
+  id: string;
+  status: string;
+  total: number;
+  // New optional fields
+  currency?: string;         // Optional, won't break existing clients
+  estimated_delivery?: string; // Optional, new feature
+  tracking_url?: string;     // Optional, enhancement
+}
+
+// Example: Breaking change requiring V2
+// V2 Response (breaking: restructured)
+interface OrderResponseV2 {
+  id: string;
+  status: string;
+  totals: {                  // Changed from 'total: number' to 'totals: object'
+    subtotal: number;
+    tax: number;
+    shipping: number;
+    total: number;
+    currency: string;        // Now required
+  };
+  delivery: {                // Restructured from flat fields
+    estimated_date: string;
+    tracking_url: string | null;
+    carrier: string | null;
+  };
+  timestamps: {
+    created_at: string;
+    updated_at: string | null;
+  };
+}
+```
+
+================================================================================
+SECCIÓN 6: GRAPHQL API DESIGN
+================================================================================
+
+GRAPHQL SCHEMA DESIGN
+
+```graphql
+# schema.graphql
+
+"""
+Root query type for read operations
+"""
+type Query {
+  """
+  Get a single order by ID
+  """
+  order(id: ID!): Order
+
+  """
+  List orders with filtering and pagination
+  """
+  orders(
+    filter: OrderFilterInput
+    pagination: PaginationInput
+    sort: OrderSortInput
+  ): OrderConnection!
+
+  """
+  Get current authenticated user
+  """
+  me: User
+
+  """
+  Get a single product by ID
+  """
+  product(id: ID!): Product
+
+  """
+  Search products
+  """
+  products(
+    query: String
+    filter: ProductFilterInput
+    pagination: PaginationInput
+  ): ProductConnection!
+}
+
+"""
+Root mutation type for write operations
+"""
+type Mutation {
+  """
+  Create a new order
+  """
+  createOrder(input: CreateOrderInput!): CreateOrderPayload!
+
+  """
+  Update an existing order
+  """
+  updateOrder(id: ID!, input: UpdateOrderInput!): UpdateOrderPayload!
+
+  """
+  Cancel an order
+  """
+  cancelOrder(id: ID!, reason: String!): CancelOrderPayload!
+
+  """
+  Add item to cart
+  """
+  addToCart(input: AddToCartInput!): AddToCartPayload!
+}
+
+"""
+Root subscription type for real-time updates
+"""
+type Subscription {
+  """
+  Subscribe to order status changes
+  """
+  orderStatusChanged(orderId: ID!): OrderStatusChangedPayload!
+
+  """
+  Subscribe to new orders (admin only)
+  """
+  newOrder: Order!
+}
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+"""
+Order represents a customer purchase
+"""
+type Order implements Node {
+  """Unique identifier"""
+  id: ID!
+
+  """Order number for customer reference"""
+  orderNumber: String!
+
+  """Current status"""
+  status: OrderStatus!
+
+  """Order line items"""
+  items: [OrderItem!]!
+
+  """Order totals"""
+  totals: OrderTotals!
+
+  """Shipping address"""
+  shippingAddress: Address!
+
+  """Payment information"""
+  payment: PaymentInfo
+
+  """Tracking information"""
+  tracking: TrackingInfo
+
+  """Customer who placed the order"""
+  customer: User!
+
+  """When the order was created"""
+  createdAt: DateTime!
+
+  """When the order was last updated"""
+  updatedAt: DateTime!
+
+  """Available actions for this order"""
+  availableActions: [OrderAction!]!
+}
+
+"""
+Order line item
+"""
+type OrderItem {
+  id: ID!
+  product: Product!
+  quantity: Int!
+  unitPrice: Money!
+  total: Money!
+}
+
+"""
+Order totals breakdown
+"""
+type OrderTotals {
+  subtotal: Money!
+  discount: Money
+  tax: Money!
+  shipping: Money!
+  total: Money!
+}
+
+"""
+Monetary value with currency
+"""
+type Money {
+  """Amount in smallest currency unit (cents)"""
+  amount: Int!
+
+  """ISO 4217 currency code"""
+  currency: String!
+
+  """Formatted display string"""
+  formatted: String!
+}
+
+"""
+Physical address
+"""
+type Address {
+  street: String!
+  city: String!
+  state: String
+  postalCode: String!
+  country: String!
+}
+
+"""
+Order status enum
+"""
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+"""
+Available actions for an order
+"""
+enum OrderAction {
+  CANCEL
+  UPDATE_SHIPPING
+  REQUEST_REFUND
+  TRACK
+}
+
+# ============================================================================
+# INPUTS
+# ============================================================================
+
+"""
+Input for creating an order
+"""
+input CreateOrderInput {
+  items: [OrderItemInput!]!
+  shippingAddress: AddressInput!
+  paymentMethodId: ID!
+  discountCode: String
+  idempotencyKey: String!
+}
+
+"""
+Input for an order item
+"""
+input OrderItemInput {
+  productId: ID!
+  quantity: Int!
+}
+
+"""
+Input for address
+"""
+input AddressInput {
+  street: String!
+  city: String!
+  state: String
+  postalCode: String!
+  country: String!
+}
+
+"""
+Filter input for orders
+"""
+input OrderFilterInput {
+  status: [OrderStatus!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+  minTotal: Int
+  maxTotal: Int
+}
+
+"""
+Sort input for orders
+"""
+input OrderSortInput {
+  field: OrderSortField!
+  direction: SortDirection!
+}
+
+enum OrderSortField {
+  CREATED_AT
+  UPDATED_AT
+  TOTAL
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""
+Pagination input (cursor-based)
+"""
+input PaginationInput {
+  first: Int
+  after: String
+  last: Int
+  before: String
+}
+
+# ============================================================================
+# PAYLOADS (Mutation responses)
+# ============================================================================
+
+"""
+Payload for createOrder mutation
+"""
+type CreateOrderPayload {
+  """The created order"""
+  order: Order
+
+  """Errors that occurred"""
+  errors: [UserError!]!
+
+  """Success indicator"""
+  success: Boolean!
+}
+
+"""
+User-facing error
+"""
+type UserError {
+  """Error code"""
+  code: String!
+
+  """Human-readable message"""
+  message: String!
+
+  """Field that caused the error, if applicable"""
+  field: String
+}
+
+# ============================================================================
+# CONNECTIONS (Pagination)
+# ============================================================================
+
+"""
+Connection type for orders (Relay-style)
+"""
+type OrderConnection {
+  """List of edges"""
+  edges: [OrderEdge!]!
+
+  """Page info"""
+  pageInfo: PageInfo!
+
+  """Total count of orders"""
+  totalCount: Int!
+}
+
+"""
+Edge type for order connection
+"""
+type OrderEdge {
+  """The order"""
+  node: Order!
+
+  """Cursor for pagination"""
+  cursor: String!
+}
+
+"""
+Page information
+"""
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+# ============================================================================
+# INTERFACES
+# ============================================================================
+
+"""
+Node interface for global object identification
+"""
+interface Node {
+  id: ID!
+}
+
+# ============================================================================
+# SCALARS
+# ============================================================================
+
+"""
+ISO 8601 date-time string
+"""
+scalar DateTime
+
+"""
+UUID string
+"""
+scalar UUID
+```
+
+================================================================================
+SECCIÓN 7: RATE LIMITING
+================================================================================
+
+RATE LIMITING IMPLEMENTATION
+
+```typescript
+// rate-limiting.ts
+
+interface RateLimitConfig {
+  windowMs: number;      // Time window in milliseconds
+  max: number;           // Max requests per window
+  keyGenerator?: (req: Request) => string;
+  handler?: (req: Request, res: Response) => void;
+  skipSuccessfulRequests?: boolean;
+  skipFailedRequests?: boolean;
+}
+
+// Rate limit tiers
+const rateLimitTiers: Record<string, RateLimitConfig> = {
+  anonymous: {
+    windowMs: 60 * 1000,  // 1 minute
+    max: 20,              // 20 requests per minute
+  },
+  authenticated: {
+    windowMs: 60 * 1000,
+    max: 1000,            // 1000 requests per minute
+  },
+  premium: {
+    windowMs: 60 * 1000,
+    max: 10000,           // 10,000 requests per minute
+  },
+  bulk: {
+    windowMs: 60 * 1000,
+    max: 100,             // 100 bulk operations per minute
+  },
+};
+
+// Rate limit middleware
+class RateLimiter {
+  private store: RateLimitStore;
+
+  constructor(store: RateLimitStore) {
+    this.store = store;
+  }
+
+  middleware(config: RateLimitConfig): RequestHandler {
+    return async (req, res, next) => {
+      const key = config.keyGenerator?.(req) ?? this.getDefaultKey(req);
+      const now = Date.now();
+
+      const record = await this.store.get(key);
+
+      if (!record) {
+        await this.store.set(key, {
+          count: 1,
+          resetTime: now + config.windowMs,
+        });
+        this.setHeaders(res, config.max, config.max - 1, now + config.windowMs);
+        return next();
+      }
+
+      if (now > record.resetTime) {
+        // Window expired, reset
+        await this.store.set(key, {
+          count: 1,
+          resetTime: now + config.windowMs,
+        });
+        this.setHeaders(res, config.max, config.max - 1, now + config.windowMs);
+        return next();
+      }
+
+      if (record.count >= config.max) {
+        // Rate limited
+        const retryAfter = Math.ceil((record.resetTime - now) / 1000);
+        this.setHeaders(res, config.max, 0, record.resetTime);
+        res.setHeader('Retry-After', retryAfter);
+
+        return res.status(429).json({
+          error: {
+            code: 'RATE_LIMITED',
+            message: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+            retry_after: retryAfter,
+            limit: config.max,
+            window_seconds: config.windowMs / 1000,
+          },
+        });
+      }
+
+      // Increment counter
+      await this.store.increment(key);
+      this.setHeaders(res, config.max, config.max - record.count - 1, record.resetTime);
+      next();
+    };
+  }
+
+  private getDefaultKey(req: Request): string {
+    // Use user ID if authenticated, otherwise IP
+    const userId = req.user?.id;
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    return userId ? `user:${userId}` : `ip:${ip}`;
+  }
+
+  private setHeaders(
+    res: Response,
+    limit: number,
+    remaining: number,
+    resetTime: number
+  ): void {
+    res.setHeader('X-RateLimit-Limit', limit);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, remaining));
+    res.setHeader('X-RateLimit-Reset', Math.floor(resetTime / 1000));
+  }
+}
+
+// Endpoint-specific rate limits
+const endpointRateLimits = {
+  '/api/v1/auth/login': {
+    windowMs: 15 * 60 * 1000,  // 15 minutes
+    max: 5,                     // 5 attempts
+    keyGenerator: (req) => `login:${req.body.email}`,
+  },
+  '/api/v1/auth/password-reset': {
+    windowMs: 60 * 60 * 1000,  // 1 hour
+    max: 3,                     // 3 attempts
+    keyGenerator: (req) => `reset:${req.body.email}`,
+  },
+  '/api/v1/orders': {
+    POST: {
+      windowMs: 60 * 1000,     // 1 minute
+      max: 10,                  // 10 orders per minute
+    },
+  },
+  '/api/v1/bulk/*': {
+    windowMs: 60 * 1000,
+    max: 10,                    // 10 bulk operations per minute
+  },
+};
+
+// Rate limit headers documentation
+/*
+ * Rate Limit Headers:
+ *
+ * X-RateLimit-Limit: 1000
+ *   Maximum requests allowed in the current window
+ *
+ * X-RateLimit-Remaining: 999
+ *   Remaining requests in the current window
+ *
+ * X-RateLimit-Reset: 1640995200
+ *   Unix timestamp when the window resets
+ *
+ * Retry-After: 60
+ *   Seconds to wait before retrying (only on 429)
+ */
+```
+
+================================================================================
+SECCIÓN 8: API SECURITY PATTERNS
+================================================================================
+
+SECURITY BEST PRACTICES
+
+```typescript
+// api-security.ts
+
+// 1. Input Validation
+import { z } from 'zod';
+
+const createOrderSchema = z.object({
+  items: z.array(z.object({
+    product_id: z.string().uuid(),
+    quantity: z.number().int().min(1).max(100),
+  })).min(1).max(50),
+  shipping_address: z.object({
+    street: z.string().min(1).max(200),
+    city: z.string().min(1).max(100),
+    state: z.string().length(2).optional(),
+    postal_code: z.string().regex(/^\d{5}(-\d{4})?$/),
+    country: z.string().length(2),
+  }),
+  discount_code: z.string().max(20).optional(),
+  idempotency_key: z.string().uuid(),
+});
+
+function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): T {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError(
+        'Validation failed',
+        error.errors.map(e => ({
+          field: e.path.join('.'),
+          code: e.code,
+          message: e.message,
+        }))
+      );
+    }
+    throw error;
+  }
+}
+
+// 2. Output Sanitization
+function sanitizeOrderResponse(order: Order, requestingUser: User): OrderResponse {
+  return {
+    id: order.id,
+    order_number: order.orderNumber,
+    status: order.status,
+    items: order.items.map(item => ({
+      product_id: item.productId,
+      product_name: item.productName,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      total: item.total,
+    })),
+    totals: order.totals,
+    // Don't expose internal fields
+    // ❌ internal_notes: order.internalNotes,
+    // ❌ profit_margin: order.profitMargin,
+    // ❌ customer_ip: order.customerIp,
+    created_at: order.createdAt.toISOString(),
+    // Only show tracking to order owner
+    ...(requestingUser.id === order.userId && {
+      tracking: order.tracking,
+    }),
+  };
+}
+
+// 3. Authorization Checks
+class OrderAuthorizationService {
+  canViewOrder(user: User, order: Order): boolean {
+    // Owner can view
+    if (order.userId === user.id) return true;
+    // Admin can view
+    if (user.roles.includes('admin')) return true;
+    // Support can view (but not sensitive data)
+    if (user.roles.includes('support')) return true;
+    return false;
+  }
+
+  canModifyOrder(user: User, order: Order): boolean {
+    // Only owner can modify
+    if (order.userId !== user.id) return false;
+    // Can only modify pending orders
+    if (order.status !== 'pending') return false;
+    return true;
+  }
+
+  canCancelOrder(user: User, order: Order): boolean {
+    // Owner can cancel pending/processing
+    if (order.userId === user.id) {
+      return ['pending', 'processing'].includes(order.status);
+    }
+    // Admin can cancel any non-delivered order
+    if (user.roles.includes('admin')) {
+      return order.status !== 'delivered';
+    }
+    return false;
+  }
+}
+
+// 4. Idempotency
+class IdempotencyService {
+  private store: IdempotencyStore;
+
+  async getOrExecute<T>(
+    key: string,
+    ttlMs: number,
+    operation: () => Promise<T>
+  ): Promise<{ result: T; isReplay: boolean }> {
+    // Check for existing result
+    const existing = await this.store.get(key);
+    if (existing) {
+      return { result: existing.result as T, isReplay: true };
+    }
+
+    // Execute operation
+    const result = await operation();
+
+    // Store result
+    await this.store.set(key, {
+      result,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + ttlMs,
+    });
+
+    return { result, isReplay: false };
+  }
+}
+
+// Usage in endpoint
+router.post('/api/v1/orders', async (req, res) => {
+  const idempotencyKey = req.headers['idempotency-key'] as string;
+  if (!idempotencyKey) {
+    return res.status(400).json({
+      error: {
+        code: 'MISSING_IDEMPOTENCY_KEY',
+        message: 'Idempotency-Key header is required for POST requests',
+      },
+    });
+  }
+
+  const { result, isReplay } = await idempotencyService.getOrExecute(
+    `create-order:${req.user.id}:${idempotencyKey}`,
+    24 * 60 * 60 * 1000, // 24 hours
+    () => orderService.createOrder(req.body, req.user)
+  );
+
+  if (isReplay) {
+    res.setHeader('Idempotent-Replayed', 'true');
+  }
+
+  res.status(201).json(result);
+});
+
+// 5. CORS Configuration
+const corsConfig = {
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://app.example.com',
+      'https://admin.example.com',
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Idempotency-Key',
+    'X-Request-ID',
+  ],
+  exposedHeaders: [
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+    'X-RateLimit-Reset',
+    'X-Total-Count',
+    'Idempotent-Replayed',
+  ],
+  credentials: true,
+  maxAge: 86400, // 24 hours
+};
+
+// 6. Request Signing (for webhooks)
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string,
+  timestamp: string
+): boolean {
+  const signedPayload = `${timestamp}.${payload}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  // Timing-safe comparison
+  if (signature.length !== expectedSignature.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+================================================================================
+SECCIÓN 9: ANTI-PATTERNS Y CORRECCIONES
+================================================================================
+
+API DESIGN ANTI-PATTERNS
+
+```typescript
+// ANTI-PATTERN 1: Leaking internal implementation
+// BAD: Exposes database schema
+interface BadOrderResponse {
+  _id: ObjectId;           // MongoDB internal
+  __v: number;             // Version key
+  customer_id: ObjectId;   // Internal reference
+  line_items: {
+    _productRef: string;   // Internal reference
+    qty: number;           // Abbreviated name
+    unit_prc: number;      // Abbreviated name
+  }[];
+  created: Date;           // Inconsistent naming
+  modified: Date;
+}
+
+// GOOD: Clean, documented response
+interface GoodOrderResponse {
+  id: string;              // Opaque identifier
+  customer: {              // Embedded, relevant data
+    id: string;
+    name: string;
+  };
+  items: {
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+  }[];
+  totals: {
+    subtotal: number;
+    tax: number;
+    shipping: number;
+    total: number;
+    currency: string;
+  };
+  created_at: string;      // ISO 8601
+  updated_at: string;
+}
+
+// ANTI-PATTERN 2: Inconsistent naming
+// BAD: Mixed naming conventions
+router.get('/api/getUsers', ...);           // Verb in URL
+router.post('/api/user/create', ...);       // Verb in URL
+router.get('/api/Users/:userId', ...);      // Pascal case
+router.get('/api/user-orders/:id', ...);    // Kebab case
+router.delete('/api/users/delete/:id', ...); // Redundant verb
+
+// GOOD: Consistent RESTful naming
+router.get('/api/v1/users', ...);           // List
+router.post('/api/v1/users', ...);          // Create
+router.get('/api/v1/users/:id', ...);       // Read
+router.patch('/api/v1/users/:id', ...);     // Update
+router.delete('/api/v1/users/:id', ...);    // Delete
+router.get('/api/v1/users/:id/orders', ...);// Nested resource
+
+// ANTI-PATTERN 3: Generic error responses
+// BAD: No context
+res.status(400).json({ error: 'Bad request' });
+res.status(500).json({ error: 'Internal server error' });
+
+// GOOD: Actionable errors
+res.status(400).json({
+  error: {
+    code: 'VALIDATION_ERROR',
+    message: 'Invalid request data',
+    details: [
+      {
+        field: 'email',
+        code: 'INVALID_FORMAT',
+        message: 'Must be a valid email address',
+        value: 'not-an-email',
+      },
+      {
+        field: 'quantity',
+        code: 'OUT_OF_RANGE',
+        message: 'Quantity must be between 1 and 100',
+        value: 150,
+      },
+    ],
+    request_id: 'req_abc123',
+    documentation_url: 'https://developer.example.com/errors#validation',
+  },
+});
+
+// ANTI-PATTERN 4: Breaking changes without versioning
+// BAD: Changed response format without version bump
+// V1: { "total": 100 }
+// V1 (later): { "totals": { "amount": 100, "currency": "USD" } }
+// Breaks all existing clients!
+
+// GOOD: New version for breaking changes
+// V1: { "total": 100 }                                    // Still works
+// V2: { "totals": { "amount": 100, "currency": "USD" } } // New format
+
+// ANTI-PATTERN 5: Over-fetching / Under-fetching
+// BAD: Returns everything
+router.get('/api/v1/users/:id', async (req, res) => {
+  const user = await db.users.findById(req.params.id)
+    .populate('orders')
+    .populate('orders.items')
+    .populate('orders.items.product')
+    .populate('addresses')
+    .populate('paymentMethods');
+
+  res.json(user); // Massive response, most not needed
+});
+
+// GOOD: Return what's needed, support expansion
+router.get('/api/v1/users/:id', async (req, res) => {
+  const expand = req.query.expand?.split(',') ?? [];
+
+  let query = db.users.findById(req.params.id);
+
+  // Only expand what's requested
+  if (expand.includes('recent_orders')) {
+    query = query.populate({
+      path: 'orders',
+      options: { limit: 5, sort: { createdAt: -1 } },
+    });
+  }
+
+  const user = await query;
+
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    ...(expand.includes('recent_orders') && {
+      recent_orders: user.orders.map(summarizeOrder),
+    }),
+    _links: {
+      self: `/api/v1/users/${user.id}`,
+      orders: `/api/v1/users/${user.id}/orders`,
+    },
+  });
+});
+
+// ANTI-PATTERN 6: No pagination
+// BAD: Returns all records
+router.get('/api/v1/orders', async (req, res) => {
+  const orders = await db.orders.find(); // Could be millions!
+  res.json(orders);
+});
+
+// GOOD: Always paginate lists
+router.get('/api/v1/orders', async (req, res) => {
+  const { cursor, limit = 20 } = req.query;
+  const orders = await orderService.list({ cursor, limit: Math.min(limit, 100) });
+
+  res.json({
+    data: orders.data,
+    pagination: orders.pagination,
+    _links: orders.links,
+  });
+});
+```
+
+================================================================================
+SECCIÓN 10: COORDINA CON
+================================================================================
+
+| Agente | Interacción |
+|--------|-------------|
+| Backend Agents | Implementación de APIs |
+| Frontend/Mobile Agents | Consumidores de APIs |
+| DX Agent | Developer experience de APIs |
+| Docs & Knowledge Agent | Documentación de APIs |
+| Security Agents | Autenticación y autorización |
+| Test Strategy Agent | Contract testing |
+| Performance Agent | API performance optimization |
+| Observability Agent | API monitoring y logging |
+
+================================================================================
+SECCIÓN 11: MÉTRICAS DE ÉXITO
+================================================================================
+
+| Métrica | Target | Medición |
+|---------|--------|----------|
+| Time to first successful API call | < 15 minutos | Developer surveys |
+| API documentation completeness | 100% | Doc coverage tools |
+| Breaking changes with migration guide | 100% | Changelog review |
+| Developer satisfaction con APIs | > 4/5 | Surveys |
+| Support tickets por confusión de API | Reducidos > 50% | Support metrics |
+| Contract test coverage | 100% APIs públicas | Test coverage |
+| API response time P95 | < 200ms | APM metrics |
+| API error rate | < 1% | Monitoring |
+
+================================================================================
+SECCIÓN 12: MODOS DE FALLA
+================================================================================
+
+| Modo de Falla | Síntoma | Prevención |
+|---------------|---------|------------|
+| Inconsistency creep | Cada endpoint diseñado diferente | Style guide enforcement |
+| Documentation lag | Docs desactualizados | Generate from code |
+| Breaking change surprise | Cambios sin aviso | Versioning policy |
+| Over-engineering | APIs complejas para casos simples | YAGNI principle |
+| Internal leak | Exponer detalles de implementación | Response DTOs |
+| Versioning hell | Demasiadas versiones activas | Deprecation policy |
+| Security holes | Vulnerabilities en API | Security review process |
+
+================================================================================
+SECCIÓN 13: DEFINICIÓN DE DONE
+================================================================================
+
+API Specification Done:
+- [ ] OpenAPI/GraphQL schema complete
+- [ ] All endpoints documented
+- [ ] Request/response examples provided
+- [ ] Error cases documented
+- [ ] Authentication requirements specified
+- [ ] Rate limits documented
+
+API Implementation Done:
+- [ ] Endpoints implemented per spec
+- [ ] Input validation implemented
+- [ ] Error handling implemented
+- [ ] Rate limiting configured
+- [ ] Idempotency for mutations
+- [ ] CORS configured correctly
+
+API Testing Done:
+- [ ] Unit tests for handlers
+- [ ] Integration tests for endpoints
+- [ ] Contract tests with consumers
+- [ ] Security testing completed
+- [ ] Performance testing completed
+
+API Documentation Done:
+- [ ] API reference generated
+- [ ] Getting started guide
+- [ ] Authentication guide
+- [ ] Code examples in multiple languages
+- [ ] Changelog maintained
+- [ ] Migration guides for version changes
+
+API Launch Done:
+- [ ] Staging deployment validated
+- [ ] Monitoring configured
+- [ ] Alerts configured
+- [ ] Support team briefed
+- [ ] Developer portal updated
+- [ ] Announcement to consumers
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

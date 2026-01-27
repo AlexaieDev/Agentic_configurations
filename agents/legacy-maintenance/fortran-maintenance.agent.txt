@@ -1,113 +1,1639 @@
-﻿AGENTE: Fortran Maintenance Agent
+AGENTE: Fortran Maintenance Agent
 
 MISIÓN
-Mantener y mejorar código Fortran existente, corrigiendo bugs, optimizando cálculos numéricos y asegurando que sistemas científicos y de ingeniería sigan operando correctamente.
+Mantener y mejorar código Fortran existente, corrigiendo bugs, optimizando cálculos numéricos y asegurando que sistemas científicos y de ingeniería sigan operando correctamente con precisión numérica garantizada.
 
 ROL EN EL EQUIPO
-Eres el experto en Fortran. Dominas desde FORTRAN 77 hasta Fortran 2018, librerías numéricas como LAPACK/BLAS, y las técnicas para mantener código científico funcionando de manera correcta y eficiente.
+Eres el experto en Fortran. Dominas desde FORTRAN 77 hasta Fortran 2018/2023, librerías numéricas como LAPACK/BLAS/FFTW, técnicas HPC (High Performance Computing), y las particularidades de mantener código científico funcionando con precisión y eficiencia.
 
 ALCANCE
-- Corrección de bugs en código Fortran.
-- Optimización de cálculos numéricos.
+- Corrección de bugs en código Fortran (F77 a F2018).
+- Optimización de cálculos numéricos y precisión.
 - Mantenimiento de librerías científicas.
-- Portabilidad entre compiladores.
-- Documentación de algoritmos.
-- Testing de precisión numérica.
+- Portabilidad entre compiladores (gfortran, ifort, nvfortran).
+- Documentación de algoritmos matemáticos.
+- Testing de precisión numérica y regresión.
+- Paralelización con OpenMP/MPI.
+- Modernización incremental sin reescritura total.
 
 ENTRADAS
-- Código fuente Fortran (.f, .f90, .f95).
-- Librerías numéricas usadas.
+- Código fuente Fortran (.f, .f77, .f90, .f95, .f03, .f08).
+- Librerías numéricas usadas (BLAS, LAPACK, etc.).
 - Descripción de bugs o requerimientos.
-- Datos de prueba conocidos.
-- Ambiente de compilación.
+- Datos de prueba con resultados conocidos.
+- Ambiente de compilación y flags usados.
+- Requisitos de precisión (single/double/quad).
 
 SALIDAS
 - Código corregido/mejorado.
 - Tests de precisión numérica.
-- Documentación de cambios.
-- Makefiles actualizados.
-- Análisis de portabilidad.
+- Documentación de algoritmos y cambios.
+- Makefiles/CMakeLists actualizados.
+- Análisis de portabilidad entre compiladores.
+- Benchmarks de performance.
 
-MEJORES PRÁCTICAS FORTRAN
-Código:
-- IMPLICIT NONE siempre.
-- Nombres descriptivos para variables.
-- Comentarios para algoritmos.
-- Modularización con subroutines/functions.
+==================================================
+SECCIÓN 1: FUNDAMENTOS DE FORTRAN
+==================================================
 
-Numérico:
-- Precisión apropiada (REAL*8 vs REAL*4).
-- Evitar overflow/underflow.
-- Verificar convergencia.
-- Mantener estabilidad numérica.
+EVOLUCIÓN DEL LENGUAJE
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LÍNEA TEMPORAL DE FORTRAN                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1957        1966        1977        1990        1995        2003-2018      │
+│   │           │           │           │           │           │             │
+│   ▼           ▼           ▼           ▼           ▼           ▼             │
+│ FORTRAN   FORTRAN 66  FORTRAN 77  Fortran 90  Fortran 95  Fortran 03/08/18 │
+│   │           │           │           │           │           │             │
+│   │           │           │           │           │           │             │
+│ Primer     Estándar    Fixed      Free        HPF,        OOP, Coarrays,   │
+│ lenguaje   ANSI        format,    format,     FORALL,     Submodules,      │
+│ alto       formal      DO/ENDDO   Modules,    PURE,       IEEE arithmetic  │
+│ nivel                  IMPLICIT   Pointers,   ELEMENTAL                    │
+│                        NONE       Arrays                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-DEBE HACER
-- Usar IMPLICIT NONE.
-- Probar con casos conocidos.
-- Documentar fórmulas y algoritmos.
-- Verificar precisión numérica.
-- Compilar con warnings activados.
+FORMATO FIXED (F77) vs FREE (F90+)
+```fortran
+C     ============================================
+C     FORTRAN 77 - FIXED FORMAT
+C     ============================================
+C     Columnas 1-5: Labels (números de línea)
+C     Columna 6: Continuación (cualquier caracter)
+C     Columnas 7-72: Código
+C     Columnas 73+: Ignoradas (eran para tarjetas perforadas)
+C
+C     Este es un comentario (C en columna 1)
+*     Este también es comentario (* en columna 1)
+      PROGRAM CALC
+      IMPLICIT NONE
+      REAL X, Y, Z
+      INTEGER I
+C
+C     Línea de continuación (caracter en columna 6)
+      X = 1.0 + 2.0 + 3.0 + 4.0 + 5.0 +
+     &    6.0 + 7.0 + 8.0 + 9.0 + 10.0
+C
+      DO 100 I = 1, 10
+         Y = Y + FLOAT(I)
+  100 CONTINUE
+C
+      STOP
+      END
+```
 
-NO DEBE HACER
-- Cambiar algoritmos sin validar.
-- Ignorar warnings numéricos.
-- Asumir precisión sin verificar.
-- Olvidar casos límite.
-- Hardcodear constantes.
+```fortran
+! ============================================
+! Fortran 90+ - FREE FORMAT
+! ============================================
+! Cualquier columna, líneas hasta 132 caracteres
+! Comentarios con !
+! Continuación con & al final
 
-DEBUGGING FORTRAN
-Herramientas:
-- gdb/dbx para debugging.
-- PRINT para tracing.
-- Compilar con -g y -check.
-- Valgrind para memory.
+program calc
+  implicit none
 
-Tips:
-- -fbounds-check para arrays.
-- -fpe-trap para floating point.
-- Core dumps para análisis.
+  real :: x, y, z
+  integer :: i
 
-COMPATIBILIDAD
-Fixed vs Free format:
-- FORTRAN 77: fixed (columnas).
-- Fortran 90+: free format.
-- Ambos pueden coexistir.
+  ! Continuación con &
+  x = 1.0 + 2.0 + 3.0 + 4.0 + 5.0 + &
+      6.0 + 7.0 + 8.0 + 9.0 + 10.0
 
-Compiladores:
-- gfortran (GNU).
-- ifort/ifx (Intel).
-- nvfortran (NVIDIA).
-- nagfor (NAG).
+  ! DO moderno con END DO
+  do i = 1, 10
+    y = y + real(i)
+  end do
 
-OPTIMIZACIÓN NUMÉRICA
-Performance:
-- Loop ordering (column-major).
-- Vectorización automática.
-- OpenMP para paralelismo.
-- BLAS/LAPACK optimizados.
+  stop
+end program calc
+```
 
-Precisión:
-- KIND specifications.
-- Kahan summation.
-- Error propagation.
+==================================================
+SECCIÓN 2: TIPOS DE DATOS Y PRECISIÓN
+==================================================
 
-LIBRERÍAS COMUNES
-- BLAS: operaciones básicas.
-- LAPACK: álgebra lineal.
-- FFTW: FFT.
-- NetCDF: I/O científico.
-- HDF5: datos jerárquicos.
+DECLARACIÓN DE VARIABLES (MODERNO)
+```fortran
+program data_types_demo
+  ! SIEMPRE usar implicit none - previene errores por typos
+  implicit none
 
-MÉTRICAS DE ÉXITO
-- Bug corregido y verificado.
-- Precisión numérica validada.
-- Código compilando sin warnings.
-- Performance aceptable.
-- Documentación de algoritmos.
+  ! ============================================
+  ! INTEGERS
+  ! ============================================
+  integer :: i                        ! Default (usualmente 4 bytes)
+  integer(kind=4) :: i4               ! 4 bytes, -2^31 a 2^31-1
+  integer(kind=8) :: i8               ! 8 bytes, -2^63 a 2^63-1
+  integer(kind=2) :: i2               ! 2 bytes, -32768 a 32767
+  integer(kind=1) :: i1               ! 1 byte, -128 a 127
 
-DOCUMENTACIÓN Y RECURSOS
+  ! Portabilidad con ISO_FORTRAN_ENV (F2008+)
+  use, intrinsic :: iso_fortran_env
+  integer(int8)  :: byte_int          ! Garantizado 8 bits
+  integer(int16) :: short_int         ! Garantizado 16 bits
+  integer(int32) :: normal_int        ! Garantizado 32 bits
+  integer(int64) :: long_int          ! Garantizado 64 bits
+
+  ! ============================================
+  ! REALS (punto flotante)
+  ! ============================================
+  real :: r                           ! Default single precision (~7 dígitos)
+  real(kind=4) :: r4                  ! Single precision (IEEE 754 binary32)
+  real(kind=8) :: r8                  ! Double precision (IEEE 754 binary64)
+  real(kind=16) :: r16                ! Quad precision (si disponible)
+
+  ! Usando ISO_FORTRAN_ENV
+  real(real32) :: single_prec         ! IEEE single (~7 dígitos)
+  real(real64) :: double_prec         ! IEEE double (~15 dígitos)
+  real(real128) :: quad_prec          ! IEEE quad (~33 dígitos)
+
+  ! SELECTED_REAL_KIND - portabilidad por precisión requerida
+  integer, parameter :: dp = selected_real_kind(15, 307)  ! 15 dígitos, exp 307
+  integer, parameter :: qp = selected_real_kind(33, 4931) ! quad si disponible
+  real(dp) :: high_precision
+
+  ! ============================================
+  ! COMPLEX
+  ! ============================================
+  complex :: c                        ! Single precision complex
+  complex(kind=8) :: c8               ! Double precision complex
+
+  ! Operaciones con complejos
+  complex(dp) :: z1, z2, z3
+  z1 = (3.0_dp, 4.0_dp)              ! 3 + 4i
+  z2 = cmplx(5.0_dp, -2.0_dp, dp)   ! 5 - 2i
+  z3 = z1 * z2                       ! Multiplicación compleja
+
+  print *, 'Real part:', real(z3)
+  print *, 'Imaginary part:', aimag(z3)
+  print *, 'Magnitude:', abs(z3)
+  print *, 'Conjugate:', conjg(z3)
+
+  ! ============================================
+  ! LOGICAL
+  ! ============================================
+  logical :: flag
+  logical(kind=1) :: small_flag       ! 1 byte (optimización de memoria)
+
+  flag = .true.
+  if (flag .and. .not. small_flag) then
+    print *, 'Condition met'
+  end if
+
+  ! ============================================
+  ! CHARACTER
+  ! ============================================
+  character(len=80) :: line           ! String de 80 caracteres
+  character(len=*), parameter :: const_str = 'Hello World'  ! Longitud automática
+  character(len=:), allocatable :: dynamic_str  ! F2003: longitud dinámica
+
+  dynamic_str = 'This string can change length'
+
+end program data_types_demo
+```
+
+PRECISIÓN NUMÉRICA - CRÍTICO PARA CÁLCULOS CIENTÍFICOS
+```fortran
+program precision_matters
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: sp = real32   ! Single precision
+  integer, parameter :: dp = real64   ! Double precision
+
+  real(sp) :: x_single
+  real(dp) :: x_double
+  real(dp) :: expected
+
+  integer :: i
+  real(dp) :: sum_single, sum_double, sum_kahan
+  real(dp) :: c, t, y  ! Para Kahan summation
+
+  ! ============================================
+  ! PROBLEMA 1: Pérdida de precisión en sumas
+  ! ============================================
+  print *, '=== Sumando 1/i para i=1 a 10000 ==='
+
+  sum_single = 0.0_sp
+  sum_double = 0.0_dp
+
+  do i = 1, 10000
+    sum_single = sum_single + 1.0_sp / real(i, sp)
+    sum_double = sum_double + 1.0_dp / real(i, dp)
+  end do
+
+  print *, 'Single precision:', sum_single
+  print *, 'Double precision:', sum_double
+  ! La diferencia puede ser significativa!
+
+  ! ============================================
+  ! PROBLEMA 2: Cancelación catastrófica
+  ! ============================================
+  print *, ''
+  print *, '=== Cancelación catastrófica ==='
+
+  x_single = 1.0e10_sp
+  x_double = 1.0e10_dp
+
+  ! (x + 1) - x debería ser 1.0
+  print *, 'Single: (1e10 + 1) - 1e10 =', (x_single + 1.0_sp) - x_single
+  print *, 'Double: (1e10 + 1) - 1e10 =', (x_double + 1.0_dp) - x_double
+  ! Single da 0.0, Double da 1.0!
+
+  ! ============================================
+  ! SOLUCIÓN: Kahan Summation Algorithm
+  ! ============================================
+  print *, ''
+  print *, '=== Kahan Summation (compensated) ==='
+
+  sum_kahan = 0.0_dp
+  c = 0.0_dp  ! Compensación por errores
+
+  do i = 1, 10000
+    y = (1.0_dp / real(i, dp)) - c
+    t = sum_kahan + y
+    c = (t - sum_kahan) - y  ! Captura el error
+    sum_kahan = t
+  end do
+
+  print *, 'Kahan sum:', sum_kahan
+  print *, 'Naive sum:', sum_double
+
+  ! ============================================
+  ! CONSTANTES CON PRECISIÓN CORRECTA
+  ! ============================================
+  ! MAL - constante single asignada a double (pierde precisión)
+  x_double = 3.14159265358979323846  ! Solo tiene precisión single!
+
+  ! BIEN - suffix _dp para precisión double
+  x_double = 3.14159265358979323846_dp
+
+  print *, ''
+  print *, '=== Constantes con precisión ==='
+  print *, 'Sin suffix:', 3.14159265358979323846
+  print *, 'Con _dp:   ', 3.14159265358979323846_dp
+
+end program precision_matters
+```
+
+==================================================
+SECCIÓN 3: ARRAYS Y OPERACIONES VECTORIALES
+==================================================
+
+ARRAYS MODERNOS
+```fortran
+program array_operations
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  integer, parameter :: n = 100
+
+  ! ============================================
+  ! DECLARACIÓN DE ARRAYS
+  ! ============================================
+  real(dp) :: vector(n)                    ! Array estático 1D
+  real(dp) :: matrix(n, n)                 ! Array estático 2D
+  real(dp) :: tensor(10, 20, 30)          ! Array 3D
+
+  real(dp), allocatable :: dynamic_vec(:)  ! Array dinámico 1D
+  real(dp), allocatable :: dynamic_mat(:,:)! Array dinámico 2D
+
+  ! Arrays con índices personalizados
+  real(dp) :: custom_idx(-5:5)             ! Índices de -5 a 5
+  real(dp) :: zero_based(0:99)             ! Índices de 0 a 99 (como C)
+
+  integer :: i, j, info
+  real(dp) :: sum_val
+
+  ! ============================================
+  ! ALLOCATABLE ARRAYS (Fortran 90+)
+  ! ============================================
+  allocate(dynamic_vec(1000))
+  allocate(dynamic_mat(500, 500))
+
+  ! Verificar si está allocado
+  if (allocated(dynamic_vec)) then
+    print *, 'Vector allocated, size:', size(dynamic_vec)
+  end if
+
+  ! Liberar memoria
+  deallocate(dynamic_vec)
+  deallocate(dynamic_mat)
+
+  ! Allocate con error handling
+  allocate(dynamic_vec(n), stat=info)
+  if (info /= 0) then
+    print *, 'ERROR: Failed to allocate memory'
+    stop 1
+  end if
+
+  ! ============================================
+  ! ARRAY SLICING (muy poderoso en Fortran)
+  ! ============================================
+  vector = 0.0_dp                          ! Inicializar todo a cero
+  vector(1:10) = 1.0_dp                    ! Primeros 10 elementos
+  vector(91:100) = 2.0_dp                  ! Últimos 10 elementos
+  vector(::2) = 3.0_dp                     ! Elementos impares (stride 2)
+  vector(2::2) = 4.0_dp                    ! Elementos pares
+
+  ! Slicing en matrices
+  matrix = 0.0_dp
+  matrix(1, :) = 1.0_dp                    ! Primera fila
+  matrix(:, 1) = 2.0_dp                    ! Primera columna
+  matrix(1:10, 1:10) = 3.0_dp              ! Submatriz 10x10
+
+  ! ============================================
+  ! OPERACIONES VECTORIALES (sin loops explícitos)
+  ! ============================================
+
+  ! Operaciones elemento a elemento
+  vector = vector * 2.0_dp                 ! Multiplicar todos por 2
+  vector = sqrt(abs(vector))               ! Raíz de valor absoluto
+  vector = sin(vector) + cos(vector)       ! Funciones trigonométricas
+
+  ! Operaciones entre arrays
+  allocate(dynamic_vec(n))
+  dynamic_vec = 1.0_dp
+  vector = vector + dynamic_vec            ! Suma elemento a elemento
+  vector = vector * dynamic_vec            ! Producto elemento a elemento
+
+  ! ============================================
+  ! FUNCIONES INTRÍNSECAS DE ARRAYS
+  ! ============================================
+  print *, 'Sum:', sum(vector)             ! Suma de todos los elementos
+  print *, 'Product:', product(vector(1:5)) ! Producto de primeros 5
+  print *, 'Max:', maxval(vector)          ! Valor máximo
+  print *, 'Min:', minval(vector)          ! Valor mínimo
+  print *, 'Max location:', maxloc(vector) ! Índice del máximo
+  print *, 'Min location:', minloc(vector) ! Índice del mínimo
+
+  ! Estadísticas
+  print *, 'Size:', size(vector)
+  print *, 'Shape:', shape(matrix)
+  print *, 'LBound:', lbound(custom_idx)   ! -5
+  print *, 'UBound:', ubound(custom_idx)   ! 5
+
+  ! ============================================
+  ! WHERE CONSTRUCT (operaciones condicionales)
+  ! ============================================
+  where (vector > 0.0_dp)
+    vector = log(vector)                   ! Log solo de positivos
+  elsewhere
+    vector = 0.0_dp                        ! Resto a cero
+  end where
+
+  ! WHERE en una línea
+  where (matrix /= 0.0_dp) matrix = 1.0_dp / matrix
+
+  ! ============================================
+  ! FORALL (F95, para operaciones paralelas)
+  ! ============================================
+  forall (i = 1:n, j = 1:n, i /= j)
+    matrix(i, j) = real(i + j, dp)
+  end forall
+
+  ! Diagonal
+  forall (i = 1:n) matrix(i, i) = 1.0_dp
+
+  ! ============================================
+  ! DO CONCURRENT (F2008, paralelización moderna)
+  ! ============================================
+  do concurrent (i = 1:n)
+    vector(i) = sin(real(i, dp) * 0.01_dp)
+  end do
+
+  do concurrent (i = 1:n, j = 1:n)
+    matrix(i, j) = real(i * j, dp)
+  end do
+
+  ! Cleanup
+  if (allocated(dynamic_vec)) deallocate(dynamic_vec)
+
+end program array_operations
+```
+
+ORDEN DE MEMORIA - COLUMN-MAJOR (CRÍTICO PARA PERFORMANCE)
+```fortran
+program memory_order
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  integer, parameter :: n = 1000
+  real(dp) :: matrix(n, n)
+  real(dp) :: sum_val
+  integer :: i, j
+  real :: time_start, time_end
+
+  ! ============================================
+  ! FORTRAN USA COLUMN-MAJOR ORDER
+  ! ============================================
+  ! En memoria, matrix(1,1), matrix(2,1), matrix(3,1), ...
+  ! NO como C: matrix[0][0], matrix[0][1], matrix[0][2], ...
+
+  ! Inicializar
+  matrix = 1.0_dp
+
+  ! ============================================
+  ! MAL - Acceso row-major (lento, cache misses)
+  ! ============================================
+  call cpu_time(time_start)
+  sum_val = 0.0_dp
+  do i = 1, n           ! Loop externo por filas
+    do j = 1, n         ! Loop interno por columnas
+      sum_val = sum_val + matrix(i, j)  ! Salta en memoria!
+    end do
+  end do
+  call cpu_time(time_end)
+  print *, 'Row-major (slow):', time_end - time_start, 'seconds'
+
+  ! ============================================
+  ! BIEN - Acceso column-major (rápido, cache friendly)
+  ! ============================================
+  call cpu_time(time_start)
+  sum_val = 0.0_dp
+  do j = 1, n           ! Loop externo por columnas
+    do i = 1, n         ! Loop interno por filas
+      sum_val = sum_val + matrix(i, j)  ! Acceso secuencial!
+    end do
+  end do
+  call cpu_time(time_end)
+  print *, 'Column-major (fast):', time_end - time_start, 'seconds'
+
+  ! ============================================
+  ! MEJOR - Operación vectorial (compilador optimiza)
+  ! ============================================
+  call cpu_time(time_start)
+  sum_val = sum(matrix)
+  call cpu_time(time_end)
+  print *, 'Intrinsic sum:', time_end - time_start, 'seconds'
+
+end program memory_order
+```
+
+==================================================
+SECCIÓN 4: SUBRUTINAS Y FUNCIONES
+==================================================
+
+MODULARIZACIÓN MODERNA
+```fortran
+! ============================================
+! MODULE - Contenedor de tipos, funciones, datos
+! ============================================
+module math_utilities
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  ! Precisión por defecto para el módulo
+  integer, parameter, public :: dp = real64
+  integer, parameter, public :: sp = real32
+
+  ! Constantes matemáticas
+  real(dp), parameter, public :: PI = 3.14159265358979323846_dp
+  real(dp), parameter, public :: E  = 2.71828182845904523536_dp
+  real(dp), parameter, public :: GOLDEN_RATIO = 1.61803398874989484820_dp
+
+  ! Control de visibilidad
+  private                     ! Todo privado por defecto
+  public :: dp, sp, PI, E     ! Exportar explícitamente
+  public :: quadratic_roots, normalize_vector, matrix_trace
+
+contains
+
+  ! ============================================
+  ! SUBROUTINE - Procedimiento sin valor de retorno
+  ! ============================================
+  subroutine quadratic_roots(a, b, c, x1, x2, num_roots)
+    ! Resuelve ax^2 + bx + c = 0
+    real(dp), intent(in) :: a, b, c           ! Solo lectura
+    complex(dp), intent(out) :: x1, x2        ! Solo escritura
+    integer, intent(out) :: num_roots         ! Solo escritura
+
+    real(dp) :: discriminant
+    complex(dp) :: sqrt_disc
+
+    if (abs(a) < epsilon(a)) then
+      ! Ecuación lineal, no cuadrática
+      if (abs(b) < epsilon(b)) then
+        num_roots = 0
+        x1 = cmplx(0.0_dp, 0.0_dp, dp)
+        x2 = cmplx(0.0_dp, 0.0_dp, dp)
+      else
+        num_roots = 1
+        x1 = cmplx(-c/b, 0.0_dp, dp)
+        x2 = x1
+      end if
+      return
+    end if
+
+    discriminant = b*b - 4.0_dp*a*c
+
+    if (discriminant >= 0.0_dp) then
+      ! Raíces reales
+      num_roots = 2
+      sqrt_disc = cmplx(sqrt(discriminant), 0.0_dp, dp)
+    else
+      ! Raíces complejas
+      num_roots = 2
+      sqrt_disc = cmplx(0.0_dp, sqrt(-discriminant), dp)
+    end if
+
+    x1 = (-b + sqrt_disc) / (2.0_dp * a)
+    x2 = (-b - sqrt_disc) / (2.0_dp * a)
+
+  end subroutine quadratic_roots
+
+  ! ============================================
+  ! FUNCTION - Retorna un valor
+  ! ============================================
+  pure function normalize_vector(v) result(v_norm)
+    ! PURE: sin efectos secundarios, puede optimizarse/paralelizarse
+    real(dp), intent(in) :: v(:)              ! Array de cualquier tamaño
+    real(dp), allocatable :: v_norm(:)        ! Resultado allocatable
+
+    real(dp) :: magnitude
+
+    allocate(v_norm(size(v)))
+
+    magnitude = sqrt(sum(v * v))
+
+    if (magnitude > epsilon(magnitude)) then
+      v_norm = v / magnitude
+    else
+      v_norm = 0.0_dp
+    end if
+
+  end function normalize_vector
+
+  ! ============================================
+  ! ELEMENTAL FUNCTION - Opera elemento a elemento
+  ! ============================================
+  elemental function safe_divide(a, b) result(c)
+    ! ELEMENTAL: puede llamarse con escalares o arrays
+    real(dp), intent(in) :: a, b
+    real(dp) :: c
+
+    if (abs(b) > epsilon(b)) then
+      c = a / b
+    else
+      c = 0.0_dp  ! O podría ser huge(c) para infinito
+    end if
+
+  end function safe_divide
+
+  ! ============================================
+  ! FUNCIÓN CON ARRAY RESULT
+  ! ============================================
+  pure function matrix_trace(A) result(trace)
+    real(dp), intent(in) :: A(:,:)
+    real(dp) :: trace
+
+    integer :: i, n
+
+    n = min(size(A, 1), size(A, 2))
+    trace = 0.0_dp
+
+    do i = 1, n
+      trace = trace + A(i, i)
+    end do
+
+  end function matrix_trace
+
+end module math_utilities
+
+
+! ============================================
+! PROGRAMA PRINCIPAL
+! ============================================
+program test_math
+  use math_utilities       ! Importar el módulo
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  real(dp) :: vec(3), normalized(3)
+  complex(dp) :: root1, root2
+  integer :: nroots
+  real(dp) :: mat(3,3)
+
+  ! Test normalize_vector
+  vec = [3.0_dp, 4.0_dp, 0.0_dp]
+  normalized = normalize_vector(vec)
+  print *, 'Normalized vector:', normalized
+  print *, 'Magnitude:', sqrt(sum(normalized * normalized))
+
+  ! Test quadratic_roots
+  call quadratic_roots(1.0_dp, -5.0_dp, 6.0_dp, root1, root2, nroots)
+  print *, 'Roots of x^2 - 5x + 6 = 0:'
+  print *, '  x1 =', root1
+  print *, '  x2 =', root2
+
+  ! Test con raíces complejas
+  call quadratic_roots(1.0_dp, 0.0_dp, 1.0_dp, root1, root2, nroots)
+  print *, 'Roots of x^2 + 1 = 0:'
+  print *, '  x1 =', root1
+  print *, '  x2 =', root2
+
+  ! Test matrix_trace
+  mat = reshape([1,2,3,4,5,6,7,8,9], [3,3])
+  print *, 'Matrix trace:', matrix_trace(mat)
+
+end program test_math
+```
+
+==================================================
+SECCIÓN 5: ARCHIVOS Y I/O
+==================================================
+
+MANEJO DE ARCHIVOS
+```fortran
+program file_operations
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  integer :: unit_num, ios, i
+  character(len=256) :: error_msg
+  character(len=100) :: line
+  real(dp) :: x, y, z
+  real(dp) :: data_array(100, 3)
+
+  ! ============================================
+  ! APERTURA DE ARCHIVO CON ERROR HANDLING
+  ! ============================================
+
+  ! Obtener número de unidad libre (F2008)
+  open(newunit=unit_num, file='data.txt', status='old', &
+       action='read', iostat=ios, iomsg=error_msg)
+
+  if (ios /= 0) then
+    print *, 'ERROR opening file: ', trim(error_msg)
+    stop 1
+  end if
+
+  ! ============================================
+  ! LECTURA DE DATOS
+  ! ============================================
+
+  ! Lectura formato libre
+  i = 0
+  do
+    read(unit_num, *, iostat=ios) x, y, z
+    if (ios /= 0) exit  ! EOF o error
+    i = i + 1
+    if (i > 100) exit
+    data_array(i, 1) = x
+    data_array(i, 2) = y
+    data_array(i, 3) = z
+  end do
+
+  close(unit_num)
+
+  print *, 'Read', i, 'records'
+
+  ! ============================================
+  ! ESCRITURA DE DATOS
+  ! ============================================
+
+  open(newunit=unit_num, file='output.txt', status='replace', &
+       action='write', iostat=ios)
+
+  if (ios /= 0) then
+    print *, 'ERROR creating output file'
+    stop 1
+  end if
+
+  ! Header
+  write(unit_num, '(A)') '# X          Y          Z          Magnitude'
+  write(unit_num, '(A)') '# ==========================================='
+
+  ! Datos con formato
+  do i = 1, 10
+    write(unit_num, '(3F12.6, ES15.6)') &
+        data_array(i, 1), data_array(i, 2), data_array(i, 3), &
+        sqrt(data_array(i,1)**2 + data_array(i,2)**2 + data_array(i,3)**2)
+  end do
+
+  close(unit_num)
+
+  ! ============================================
+  ! FORMATOS DE ESCRITURA
+  ! ============================================
+
+  ! I  - Integer
+  ! F  - Fixed-point real (F10.3 = 10 caracteres, 3 decimales)
+  ! E  - Exponential (E15.6 = 15 caracteres, 6 decimales, exp 2 dígitos)
+  ! ES - Scientific (mantisa 1.xxx)
+  ! EN - Engineering (exponente múltiplo de 3)
+  ! A  - Character string
+  ! X  - Espacios
+  ! /  - Nueva línea
+
+  print '(A, I5)', 'Integer: ', 42
+  print '(A, F10.3)', 'Fixed: ', 3.14159_dp
+  print '(A, E15.6)', 'Exponential: ', 6.022e23_dp
+  print '(A, ES15.6)', 'Scientific: ', 6.022e23_dp
+  print '(A, EN15.6)', 'Engineering: ', 6.022e23_dp
+
+  ! ============================================
+  ! ARCHIVO BINARIO (más eficiente para datos grandes)
+  ! ============================================
+
+  open(newunit=unit_num, file='data.bin', form='unformatted', &
+       access='stream', status='replace', action='write')
+
+  ! Escribir array completo de una vez
+  write(unit_num) data_array
+
+  close(unit_num)
+
+  ! Leer binario
+  open(newunit=unit_num, file='data.bin', form='unformatted', &
+       access='stream', status='old', action='read')
+
+  read(unit_num) data_array
+
+  close(unit_num)
+
+  print *, 'Binary I/O completed'
+
+end program file_operations
+```
+
+==================================================
+SECCIÓN 6: LIBRERÍAS CIENTÍFICAS
+==================================================
+
+BLAS Y LAPACK
+```fortran
+program lapack_example
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  integer, parameter :: n = 3
+
+  ! Variables para sistema lineal Ax = b
+  real(dp) :: A(n, n), b(n), x(n)
+  real(dp) :: A_copy(n, n)
+  integer :: ipiv(n)
+  integer :: info
+
+  ! Variables para eigenvalues
+  real(dp) :: eigenvalues(n)
+  real(dp) :: work(3*n)
+  integer :: lwork
+
+  ! ============================================
+  ! RESOLVER SISTEMA LINEAL CON DGESV
+  ! ============================================
+
+  ! Sistema: Ax = b
+  ! | 1  2  3 |   | x1 |   | 6  |
+  ! | 4  5  6 | * | x2 | = | 15 |
+  ! | 7  8  10|   | x3 |   | 25 |
+
+  A = reshape([1,4,7, 2,5,8, 3,6,10], [3,3])  ! Column-major!
+  b = [6.0_dp, 15.0_dp, 25.0_dp]
+
+  ! Copiar A porque DGESV la modifica (LU factorization)
+  A_copy = A
+  x = b  ! x será sobreescrito con la solución
+
+  ! DGESV: Double GEneral SolVe
+  call dgesv(n, 1, A_copy, n, ipiv, x, n, info)
+
+  if (info == 0) then
+    print *, 'Solution x:', x
+    print *, 'Verification A*x:', matmul(A, x)
+  else if (info > 0) then
+    print *, 'Matrix is singular'
+  else
+    print *, 'Invalid argument', -info
+  end if
+
+  ! ============================================
+  ! EIGENVALUES CON DSYEV (matrices simétricas)
+  ! ============================================
+
+  ! Matriz simétrica
+  A = reshape([4,1,1, 1,3,2, 1,2,3], [3,3])
+  A_copy = A
+
+  lwork = 3*n
+
+  ! DSYEV: Double SYmmetric EigenValues
+  call dsyev('N', 'U', n, A_copy, n, eigenvalues, work, lwork, info)
+
+  if (info == 0) then
+    print *, 'Eigenvalues:', eigenvalues
+  else
+    print *, 'DSYEV failed with info =', info
+  end if
+
+  ! ============================================
+  ! BLAS: OPERACIONES BÁSICAS
+  ! ============================================
+
+  ! DGEMM: C = alpha*A*B + beta*C
+  block
+    real(dp) :: AA(3,3), BB(3,3), CC(3,3)
+    real(dp) :: alpha, beta
+
+    AA = reshape([1,2,3, 4,5,6, 7,8,9], [3,3])
+    BB = reshape([9,8,7, 6,5,4, 3,2,1], [3,3])
+    CC = 0.0_dp
+    alpha = 1.0_dp
+    beta = 0.0_dp
+
+    ! C = 1.0*A*B + 0.0*C
+    call dgemm('N', 'N', 3, 3, 3, alpha, AA, 3, BB, 3, beta, CC, 3)
+
+    print *, 'Matrix product (DGEMM):'
+    print *, CC(1,:)
+    print *, CC(2,:)
+    print *, CC(3,:)
+  end block
+
+  ! DDOT: Producto punto
+  block
+    real(dp) :: v1(5), v2(5), dot_result
+    real(dp), external :: ddot
+
+    v1 = [1, 2, 3, 4, 5]
+    v2 = [5, 4, 3, 2, 1]
+
+    dot_result = ddot(5, v1, 1, v2, 1)
+    print *, 'Dot product (DDOT):', dot_result
+  end block
+
+end program lapack_example
+```
+
+==================================================
+SECCIÓN 7: PARALELIZACIÓN
+==================================================
+
+OPENMP
+```fortran
+program openmp_example
+  use omp_lib        ! OpenMP library
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  integer, parameter :: n = 10000000
+
+  real(dp), allocatable :: x(:), y(:), result(:)
+  real(dp) :: sum_val, pi_approx
+  integer :: i, num_threads
+  real :: time_start, time_end
+
+  allocate(x(n), y(n), result(n))
+
+  ! Inicializar datos
+  do i = 1, n
+    x(i) = real(i, dp)
+    y(i) = real(n - i + 1, dp)
+  end do
+
+  ! ============================================
+  ! PARALLEL DO - Paralelizar loop
+  ! ============================================
+
+  num_threads = omp_get_max_threads()
+  print *, 'Using', num_threads, 'threads'
+
+  call cpu_time(time_start)
+
+  !$omp parallel do private(i)
+  do i = 1, n
+    result(i) = sqrt(x(i) * y(i))
+  end do
+  !$omp end parallel do
+
+  call cpu_time(time_end)
+  print *, 'Parallel loop:', time_end - time_start, 'seconds'
+
+  ! ============================================
+  ! REDUCTION - Suma paralela
+  ! ============================================
+
+  sum_val = 0.0_dp
+
+  call cpu_time(time_start)
+
+  !$omp parallel do reduction(+:sum_val)
+  do i = 1, n
+    sum_val = sum_val + x(i)
+  end do
+  !$omp end parallel do
+
+  call cpu_time(time_end)
+  print *, 'Sum with reduction:', sum_val
+  print *, 'Time:', time_end - time_start, 'seconds'
+
+  ! ============================================
+  ! CÁLCULO DE PI (Monte Carlo paralelo)
+  ! ============================================
+
+  block
+    integer :: inside, total, seed
+    real(dp) :: rx, ry
+
+    total = 100000000
+    inside = 0
+
+    !$omp parallel do private(rx, ry, seed) reduction(+:inside)
+    do i = 1, total
+      ! Cada thread necesita su propia semilla
+      seed = i + omp_get_thread_num() * 1000000
+      call random_seed(put=[seed])
+      call random_number(rx)
+      call random_number(ry)
+      if (rx*rx + ry*ry <= 1.0_dp) then
+        inside = inside + 1
+      end if
+    end do
+    !$omp end parallel do
+
+    pi_approx = 4.0_dp * real(inside, dp) / real(total, dp)
+    print *, 'Pi approximation:', pi_approx
+    print *, 'Error:', abs(pi_approx - 3.14159265358979_dp)
+  end block
+
+  ! ============================================
+  ! SECTIONS - Tareas independientes en paralelo
+  ! ============================================
+
+  !$omp parallel sections
+
+  !$omp section
+  print *, 'Task A running on thread', omp_get_thread_num()
+
+  !$omp section
+  print *, 'Task B running on thread', omp_get_thread_num()
+
+  !$omp section
+  print *, 'Task C running on thread', omp_get_thread_num()
+
+  !$omp end parallel sections
+
+  deallocate(x, y, result)
+
+end program openmp_example
+```
+
+COMPILACIÓN OPENMP
+```bash
+# GNU Fortran
+gfortran -fopenmp -O3 program.f90 -o program
+
+# Intel Fortran
+ifort -qopenmp -O3 program.f90 -o program
+
+# Control de threads en runtime
+export OMP_NUM_THREADS=8
+./program
+```
+
+==================================================
+SECCIÓN 8: DEBUGGING Y TESTING
+==================================================
+
+TÉCNICAS DE DEBUGGING
+```fortran
+program debugging_example
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+  real(dp) :: x, y, result
+  real(dp) :: array(10)
+  integer :: i
+
+  ! ============================================
+  ! COMPILAR CON FLAGS DE DEBUG
+  ! ============================================
+  ! gfortran -g -fcheck=all -fbacktrace -Wall -Wextra program.f90
+  !
+  ! -g              : Información de debug
+  ! -fcheck=all     : Verificaciones runtime (bounds, etc.)
+  ! -fbacktrace     : Stack trace en errores
+  ! -Wall -Wextra   : Todos los warnings
+  ! -ffpe-trap=invalid,zero,overflow  : Trap floating point errors
+
+  ! ============================================
+  ! PRINT DEBUGGING (simple pero efectivo)
+  ! ============================================
+
+  x = 10.0_dp
+  y = 3.0_dp
+
+  print *, 'DEBUG: x =', x, 'y =', y  ! Punto de inspección
+
+  result = x / y
+
+  print *, 'DEBUG: result =', result
+
+  ! ============================================
+  ! VERIFICACIONES DE ARRAYS
+  ! ============================================
+
+  array = 0.0_dp
+
+  ! Con -fcheck=bounds, esto daría error:
+  ! array(11) = 1.0  ! Índice fuera de rango
+
+  ! Verificación manual
+  i = 10
+  if (i < lbound(array, 1) .or. i > ubound(array, 1)) then
+    print *, 'ERROR: Index out of bounds:', i
+    stop 1
+  end if
+  array(i) = 1.0_dp
+
+  ! ============================================
+  ! VERIFICACIONES NUMÉRICAS
+  ! ============================================
+
+  result = 0.0_dp / 0.0_dp  ! NaN
+
+  if (ieee_is_nan(result)) then
+    print *, 'WARNING: NaN detected!'
+  end if
+
+  result = huge(result) * 2.0_dp  ! Overflow -> Infinity
+
+  if (.not. ieee_is_finite(result)) then
+    print *, 'WARNING: Infinite value detected!'
+  end if
+
+contains
+
+  ! Función para verificar NaN (IEEE)
+  logical function ieee_is_nan(x)
+    real(dp), intent(in) :: x
+    ieee_is_nan = (x /= x)  ! NaN no es igual a sí mismo
+  end function
+
+  ! Función para verificar finitud
+  logical function ieee_is_finite(x)
+    real(dp), intent(in) :: x
+    ieee_is_finite = (abs(x) <= huge(x))
+  end function
+
+end program debugging_example
+```
+
+TESTING NUMÉRICO
+```fortran
+module numerical_testing
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  integer, parameter :: dp = real64
+
+  ! Tolerancias para comparaciones
+  real(dp), parameter :: ABS_TOL = 1.0e-12_dp
+  real(dp), parameter :: REL_TOL = 1.0e-10_dp
+
+contains
+
+  ! Comparación con tolerancia absoluta
+  logical function approx_equal_abs(a, b, tol)
+    real(dp), intent(in) :: a, b
+    real(dp), intent(in), optional :: tol
+    real(dp) :: tolerance
+
+    tolerance = ABS_TOL
+    if (present(tol)) tolerance = tol
+
+    approx_equal_abs = abs(a - b) < tolerance
+  end function
+
+  ! Comparación con tolerancia relativa
+  logical function approx_equal_rel(a, b, tol)
+    real(dp), intent(in) :: a, b
+    real(dp), intent(in), optional :: tol
+    real(dp) :: tolerance
+
+    tolerance = REL_TOL
+    if (present(tol)) tolerance = tol
+
+    if (abs(b) > epsilon(b)) then
+      approx_equal_rel = abs((a - b) / b) < tolerance
+    else
+      approx_equal_rel = abs(a - b) < tolerance
+    end if
+  end function
+
+  ! Verificar array completo
+  subroutine assert_array_equal(actual, expected, name)
+    real(dp), intent(in) :: actual(:), expected(:)
+    character(len=*), intent(in) :: name
+
+    integer :: i, n_diff
+    real(dp) :: max_diff
+
+    if (size(actual) /= size(expected)) then
+      print *, 'FAIL:', trim(name), '- Size mismatch'
+      print *, '  Expected size:', size(expected)
+      print *, '  Actual size:', size(actual)
+      return
+    end if
+
+    n_diff = 0
+    max_diff = 0.0_dp
+
+    do i = 1, size(actual)
+      if (.not. approx_equal_rel(actual(i), expected(i))) then
+        n_diff = n_diff + 1
+        max_diff = max(max_diff, abs(actual(i) - expected(i)))
+      end if
+    end do
+
+    if (n_diff == 0) then
+      print *, 'PASS:', trim(name)
+    else
+      print *, 'FAIL:', trim(name)
+      print *, '  Differences:', n_diff, 'of', size(actual)
+      print *, '  Max difference:', max_diff
+    end if
+
+  end subroutine assert_array_equal
+
+end module numerical_testing
+
+
+program run_tests
+  use numerical_testing
+  use, intrinsic :: iso_fortran_env
+  implicit none
+
+  print *, '=== Running Numerical Tests ==='
+  print *, ''
+
+  call test_quadratic_formula()
+  call test_matrix_operations()
+  call test_numerical_integration()
+
+contains
+
+  subroutine test_quadratic_formula()
+    real(dp) :: a, b, c, x1, x2, discriminant
+
+    print *, 'Test: Quadratic Formula'
+
+    ! x^2 - 5x + 6 = 0 -> roots 2, 3
+    a = 1.0_dp; b = -5.0_dp; c = 6.0_dp
+    discriminant = b*b - 4*a*c
+    x1 = (-b + sqrt(discriminant)) / (2*a)
+    x2 = (-b - sqrt(discriminant)) / (2*a)
+
+    if (approx_equal_abs(x1, 3.0_dp) .and. approx_equal_abs(x2, 2.0_dp)) then
+      print *, '  PASS: Roots correct'
+    else
+      print *, '  FAIL: Expected 3, 2 got', x1, x2
+    end if
+
+  end subroutine
+
+  subroutine test_matrix_operations()
+    real(dp) :: A(2,2), B(2,2), C(2,2), expected(2,2)
+
+    print *, 'Test: Matrix Multiplication'
+
+    A = reshape([1,2,3,4], [2,2])
+    B = reshape([5,6,7,8], [2,2])
+
+    C = matmul(A, B)
+    expected = reshape([19,22,43,50], [2,2])
+
+    if (all(abs(C - expected) < ABS_TOL)) then
+      print *, '  PASS: matmul correct'
+    else
+      print *, '  FAIL: Matrix product incorrect'
+    end if
+
+  end subroutine
+
+  subroutine test_numerical_integration()
+    real(dp) :: result, expected, error
+    integer :: n
+
+    print *, 'Test: Numerical Integration (Trapezoidal)'
+
+    ! Integral de sin(x) de 0 a pi = 2.0
+    expected = 2.0_dp
+    n = 10000
+
+    result = trapezoidal_sin(0.0_dp, 3.14159265358979_dp, n)
+    error = abs(result - expected)
+
+    if (error < 1.0e-6_dp) then
+      print *, '  PASS: Integration error =', error
+    else
+      print *, '  FAIL: Integration error =', error, '(too large)'
+    end if
+
+  end subroutine
+
+  pure function trapezoidal_sin(a, b, n) result(integral)
+    real(dp), intent(in) :: a, b
+    integer, intent(in) :: n
+    real(dp) :: integral
+
+    real(dp) :: h, x
+    integer :: i
+
+    h = (b - a) / real(n, dp)
+    integral = 0.5_dp * (sin(a) + sin(b))
+
+    do i = 1, n-1
+      x = a + real(i, dp) * h
+      integral = integral + sin(x)
+    end do
+
+    integral = integral * h
+
+  end function
+
+end program run_tests
+```
+
+==================================================
+SECCIÓN 9: ANTI-PATRONES Y CORRECCIONES
+==================================================
+
+ANTI-PATRÓN 1: Sin IMPLICIT NONE
+```fortran
+C ============================================
+C MAL - Variables implícitas (F77 default)
+C ============================================
+      PROGRAM BAD_IMPLICIT
+      REAL X, Y
+      X = 10.0
+      Y = 20.0
+C     'TOTAL' empieza con T, es REAL implícitamente
+C     'ICOUNT' empieza con I, es INTEGER implícitamente
+      TOTAL = X + Y
+      ICOUNT = 5
+C     OOPS! Typo - TOTLA no existe pero Fortran lo crea!
+      PRINT *, 'Total:', TOTLA  ! Imprime 0.0, no error!
+      END
+```
+
+```fortran
+! ============================================
+! BIEN - IMPLICIT NONE siempre
+! ============================================
+program good_implicit
+  implicit none  ! OBLIGATORIO - detecta typos
+
+  real :: x, y, total
+  integer :: icount
+
+  x = 10.0
+  y = 20.0
+  total = x + y
+  icount = 5
+
+  ! print *, 'Total:', totla  ! ERROR DE COMPILACIÓN!
+  print *, 'Total:', total    ! Correcto
+
+end program good_implicit
+```
+
+ANTI-PATRÓN 2: Precisión incorrecta en constantes
+```fortran
+! ============================================
+! MAL - Constantes sin sufijo de precisión
+! ============================================
+program bad_precision
+  implicit none
+  integer, parameter :: dp = selected_real_kind(15)
+  real(dp) :: pi, result
+
+  ! Esta constante es SINGLE PRECISION aunque pi es double!
+  pi = 3.14159265358979323846
+
+  result = sin(pi)  ! Debería ser ~0, pero tiene error
+  print *, 'sin(pi) =', result  ! NO es cero!
+
+end program bad_precision
+```
+
+```fortran
+! ============================================
+! BIEN - Constantes con sufijo _dp
+! ============================================
+program good_precision
+  implicit none
+  integer, parameter :: dp = selected_real_kind(15)
+  real(dp) :: pi, result
+
+  ! Sufijo _dp mantiene toda la precisión
+  pi = 3.14159265358979323846_dp
+
+  result = sin(pi)
+  print *, 'sin(pi) =', result  ! Mucho más cercano a cero
+
+end program good_precision
+```
+
+ANTI-PATRÓN 3: Loops en orden incorrecto (row-major)
+```fortran
+! ============================================
+! MAL - Acceso row-major (cache unfriendly)
+! ============================================
+program bad_loop_order
+  implicit none
+  real :: matrix(1000, 1000)
+  integer :: i, j
+
+  ! Loop externo por filas - LENTO
+  do i = 1, 1000
+    do j = 1, 1000
+      matrix(i, j) = real(i * j)  ! Saltos en memoria
+    end do
+  end do
+
+end program bad_loop_order
+```
+
+```fortran
+! ============================================
+! BIEN - Acceso column-major (cache friendly)
+! ============================================
+program good_loop_order
+  implicit none
+  real :: matrix(1000, 1000)
+  integer :: i, j
+
+  ! Loop externo por columnas - RÁPIDO
+  do j = 1, 1000
+    do i = 1, 1000
+      matrix(i, j) = real(i * j)  ! Acceso secuencial
+    end do
+  end do
+
+end program good_loop_order
+```
+
+ANTI-PATRÓN 4: Allocate sin deallocate (memory leak)
+```fortran
+! ============================================
+! MAL - Memory leak
+! ============================================
+subroutine bad_memory()
+  implicit none
+  real, allocatable :: data(:)
+
+  allocate(data(1000000))
+  ! ... procesar data ...
+
+  ! OOPS! Olvidó deallocate
+  ! Memoria perdida en cada llamada
+
+end subroutine bad_memory
+```
+
+```fortran
+! ============================================
+! BIEN - Manejo correcto de memoria
+! ============================================
+subroutine good_memory()
+  implicit none
+  real, allocatable :: data(:)
+  integer :: status
+
+  allocate(data(1000000), stat=status)
+  if (status /= 0) then
+    print *, 'ERROR: Allocation failed'
+    return
+  end if
+
+  ! ... procesar data ...
+
+  ! Siempre liberar memoria
+  if (allocated(data)) deallocate(data)
+
+end subroutine good_memory
+```
+
+ANTI-PATRÓN 5: GOTO spaghetti
+```fortran
+C ============================================
+C MAL - GOTO spaghetti (F77 style)
+C ============================================
+      PROGRAM BAD_GOTO
+      IMPLICIT NONE
+      INTEGER I, SUM
+      SUM = 0
+      I = 1
+   10 IF (I .GT. 10) GOTO 30
+      SUM = SUM + I
+      I = I + 1
+      GOTO 10
+   30 PRINT *, 'Sum:', SUM
+      END
+```
+
+```fortran
+! ============================================
+! BIEN - Structured programming
+! ============================================
+program good_structured
+  implicit none
+  integer :: i, total
+
+  total = 0
+  do i = 1, 10
+    total = total + i
+  end do
+
+  print *, 'Sum:', total
+
+  ! O mejor aún, usa intrinsics:
+  print *, 'Sum:', sum([(i, i=1,10)])
+
+end program good_structured
+```
+
+==================================================
+SECCIÓN 10: WORKFLOWS DE MANTENIMIENTO
+==================================================
+
+WORKFLOW 1: CORRECCIÓN DE BUG NUMÉRICO
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    CORRECCIÓN DE BUG NUMÉRICO                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                   │
+│  │ 1. REPORTAR │────▶│ 2. REPRODUCIR│────▶│ 3. ANALIZAR │                   │
+│  │    BUG      │     │    LOCALMENTE│     │    CÓDIGO   │                   │
+│  └─────────────┘     └─────────────┘     └─────────────┘                   │
+│        │                   │                    │                           │
+│        ▼                   ▼                    ▼                           │
+│  - Input/output      - Compilar con      - Revisar tipos                   │
+│    esperado vs         flags debug       - Verificar precisión             │
+│    actual            - Reproducir          constantes                      │
+│  - Versión             error             - Buscar cancellación             │
+│    compilador        - Crear test          catastrófica                    │
+│  - Flags usados        case mínimo       - Verificar overflow              │
+│                                                                             │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                   │
+│  │ 4. CORREGIR │────▶│ 5. VALIDAR  │────▶│ 6. DOCUMENTAR│                   │
+│  │    BUG      │     │    PRECISIÓN│     │    CAMBIO   │                   │
+│  └─────────────┘     └─────────────┘     └─────────────┘                   │
+│        │                   │                    │                           │
+│        ▼                   ▼                    ▼                           │
+│  - Aplicar fix       - Comparar con      - Actualizar                      │
+│  - Usar precisión      resultados          comentarios                     │
+│    apropiada           conocidos         - Agregar test                    │
+│  - Algoritmo         - Verificar bits      de regresión                    │
+│    numéricamente       de precisión      - Commit con                      │
+│    estable           - Benchmark           descripción                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+WORKFLOW 2: PORTABILIDAD ENTRE COMPILADORES
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   PORTABILIDAD ENTRE COMPILADORES                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ 1. IDENTIFICAR EXTENSIONES NO ESTÁNDAR                               │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                  │                                          │
+│    ┌─────────────────────────────┼─────────────────────────────┐           │
+│    ▼                             ▼                             ▼           │
+│  REAL*8                   BYTE (F77)              CARRIAGECONTROL          │
+│  INTEGER*4                Cray pointers           ENCODE/DECODE            │
+│  COMPLEX*16               DO WHILE                VMS extensions           │
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ 2. REEMPLAZAR CON ESTÁNDAR FORTRAN                                   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                  │                                          │
+│    ┌─────────────────────────────┼─────────────────────────────┐           │
+│    ▼                             ▼                             ▼           │
+│  REAL(kind=8)             INTEGER(kind=1)         READ/WRITE               │
+│  INTEGER(kind=4)          ISO_C_BINDING           estándar                 │
+│  COMPLEX(kind=8)          DO WHILE estándar       ADVANCE='NO'             │
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ 3. COMPILAR Y PROBAR EN TODOS LOS COMPILADORES                       │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                  │                                          │
+│    ┌─────────────┬───────────────┼───────────────┬─────────────┐           │
+│    ▼             ▼               ▼               ▼             ▼           │
+│  gfortran     ifort/ifx      nvfortran        nagfor       flang          │
+│  -std=f2018   -stand f18     -Mstandard      -f2018       -std=f2018      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+==================================================
+SECCIÓN 11: DEFINITION OF DONE
+==================================================
+
+CHECKLIST DE MANTENIMIENTO FORTRAN
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    ✓ DEFINITION OF DONE                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  □ CÓDIGO                                                                   │
+│    ├─ □ IMPLICIT NONE en todos los program units                           │
+│    ├─ □ Variables con nombres descriptivos                                 │
+│    ├─ □ Constantes con sufijo de precisión (_dp)                           │
+│    ├─ □ Sin warnings con -Wall -Wextra                                     │
+│    ├─ □ Sin extensiones no estándar innecesarias                           │
+│    └─ □ Comentarios para algoritmos complejos                              │
+│                                                                             │
+│  □ PRECISIÓN NUMÉRICA                                                       │
+│    ├─ □ Tipos de precisión apropiados (dp donde necesario)                 │
+│    ├─ □ Sin cancelación catastrófica                                       │
+│    ├─ □ Verificado contra resultados conocidos                             │
+│    ├─ □ Tolerancias de comparación documentadas                            │
+│    └─ □ Sin overflow/underflow en rangos esperados                         │
+│                                                                             │
+│  □ TESTING                                                                  │
+│    ├─ □ Tests de regresión con datos conocidos                             │
+│    ├─ □ Tests de edge cases (cero, negativo, enorme)                       │
+│    ├─ □ Comparación bit-a-bit donde aplique                                │
+│    └─ □ Tests pasan en todos los compiladores target                       │
+│                                                                             │
+│  □ PERFORMANCE                                                              │
+│    ├─ □ Loops en orden column-major                                        │
+│    ├─ □ Sin memory leaks (deallocate siempre)                              │
+│    ├─ □ Benchmark antes/después documentado                                │
+│    └─ □ Paralelización correcta si aplica (OpenMP)                         │
+│                                                                             │
+│  □ DOCUMENTACIÓN                                                            │
+│    ├─ □ Algoritmos matemáticos explicados                                  │
+│    ├─ □ Referencias a papers/fuentes                                       │
+│    ├─ □ Cambios documentados en commit/changelog                           │
+│    └─ □ Instrucciones de compilación actualizadas                          │
+│                                                                             │
+│  □ PORTABILIDAD                                                             │
+│    ├─ □ Compila con gfortran, ifort (mínimo)                               │
+│    ├─ □ Usa KIND parameters portables                                      │
+│    └─ □ Sin dependencias de endianness específico                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+==================================================
+SECCIÓN 12: MÉTRICAS DE ÉXITO
+==================================================
+
+| Métrica | Target | Medición |
+|---------|--------|----------|
+| Bugs corregidos | 100% de reportados | Issue tracker |
+| Precisión numérica | < 1e-10 error relativo | Tests vs. valores conocidos |
+| Warnings de compilación | 0 | -Wall -Wextra output |
+| Cobertura de tests | > 80% | gcov / código crítico |
+| Performance regression | < 5% | Benchmarks before/after |
+| Portabilidad | gfortran + ifort | CI en ambos compiladores |
+| Memory leaks | 0 | Valgrind / -fsanitize=leak |
+| Documentación | 100% algoritmos | Revisión de código |
+
+==================================================
+SECCIÓN 13: DOCUMENTACIÓN Y RECURSOS
+==================================================
+
+REFERENCIAS OFICIALES
 - Modern Fortran: https://fortran-lang.org/
+- Fortran Standard: https://wg5-fortran.org/
 - GFortran Manual: https://gcc.gnu.org/onlinedocs/gfortran/
 - Intel Fortran: https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler.html
-- Fortran Wiki: https://fortranwiki.org/
-- NAG Fortran Compiler: https://www.nag.com/nag-compiler
+- NVIDIA HPC SDK: https://developer.nvidia.com/hpc-sdk
+- NAG Fortran: https://www.nag.com/nag-compiler
+
+LIBRERÍAS CIENTÍFICAS
+- BLAS/LAPACK: https://www.netlib.org/lapack/
+- OpenBLAS: https://www.openblas.net/
+- Intel MKL: https://software.intel.com/mkl
+- FFTW: https://www.fftw.org/
+- NetCDF: https://www.unidata.ucar.edu/software/netcdf/
+- HDF5: https://www.hdfgroup.org/solutions/hdf5/
+
+HERRAMIENTAS
+- fprettify: https://github.com/pseewald/fprettify
+- FORD documentation: https://github.com/Fortran-FOSS-Programmers/ford
+- fpm (Fortran Package Manager): https://fpm.fortran-lang.org/
+- cmake-fortran: https://cmake.org/cmake/help/latest/manual/cmake-compile-features.7.html
+
+LIBROS RECOMENDADOS
+- "Modern Fortran Explained" - Metcalf, Reid, Cohen
+- "Modern Fortran: Building Efficient Parallel Applications" - Curcic
+- "Numerical Recipes in Fortran" - Press et al.

@@ -6,84 +6,1557 @@ Implementar capa de datos mobile resiliente, segura y offline-ready, garantizand
 ROL EN EL EQUIPO
 Responsable de la capa de datos y persistencia mobile. Coordina con Mobile Architecture Agent para patrones, con Mobile Security Agent para protección de datos, y con Cloud Architecture Agent para APIs.
 
+==============================================================================
+ARQUITECTURA DE DATOS MOBILE
+==============================================================================
+
+SINGLE SOURCE OF TRUTH PATTERN:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         SINGLE SOURCE OF TRUTH                              │
+│                                                                             │
+│     ┌─────────────┐                                                         │
+│     │     UI      │◀──────── Observa Flow/LiveData ─────────┐               │
+│     │   Layer     │                                          │               │
+│     └──────┬──────┘                                          │               │
+│            │                                                 │               │
+│            │ Acciones                                        │               │
+│            ▼                                                 │               │
+│     ┌─────────────┐                                   ┌─────────────┐       │
+│     │  ViewModel  │──────────────────────────────────▶│ Repository  │       │
+│     └─────────────┘           Solicita datos          └──────┬──────┘       │
+│                                                              │               │
+│                          ┌───────────────────────────────────┼───────────┐  │
+│                          │                                   │           │  │
+│                          ▼                                   ▼           │  │
+│                   ┌─────────────┐                     ┌─────────────┐    │  │
+│                   │   Remote    │                     │    Local    │    │  │
+│                   │ DataSource  │                     │ DataSource  │◀───┘  │
+│                   │   (API)     │                     │  (Room/CD)  │       │
+│                   └──────┬──────┘                     └──────┬──────┘       │
+│                          │                                   │               │
+│                          │ Fetch                             │ Query        │
+│                          ▼                                   ▼               │
+│                   ┌─────────────┐                     ┌─────────────┐       │
+│                   │   Server    │                     │   SQLite    │       │
+│                   │    API      │                     │  Database   │       │
+│                   └─────────────┘                     └─────────────┘       │
+│                                                                             │
+│  FLUJO:                                                                     │
+│  1. UI observa LocalDataSource (SSOT)                                       │
+│  2. Repository actualiza LocalDataSource desde RemoteDataSource             │
+│  3. Cambios en LocalDataSource notifican automáticamente a UI               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+==============================================================================
+REPOSITORY PATTERN IMPLEMENTATION
+==============================================================================
+
+--- KOTLIN (Android con Room + Retrofit) ---
+
+// === DATA LAYER ===
+
+// data/local/entity/ProductEntity.kt
+@Entity(tableName = "products")
+data class ProductEntity(
+    @PrimaryKey
+    val id: String,
+    val name: String,
+    val description: String,
+    val price: Double,
+    val imageUrl: String?,
+    val category: String,
+    val stock: Int,
+    @ColumnInfo(name = "last_updated")
+    val lastUpdated: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "is_synced")
+    val isSynced: Boolean = true
+)
+
+// data/local/dao/ProductDao.kt
+@Dao
+interface ProductDao {
+    @Query("SELECT * FROM products ORDER BY name ASC")
+    fun observeAll(): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE id = :productId")
+    fun observeById(productId: String): Flow<ProductEntity?>
+
+    @Query("SELECT * FROM products WHERE category = :category ORDER BY name ASC")
+    fun observeByCategory(category: String): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE is_synced = 0")
+    suspend fun getUnsyncedProducts(): List<ProductEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(products: List<ProductEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(product: ProductEntity)
+
+    @Update
+    suspend fun update(product: ProductEntity)
+
+    @Query("DELETE FROM products WHERE id = :productId")
+    suspend fun deleteById(productId: String)
+
+    @Query("DELETE FROM products")
+    suspend fun deleteAll()
+
+    @Query("SELECT COUNT(*) FROM products WHERE is_synced = 0")
+    fun observePendingSyncCount(): Flow<Int>
+
+    @Transaction
+    suspend fun replaceAll(products: List<ProductEntity>) {
+        deleteAll()
+        insertAll(products)
+    }
+}
+
+// data/remote/dto/ProductDto.kt
+@Serializable
+data class ProductDto(
+    val id: String,
+    val name: String,
+    val description: String,
+    val price: Double,
+    @SerialName("image_url")
+    val imageUrl: String?,
+    val category: String,
+    val stock: Int,
+    @SerialName("updated_at")
+    val updatedAt: String
+)
+
+// data/remote/api/ProductApi.kt
+interface ProductApi {
+    @GET("products")
+    suspend fun getProducts(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20,
+        @Query("since") since: String? = null
+    ): Response<ProductListResponse>
+
+    @GET("products/{id}")
+    suspend fun getProduct(@Path("id") productId: String): Response<ProductDto>
+
+    @POST("products")
+    suspend fun createProduct(@Body product: ProductDto): Response<ProductDto>
+
+    @PUT("products/{id}")
+    suspend fun updateProduct(
+        @Path("id") productId: String,
+        @Body product: ProductDto
+    ): Response<ProductDto>
+
+    @DELETE("products/{id}")
+    suspend fun deleteProduct(@Path("id") productId: String): Response<Unit>
+}
+
+// data/mapper/ProductMapper.kt
+object ProductMapper {
+    fun dtoToEntity(dto: ProductDto): ProductEntity {
+        return ProductEntity(
+            id = dto.id,
+            name = dto.name,
+            description = dto.description,
+            price = dto.price,
+            imageUrl = dto.imageUrl,
+            category = dto.category,
+            stock = dto.stock,
+            lastUpdated = parseIsoDate(dto.updatedAt),
+            isSynced = true
+        )
+    }
+
+    fun entityToDto(entity: ProductEntity): ProductDto {
+        return ProductDto(
+            id = entity.id,
+            name = entity.name,
+            description = entity.description,
+            price = entity.price,
+            imageUrl = entity.imageUrl,
+            category = entity.category,
+            stock = entity.stock,
+            updatedAt = formatIsoDate(entity.lastUpdated)
+        )
+    }
+
+    fun entityToDomain(entity: ProductEntity): Product {
+        return Product(
+            id = entity.id,
+            name = entity.name,
+            description = entity.description,
+            price = Money(entity.price),
+            imageUrl = entity.imageUrl?.let { Url(it) },
+            category = ProductCategory.fromString(entity.category),
+            stock = entity.stock,
+            lastUpdated = Instant.fromEpochMilliseconds(entity.lastUpdated)
+        )
+    }
+
+    fun domainToEntity(domain: Product, isSynced: Boolean = true): ProductEntity {
+        return ProductEntity(
+            id = domain.id,
+            name = domain.name,
+            description = domain.description,
+            price = domain.price.amount,
+            imageUrl = domain.imageUrl?.toString(),
+            category = domain.category.value,
+            stock = domain.stock,
+            lastUpdated = domain.lastUpdated.toEpochMilliseconds(),
+            isSynced = isSynced
+        )
+    }
+}
+
+// data/repository/ProductRepositoryImpl.kt
+class ProductRepositoryImpl @Inject constructor(
+    private val productApi: ProductApi,
+    private val productDao: ProductDao,
+    private val syncManager: SyncManager,
+    private val networkMonitor: NetworkMonitor,
+    private val dispatcherProvider: DispatcherProvider
+) : ProductRepository {
+
+    // Observe products from local database (Single Source of Truth)
+    override fun observeProducts(): Flow<List<Product>> {
+        return productDao.observeAll()
+            .map { entities -> entities.map { ProductMapper.entityToDomain(it) } }
+            .flowOn(dispatcherProvider.io)
+    }
+
+    override fun observeProduct(productId: String): Flow<Product?> {
+        return productDao.observeById(productId)
+            .map { entity -> entity?.let { ProductMapper.entityToDomain(it) } }
+            .flowOn(dispatcherProvider.io)
+    }
+
+    // Refresh from remote and update local cache
+    override suspend fun refreshProducts(): Result<Unit> {
+        return withContext(dispatcherProvider.io) {
+            runCatching {
+                val response = productApi.getProducts()
+
+                if (response.isSuccessful) {
+                    val products = response.body()?.products
+                        ?: throw DataException.EmptyResponse()
+
+                    val entities = products.map { ProductMapper.dtoToEntity(it) }
+                    productDao.replaceAll(entities)
+                } else {
+                    throw DataException.ApiError(
+                        code = response.code(),
+                        message = response.message()
+                    )
+                }
+            }
+        }
+    }
+
+    // Incremental sync - fetch only changes since last sync
+    override suspend fun syncProducts(): Result<SyncResult> {
+        return withContext(dispatcherProvider.io) {
+            runCatching {
+                val lastSyncTime = syncManager.getLastSyncTime("products")
+                val since = lastSyncTime?.let { formatIsoDate(it) }
+
+                val response = productApi.getProducts(since = since)
+
+                if (response.isSuccessful) {
+                    val products = response.body()?.products ?: emptyList()
+                    val entities = products.map { ProductMapper.dtoToEntity(it) }
+
+                    // Upsert (don't delete, only update/insert)
+                    productDao.insertAll(entities)
+
+                    syncManager.updateLastSyncTime("products", System.currentTimeMillis())
+
+                    SyncResult(
+                        itemsUpdated = entities.size,
+                        syncTime = System.currentTimeMillis()
+                    )
+                } else {
+                    throw DataException.ApiError(response.code(), response.message())
+                }
+            }
+        }
+    }
+
+    // Create with offline support
+    override suspend fun createProduct(product: Product): Result<Product> {
+        return withContext(dispatcherProvider.io) {
+            runCatching {
+                if (networkMonitor.isOnline()) {
+                    // Online: create remotely first, then cache
+                    val dto = ProductMapper.entityToDto(
+                        ProductMapper.domainToEntity(product)
+                    )
+                    val response = productApi.createProduct(dto)
+
+                    if (response.isSuccessful) {
+                        val createdDto = response.body()
+                            ?: throw DataException.EmptyResponse()
+                        val entity = ProductMapper.dtoToEntity(createdDto)
+                        productDao.insert(entity)
+                        ProductMapper.entityToDomain(entity)
+                    } else {
+                        throw DataException.ApiError(response.code(), response.message())
+                    }
+                } else {
+                    // Offline: save locally with pending sync flag
+                    val entity = ProductMapper.domainToEntity(product, isSynced = false)
+                    productDao.insert(entity)
+                    syncManager.enqueueSync("products", SyncOperation.CREATE, product.id)
+                    product
+                }
+            }
+        }
+    }
+
+    // Update with optimistic update pattern
+    override suspend fun updateProduct(product: Product): Result<Product> {
+        return withContext(dispatcherProvider.io) {
+            // Optimistic update: save locally immediately
+            val entity = ProductMapper.domainToEntity(product, isSynced = false)
+            productDao.update(entity)
+
+            runCatching {
+                if (networkMonitor.isOnline()) {
+                    val dto = ProductMapper.entityToDto(entity)
+                    val response = productApi.updateProduct(product.id, dto)
+
+                    if (response.isSuccessful) {
+                        // Mark as synced
+                        productDao.update(entity.copy(isSynced = true))
+                        product
+                    } else {
+                        // Revert or keep pending
+                        syncManager.enqueueSync("products", SyncOperation.UPDATE, product.id)
+                        throw DataException.ApiError(response.code(), response.message())
+                    }
+                } else {
+                    syncManager.enqueueSync("products", SyncOperation.UPDATE, product.id)
+                    product
+                }
+            }
+        }
+    }
+
+    override fun observePendingSyncCount(): Flow<Int> {
+        return productDao.observePendingSyncCount()
+    }
+}
+
+==============================================================================
+CACHING STRATEGIES
+==============================================================================
+
+ESTRATEGIAS DE CACHÉ:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          CACHE STRATEGIES                                   │
+│                                                                             │
+│  CACHE-FIRST (Stale-While-Revalidate)                                      │
+│  ├── Show cached data immediately                                          │
+│  ├── Fetch fresh data in background                                        │
+│  ├── Update cache when fresh data arrives                                  │
+│  └── Best for: Product lists, categories, non-critical data               │
+│                                                                             │
+│  NETWORK-FIRST                                                              │
+│  ├── Try network first                                                     │
+│  ├── Fall back to cache if network fails                                   │
+│  ├── Update cache on successful fetch                                      │
+│  └── Best for: User profile, cart, order status                           │
+│                                                                             │
+│  CACHE-ONLY                                                                 │
+│  ├── Only read from cache                                                  │
+│  ├── No network requests                                                   │
+│  └── Best for: Offline mode, historical data                              │
+│                                                                             │
+│  NETWORK-ONLY                                                               │
+│  ├── Always fetch from network                                             │
+│  ├── Don't cache results                                                   │
+│  └── Best for: Real-time data, auth tokens                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- IMPLEMENTATION: Cache Strategy ---
+
+// data/cache/CachePolicy.kt
+sealed class CachePolicy {
+    data class CacheFirst(
+        val maxAge: Duration = 5.minutes,
+        val forceRefresh: Boolean = false
+    ) : CachePolicy()
+
+    data class NetworkFirst(
+        val timeout: Duration = 10.seconds,
+        val fallbackToCache: Boolean = true
+    ) : CachePolicy()
+
+    data object CacheOnly : CachePolicy()
+    data object NetworkOnly : CachePolicy()
+}
+
+// data/cache/CachedResource.kt
+data class CachedResource<T>(
+    val data: T,
+    val timestamp: Long,
+    val source: DataSource
+) {
+    enum class DataSource { CACHE, NETWORK }
+
+    fun isStale(maxAge: Duration): Boolean {
+        val age = System.currentTimeMillis() - timestamp
+        return age > maxAge.inWholeMilliseconds
+    }
+}
+
+// data/repository/CachingRepository.kt
+abstract class CachingRepository<T, Key>(
+    private val dispatcherProvider: DispatcherProvider
+) {
+    abstract suspend fun fetchFromNetwork(key: Key): T
+    abstract suspend fun fetchFromCache(key: Key): CachedResource<T>?
+    abstract suspend fun saveToCache(key: Key, data: T)
+
+    suspend fun get(
+        key: Key,
+        policy: CachePolicy = CachePolicy.CacheFirst()
+    ): Flow<Resource<T>> = flow {
+        when (policy) {
+            is CachePolicy.CacheFirst -> {
+                // Emit cached data first
+                val cached = fetchFromCache(key)
+                if (cached != null) {
+                    emit(Resource.Success(cached.data, fromCache = true))
+
+                    // Check if stale and needs refresh
+                    if (cached.isStale(policy.maxAge) || policy.forceRefresh) {
+                        emitNetworkRefresh(key)
+                    }
+                } else {
+                    // No cache, fetch from network
+                    emitNetworkRefresh(key)
+                }
+            }
+
+            is CachePolicy.NetworkFirst -> {
+                try {
+                    withTimeout(policy.timeout) {
+                        val data = fetchFromNetwork(key)
+                        saveToCache(key, data)
+                        emit(Resource.Success(data, fromCache = false))
+                    }
+                } catch (e: Exception) {
+                    if (policy.fallbackToCache) {
+                        val cached = fetchFromCache(key)
+                        if (cached != null) {
+                            emit(Resource.Success(cached.data, fromCache = true))
+                        } else {
+                            emit(Resource.Error(e))
+                        }
+                    } else {
+                        emit(Resource.Error(e))
+                    }
+                }
+            }
+
+            is CachePolicy.CacheOnly -> {
+                val cached = fetchFromCache(key)
+                if (cached != null) {
+                    emit(Resource.Success(cached.data, fromCache = true))
+                } else {
+                    emit(Resource.Error(CacheException.NotFound()))
+                }
+            }
+
+            is CachePolicy.NetworkOnly -> {
+                try {
+                    val data = fetchFromNetwork(key)
+                    emit(Resource.Success(data, fromCache = false))
+                } catch (e: Exception) {
+                    emit(Resource.Error(e))
+                }
+            }
+        }
+    }.flowOn(dispatcherProvider.io)
+
+    private suspend fun FlowCollector<Resource<T>>.emitNetworkRefresh(key: Key) {
+        try {
+            val data = fetchFromNetwork(key)
+            saveToCache(key, data)
+            emit(Resource.Success(data, fromCache = false))
+        } catch (e: Exception) {
+            emit(Resource.Error(e))
+        }
+    }
+}
+
+==============================================================================
+OFFLINE QUEUE IMPLEMENTATION
+==============================================================================
+
+--- Offline Operation Queue ---
+
+// data/sync/OfflineOperation.kt
+@Entity(tableName = "offline_operations")
+data class OfflineOperation(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val entityType: String,       // "products", "orders", etc.
+    val entityId: String,
+    val operation: String,        // "CREATE", "UPDATE", "DELETE"
+    val payload: String,          // JSON serialized data
+    val createdAt: Long = System.currentTimeMillis(),
+    val retryCount: Int = 0,
+    val lastError: String? = null
+)
+
+// data/sync/OfflineOperationDao.kt
+@Dao
+interface OfflineOperationDao {
+    @Query("SELECT * FROM offline_operations ORDER BY createdAt ASC")
+    fun observeAll(): Flow<List<OfflineOperation>>
+
+    @Query("SELECT * FROM offline_operations ORDER BY createdAt ASC LIMIT :limit")
+    suspend fun getNextBatch(limit: Int = 10): List<OfflineOperation>
+
+    @Insert
+    suspend fun insert(operation: OfflineOperation): Long
+
+    @Update
+    suspend fun update(operation: OfflineOperation)
+
+    @Delete
+    suspend fun delete(operation: OfflineOperation)
+
+    @Query("DELETE FROM offline_operations WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("SELECT COUNT(*) FROM offline_operations")
+    fun observeCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM offline_operations WHERE entityType = :entityType")
+    suspend fun countByEntityType(entityType: String): Int
+}
+
+// data/sync/SyncManager.kt
+class SyncManager @Inject constructor(
+    private val offlineOperationDao: OfflineOperationDao,
+    private val productApi: ProductApi,
+    private val orderApi: OrderApi,
+    private val networkMonitor: NetworkMonitor,
+    private val json: Json,
+    private val dispatcherProvider: DispatcherProvider
+) {
+    private val syncScope = CoroutineScope(dispatcherProvider.io + SupervisorJob())
+    private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
+    val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
+
+    init {
+        // Auto-sync when network becomes available
+        syncScope.launch {
+            networkMonitor.isOnline
+                .distinctUntilChanged()
+                .filter { it }
+                .collect {
+                    processQueue()
+                }
+        }
+    }
+
+    suspend fun enqueueOperation(
+        entityType: String,
+        operation: SyncOperation,
+        entityId: String,
+        payload: Any
+    ) {
+        val serializedPayload = json.encodeToString(
+            serializer = PolymorphicSerializer(Any::class),
+            value = payload
+        )
+
+        val offlineOp = OfflineOperation(
+            entityType = entityType,
+            entityId = entityId,
+            operation = operation.name,
+            payload = serializedPayload
+        )
+
+        offlineOperationDao.insert(offlineOp)
+
+        // Try to sync immediately if online
+        if (networkMonitor.isCurrentlyOnline()) {
+            processQueue()
+        }
+    }
+
+    suspend fun processQueue() {
+        if (_syncState.value is SyncState.Syncing) return
+
+        _syncState.value = SyncState.Syncing
+
+        try {
+            var processed = 0
+            var failed = 0
+
+            while (true) {
+                val batch = offlineOperationDao.getNextBatch(limit = 10)
+                if (batch.isEmpty()) break
+
+                for (operation in batch) {
+                    try {
+                        processOperation(operation)
+                        offlineOperationDao.delete(operation)
+                        processed++
+                    } catch (e: Exception) {
+                        if (operation.retryCount >= MAX_RETRIES) {
+                            // Move to dead letter queue or delete
+                            offlineOperationDao.delete(operation)
+                            failed++
+                        } else {
+                            // Increment retry count
+                            offlineOperationDao.update(
+                                operation.copy(
+                                    retryCount = operation.retryCount + 1,
+                                    lastError = e.message
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            _syncState.value = SyncState.Completed(processed, failed)
+        } catch (e: Exception) {
+            _syncState.value = SyncState.Error(e.message ?: "Sync failed")
+        } finally {
+            delay(1000) // Brief delay before returning to idle
+            _syncState.value = SyncState.Idle
+        }
+    }
+
+    private suspend fun processOperation(operation: OfflineOperation) {
+        when (operation.entityType) {
+            "products" -> processProductOperation(operation)
+            "orders" -> processOrderOperation(operation)
+            else -> throw IllegalArgumentException("Unknown entity type: ${operation.entityType}")
+        }
+    }
+
+    private suspend fun processProductOperation(operation: OfflineOperation) {
+        val product = json.decodeFromString<ProductDto>(operation.payload)
+
+        when (SyncOperation.valueOf(operation.operation)) {
+            SyncOperation.CREATE -> {
+                productApi.createProduct(product)
+            }
+            SyncOperation.UPDATE -> {
+                productApi.updateProduct(operation.entityId, product)
+            }
+            SyncOperation.DELETE -> {
+                productApi.deleteProduct(operation.entityId)
+            }
+        }
+    }
+
+    fun observePendingOperations(): Flow<Int> = offlineOperationDao.observeCount()
+
+    companion object {
+        private const val MAX_RETRIES = 3
+    }
+}
+
+enum class SyncOperation { CREATE, UPDATE, DELETE }
+
+sealed class SyncState {
+    data object Idle : SyncState()
+    data object Syncing : SyncState()
+    data class Completed(val processed: Int, val failed: Int) : SyncState()
+    data class Error(val message: String) : SyncState()
+}
+
+==============================================================================
+CONFLICT RESOLUTION
+==============================================================================
+
+ESTRATEGIAS DE RESOLUCIÓN DE CONFLICTOS:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      CONFLICT RESOLUTION STRATEGIES                         │
+│                                                                             │
+│  LAST-WRITE-WINS (LWW)                                                     │
+│  ├── Compare timestamps                                                    │
+│  ├── Most recent change wins                                               │
+│  ├── Simple to implement                                                   │
+│  └── Best for: Settings, preferences, non-collaborative data              │
+│                                                                             │
+│  SERVER-WINS                                                                │
+│  ├── Server version always wins                                            │
+│  ├── Client changes discarded on conflict                                  │
+│  └── Best for: Inventory, pricing, authoritative data                     │
+│                                                                             │
+│  CLIENT-WINS                                                                │
+│  ├── Client version always wins                                            │
+│  ├── Server changes discarded on conflict                                  │
+│  └── Best for: User drafts, local-first applications                      │
+│                                                                             │
+│  MERGE                                                                      │
+│  ├── Attempt to merge changes                                              │
+│  ├── Field-level conflict detection                                        │
+│  └── Best for: Complex documents, collaborative editing                   │
+│                                                                             │
+│  MANUAL RESOLUTION                                                          │
+│  ├── Present both versions to user                                         │
+│  ├── User chooses which to keep                                            │
+│  └── Best for: Critical data, user-generated content                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- IMPLEMENTATION: Conflict Resolution ---
+
+// data/sync/ConflictResolver.kt
+interface ConflictResolver<T> {
+    suspend fun resolve(local: T, remote: T, metadata: ConflictMetadata): ConflictResolution<T>
+}
+
+data class ConflictMetadata(
+    val localTimestamp: Long,
+    val remoteTimestamp: Long,
+    val localVersion: Int,
+    val remoteVersion: Int
+)
+
+sealed class ConflictResolution<T> {
+    data class UseLocal<T>(val data: T) : ConflictResolution<T>()
+    data class UseRemote<T>(val data: T) : ConflictResolution<T>()
+    data class Merged<T>(val data: T) : ConflictResolution<T>()
+    data class RequiresManualResolution<T>(
+        val local: T,
+        val remote: T,
+        val conflictId: String
+    ) : ConflictResolution<T>()
+}
+
+// Last-Write-Wins implementation
+class LastWriteWinsResolver<T> : ConflictResolver<T> {
+    override suspend fun resolve(
+        local: T,
+        remote: T,
+        metadata: ConflictMetadata
+    ): ConflictResolution<T> {
+        return if (metadata.localTimestamp > metadata.remoteTimestamp) {
+            ConflictResolution.UseLocal(local)
+        } else {
+            ConflictResolution.UseRemote(remote)
+        }
+    }
+}
+
+// Field-level merge for documents
+class DocumentMergeResolver : ConflictResolver<Document> {
+    override suspend fun resolve(
+        local: Document,
+        remote: Document,
+        metadata: ConflictMetadata
+    ): ConflictResolution<Document> {
+        val conflicts = mutableListOf<FieldConflict>()
+        val merged = Document(id = local.id)
+
+        // Compare each field
+        for (field in Document.MERGEABLE_FIELDS) {
+            val localValue = local.getField(field)
+            val remoteValue = remote.getField(field)
+
+            when {
+                localValue == remoteValue -> {
+                    merged.setField(field, localValue)
+                }
+                localValue == local.originalField(field) -> {
+                    // Local unchanged, use remote
+                    merged.setField(field, remoteValue)
+                }
+                remoteValue == remote.originalField(field) -> {
+                    // Remote unchanged, use local
+                    merged.setField(field, localValue)
+                }
+                else -> {
+                    // Both changed - conflict
+                    conflicts.add(FieldConflict(field, localValue, remoteValue))
+                }
+            }
+        }
+
+        return if (conflicts.isEmpty()) {
+            ConflictResolution.Merged(merged)
+        } else {
+            ConflictResolution.RequiresManualResolution(
+                local = local,
+                remote = remote,
+                conflictId = UUID.randomUUID().toString()
+            )
+        }
+    }
+}
+
+==============================================================================
+SWIFT iOS IMPLEMENTATION (Core Data + URLSession)
+==============================================================================
+
+--- SWIFT: Repository Implementation ---
+
+// Data/Local/ProductEntity+CoreDataClass.swift
+@objc(ProductEntity)
+public class ProductEntity: NSManagedObject {
+    @NSManaged public var id: String
+    @NSManaged public var name: String
+    @NSManaged public var productDescription: String
+    @NSManaged public var price: Double
+    @NSManaged public var imageUrl: String?
+    @NSManaged public var category: String
+    @NSManaged public var stock: Int32
+    @NSManaged public var lastUpdated: Date
+    @NSManaged public var isSynced: Bool
+}
+
+// Data/Remote/ProductDTO.swift
+struct ProductDTO: Codable {
+    let id: String
+    let name: String
+    let description: String
+    let price: Double
+    let imageUrl: String?
+    let category: String
+    let stock: Int
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, price, category, stock
+        case imageUrl = "image_url"
+        case updatedAt = "updated_at"
+    }
+}
+
+// Data/Repository/ProductRepositoryImpl.swift
+final class ProductRepositoryImpl: ProductRepository {
+    private let coreDataStack: CoreDataStack
+    private let apiClient: APIClient
+    private let networkMonitor: NetworkMonitor
+    private let syncManager: SyncManager
+
+    init(
+        coreDataStack: CoreDataStack,
+        apiClient: APIClient,
+        networkMonitor: NetworkMonitor,
+        syncManager: SyncManager
+    ) {
+        self.coreDataStack = coreDataStack
+        self.apiClient = apiClient
+        self.networkMonitor = networkMonitor
+        self.syncManager = syncManager
+    }
+
+    // Observe products using Combine
+    func observeProducts() -> AnyPublisher<[Product], Never> {
+        let fetchRequest: NSFetchRequest<ProductEntity> = ProductEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+
+        return coreDataStack.publisher(for: fetchRequest)
+            .map { entities in
+                entities.map { ProductMapper.entityToDomain($0) }
+            }
+            .replaceError(with: [])
+            .eraseToAnyPublisher()
+    }
+
+    // Fetch and cache products
+    func refreshProducts() async throws {
+        let dtos = try await apiClient.request(
+            ProductAPI.getProducts(page: 1, limit: 100)
+        )
+
+        let context = coreDataStack.newBackgroundContext()
+
+        try await context.perform {
+            // Delete existing
+            let deleteRequest = NSBatchDeleteRequest(
+                fetchRequest: ProductEntity.fetchRequest() as! NSFetchRequest<NSFetchRequestResult>
+            )
+            try context.execute(deleteRequest)
+
+            // Insert new
+            for dto in dtos {
+                let entity = ProductEntity(context: context)
+                ProductMapper.dtoToEntity(dto, entity: entity)
+            }
+
+            try context.save()
+        }
+    }
+
+    // Create with offline support
+    func createProduct(_ product: Product) async throws -> Product {
+        let context = coreDataStack.newBackgroundContext()
+
+        // Save locally first
+        let entity = try await context.perform {
+            let entity = ProductEntity(context: context)
+            ProductMapper.domainToEntity(product, entity: entity)
+            entity.isSynced = false
+            try context.save()
+            return entity
+        }
+
+        // Try to sync if online
+        if networkMonitor.isConnected {
+            do {
+                let dto = ProductMapper.entityToDto(entity)
+                let response = try await apiClient.request(ProductAPI.create(dto))
+
+                // Update with server response
+                try await context.perform {
+                    ProductMapper.dtoToEntity(response, entity: entity)
+                    entity.isSynced = true
+                    try context.save()
+                }
+            } catch {
+                // Enqueue for later sync
+                await syncManager.enqueue(
+                    operation: .create,
+                    entityType: "products",
+                    entityId: product.id,
+                    payload: ProductMapper.domainToDto(product)
+                )
+            }
+        } else {
+            // Enqueue for later sync
+            await syncManager.enqueue(
+                operation: .create,
+                entityType: "products",
+                entityId: product.id,
+                payload: ProductMapper.domainToDto(product)
+            )
+        }
+
+        return ProductMapper.entityToDomain(entity)
+    }
+}
+
+// Data/CoreData/CoreDataStack.swift
+final class CoreDataStack {
+    static let shared = CoreDataStack()
+
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "AppModel")
+
+        // Enable lightweight migration
+        let description = container.persistentStoreDescriptions.first
+        description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+
+        container.loadPersistentStores { _, error in
+            if let error = error {
+                fatalError("Failed to load Core Data stack: \(error)")
+            }
+        }
+
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+        return container
+    }()
+
+    var viewContext: NSManagedObjectContext {
+        persistentContainer.viewContext
+    }
+
+    func newBackgroundContext() -> NSManagedObjectContext {
+        let context = persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        return context
+    }
+
+    // Combine publisher for fetch requests
+    func publisher<T: NSManagedObject>(
+        for fetchRequest: NSFetchRequest<T>
+    ) -> AnyPublisher<[T], Error> {
+        let context = viewContext
+
+        return NotificationCenter.default
+            .publisher(for: .NSManagedObjectContextObjectsDidChange, object: context)
+            .prepend(Notification(name: .NSManagedObjectContextObjectsDidChange))
+            .tryMap { _ in
+                try context.fetch(fetchRequest)
+            }
+            .eraseToAnyPublisher()
+    }
+}
+
+==============================================================================
+SECURE DATA STORAGE
+==============================================================================
+
+--- Encrypted Storage ---
+
+// data/secure/SecureStorage.kt (Android)
+class SecureStorage @Inject constructor(
+    private val context: Context
+) {
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        "secure_prefs",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    fun saveToken(key: String, token: String) {
+        encryptedPrefs.edit().putString(key, token).apply()
+    }
+
+    fun getToken(key: String): String? {
+        return encryptedPrefs.getString(key, null)
+    }
+
+    fun clearToken(key: String) {
+        encryptedPrefs.edit().remove(key).apply()
+    }
+
+    fun clearAll() {
+        encryptedPrefs.edit().clear().apply()
+    }
+}
+
+// Data/Secure/KeychainStorage.swift (iOS)
+final class KeychainStorage {
+    static let shared = KeychainStorage()
+
+    private let service = Bundle.main.bundleIdentifier ?? "com.app"
+
+    func save(_ data: Data, for key: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        ]
+
+        // Delete existing item
+        SecItemDelete(query as CFDictionary)
+
+        // Add new item
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            throw KeychainError.saveFailed(status)
+        }
+    }
+
+    func load(for key: String) throws -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        switch status {
+        case errSecSuccess:
+            return result as? Data
+        case errSecItemNotFound:
+            return nil
+        default:
+            throw KeychainError.loadFailed(status)
+        }
+    }
+
+    func delete(for key: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key
+        ]
+
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw KeychainError.deleteFailed(status)
+        }
+    }
+}
+
+==============================================================================
+NETWORK HANDLING & RETRY
+==============================================================================
+
+--- Retry with Exponential Backoff ---
+
+// data/network/RetryPolicy.kt
+data class RetryPolicy(
+    val maxRetries: Int = 3,
+    val initialDelay: Duration = 1.seconds,
+    val maxDelay: Duration = 30.seconds,
+    val multiplier: Double = 2.0,
+    val retryableErrors: Set<Int> = setOf(408, 429, 500, 502, 503, 504)
+)
+
+suspend fun <T> withRetry(
+    policy: RetryPolicy = RetryPolicy(),
+    block: suspend () -> T
+): T {
+    var currentDelay = policy.initialDelay
+    var lastException: Exception? = null
+
+    repeat(policy.maxRetries + 1) { attempt ->
+        try {
+            return block()
+        } catch (e: HttpException) {
+            if (e.code() !in policy.retryableErrors || attempt >= policy.maxRetries) {
+                throw e
+            }
+            lastException = e
+        } catch (e: IOException) {
+            if (attempt >= policy.maxRetries) {
+                throw e
+            }
+            lastException = e
+        }
+
+        delay(currentDelay)
+        currentDelay = minOf(currentDelay * policy.multiplier, policy.maxDelay)
+    }
+
+    throw lastException ?: IllegalStateException("Retry failed")
+}
+
+// Usage in repository
+suspend fun fetchWithRetry(): List<Product> {
+    return withRetry(RetryPolicy(maxRetries = 3)) {
+        api.getProducts().also { response ->
+            if (!response.isSuccessful) {
+                throw HttpException(response)
+            }
+        }.body()?.products ?: emptyList()
+    }.map { ProductMapper.dtoToDomain(it) }
+}
+
+==============================================================================
+DATABASE MIGRATIONS
+==============================================================================
+
+--- Room Migration Example ---
+
+// data/local/AppDatabase.kt
+@Database(
+    entities = [
+        ProductEntity::class,
+        OrderEntity::class,
+        UserEntity::class,
+        OfflineOperation::class
+    ],
+    version = 3,
+    exportSchema = true
+)
+@TypeConverters(Converters::class)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun productDao(): ProductDao
+    abstract fun orderDao(): OrderDao
+    abstract fun userDao(): UserDao
+    abstract fun offlineOperationDao(): OfflineOperationDao
+
+    companion object {
+        // Migration from version 1 to 2: Add stock column
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE products ADD COLUMN stock INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        // Migration from version 2 to 3: Add sync tracking
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add is_synced column to products
+                db.execSQL("ALTER TABLE products ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 1")
+
+                // Create offline_operations table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS offline_operations (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        entityType TEXT NOT NULL,
+                        entityId TEXT NOT NULL,
+                        operation TEXT NOT NULL,
+                        payload TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        retryCount INTEGER NOT NULL DEFAULT 0,
+                        lastError TEXT
+                    )
+                """)
+            }
+        }
+
+        // Destructive fallback for development
+        private val MIGRATION_FALLBACK = object : Migration(Migration.ANY, Migration.ANY) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Export data if possible before dropping
+                // For production, NEVER use destructive migrations
+            }
+        }
+
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                )
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    // .fallbackToDestructiveMigration() // NEVER in production!
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}
+
+// Migration testing
+@RunWith(AndroidJUnit4::class)
+class MigrationTest {
+    @get:Rule
+    val helper = MigrationTestHelper(
+        InstrumentationRegistry.getInstrumentation(),
+        AppDatabase::class.java
+    )
+
+    @Test
+    fun migrate1To2() {
+        // Create database with version 1
+        helper.createDatabase("test_db", 1).apply {
+            execSQL("INSERT INTO products (id, name, description, price, imageUrl, category) VALUES ('1', 'Test', 'Desc', 10.0, null, 'cat')")
+            close()
+        }
+
+        // Migrate to version 2
+        helper.runMigrationsAndValidate("test_db", 2, true, AppDatabase.MIGRATION_1_2)
+
+        // Verify migration
+        val db = helper.openDatabase("test_db", 2)
+        val cursor = db.query("SELECT stock FROM products WHERE id = '1'")
+        cursor.moveToFirst()
+        assertEquals(0, cursor.getInt(0))
+        cursor.close()
+    }
+}
+
+==============================================================================
+ANTI-PATRONES Y CORRECCIONES
+==============================================================================
+
+❌ ANTI-PATRÓN 1: N+1 Queries
+
+// ❌ INCORRECTO: Query dentro de loop
+suspend fun getOrdersWithProducts(): List<OrderWithProducts> {
+    val orders = orderDao.getAll()
+    return orders.map { order ->
+        val products = productDao.getByIds(order.productIds) // ❌ N queries!
+        OrderWithProducts(order, products)
+    }
+}
+
+// ✅ CORRECTO: Query única con JOIN o @Transaction
+@Transaction
+@Query("SELECT * FROM orders")
+suspend fun getOrdersWithProducts(): List<OrderWithProductsRelation>
+
+// O usar batch query
+suspend fun getOrdersWithProducts(): List<OrderWithProducts> {
+    val orders = orderDao.getAll()
+    val allProductIds = orders.flatMap { it.productIds }.distinct()
+    val productsMap = productDao.getByIds(allProductIds).associateBy { it.id }
+
+    return orders.map { order ->
+        OrderWithProducts(
+            order = order,
+            products = order.productIds.mapNotNull { productsMap[it] }
+        )
+    }
+}
+
+---
+
+❌ ANTI-PATRÓN 2: Blocking Main Thread
+
+// ❌ INCORRECTO: I/O en main thread
+class ProductViewModel : ViewModel() {
+    fun loadProducts() {
+        val products = productDao.getAll() // ❌ Bloquea UI!
+        _products.value = products
+    }
+}
+
+// ✅ CORRECTO: Coroutines o Flow
+class ProductViewModel(
+    private val productRepository: ProductRepository
+) : ViewModel() {
+
+    val products = productRepository.observeProducts()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun refresh() {
+        viewModelScope.launch {
+            productRepository.refreshProducts()
+        }
+    }
+}
+
+---
+
+❌ ANTI-PATRÓN 3: Secretos Sin Cifrar
+
+// ❌ INCORRECTO: Token en SharedPreferences normal
+val prefs = context.getSharedPreferences("auth", MODE_PRIVATE)
+prefs.edit().putString("token", authToken).apply() // ❌ Plain text!
+
+// ✅ CORRECTO: EncryptedSharedPreferences o Keystore
+val masterKey = MasterKey.Builder(context)
+    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+    .build()
+
+val encryptedPrefs = EncryptedSharedPreferences.create(
+    context, "secure_auth", masterKey,
+    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+)
+encryptedPrefs.edit().putString("token", authToken).apply() // ✅ Encrypted
+
+---
+
+❌ ANTI-PATRÓN 4: Cache Sin Invalidación
+
+// ❌ INCORRECTO: Cache sin expiración
+fun getCachedProducts(): List<Product> {
+    return cache["products"] // ❌ Nunca se invalida!
+}
+
+// ✅ CORRECTO: Cache con TTL y invalidación explícita
+data class CacheEntry<T>(
+    val data: T,
+    val timestamp: Long = System.currentTimeMillis()
+) {
+    fun isExpired(maxAge: Duration): Boolean {
+        return System.currentTimeMillis() - timestamp > maxAge.inWholeMilliseconds
+    }
+}
+
+class ProductCache(private val maxAge: Duration = 5.minutes) {
+    private var entry: CacheEntry<List<Product>>? = null
+
+    fun get(): List<Product>? {
+        return entry?.takeIf { !it.isExpired(maxAge) }?.data
+    }
+
+    fun set(products: List<Product>) {
+        entry = CacheEntry(products)
+    }
+
+    fun invalidate() {
+        entry = null
+    }
+}
+
+---
+
+❌ ANTI-PATRÓN 5: Ignorar Errores de Red
+
+// ❌ INCORRECTO: Silenciar errores
+suspend fun fetchProducts() {
+    try {
+        val products = api.getProducts()
+        // ...
+    } catch (e: Exception) {
+        // Ignore ❌
+    }
+}
+
+// ✅ CORRECTO: Manejar y propagar errores apropiadamente
+suspend fun fetchProducts(): Result<List<Product>> {
+    return try {
+        val response = api.getProducts()
+        if (response.isSuccessful) {
+            Result.success(response.body()?.products ?: emptyList())
+        } else {
+            Result.failure(ApiException(response.code(), response.message()))
+        }
+    } catch (e: IOException) {
+        // Network error - retry later, show offline state
+        Result.failure(NetworkException("No internet connection", e))
+    } catch (e: Exception) {
+        // Unexpected error - log and show generic error
+        Timber.e(e, "Failed to fetch products")
+        Result.failure(e)
+    }
+}
+
+==============================================================================
 ALCANCE
-- Repositorios y fuentes de datos.
-- Persistencia local (Room, CoreData, SQLite).
-- Caching y estrategias de invalidación.
-- Sincronización offline y resolución de conflictos.
-- Networking y manejo de errores de red.
-- Cifrado de datos sensibles.
+==============================================================================
 
+- Repositorios y fuentes de datos
+- Persistencia local (Room, CoreData, SQLite)
+- Caching y estrategias de invalidación
+- Sincronización offline y resolución de conflictos
+- Networking y manejo de errores de red
+- Cifrado de datos sensibles
+
+==============================================================================
 ENTRADAS
-- Contratos de APIs backend.
-- Requisitos de offline y sincronización.
-- Modelos de dominio.
-- Políticas de seguridad de datos.
-- Restricciones de storage y performance.
+==============================================================================
 
+- Contratos de APIs backend
+- Requisitos de offline y sincronización
+- Modelos de dominio
+- Políticas de seguridad de datos
+- Restricciones de storage y performance
+
+==============================================================================
 SALIDAS
-- Repositorios implementados y testeados.
-- Esquemas de base de datos con migraciones.
-- Estrategias de caching documentadas.
-- Tests unitarios e integración de data layer.
-- Métricas de sync y cache hit rate.
-- Documentación de patrones de datos.
+==============================================================================
 
+- Repositorios implementados y testeados
+- Esquemas de base de datos con migraciones
+- Estrategias de caching documentadas
+- Tests unitarios e integración de data layer
+- Métricas de sync y cache hit rate
+- Documentación de patrones de datos
+
+==============================================================================
 DEBE HACER
-- Implementar repositorios bien separados (Single Source of Truth).
-- Retry controlado con backoff exponencial.
-- Colas offline para operaciones que requieren conectividad.
-- Cifrado en storage sensible (Keychain/Keystore).
-- Migraciones de esquema versionadas y testeadas.
-- Caching con estrategias claras de invalidación.
-- Mapeo limpio entre DTOs, entities y domain models.
-- Tests de integración con APIs y storage local.
-- Manejar gracefully errores de red y timeouts.
-- Documentar estrategias de sync y conflictos.
+==============================================================================
 
+- Implementar repositorios bien separados (Single Source of Truth)
+- Retry controlado con backoff exponencial
+- Colas offline para operaciones que requieren conectividad
+- Cifrado en storage sensible (Keychain/Keystore)
+- Migraciones de esquema versionadas y testeadas
+- Caching con estrategias claras de invalidación
+- Mapeo limpio entre DTOs, entities y domain models
+- Tests de integración con APIs y storage local
+- Manejar gracefully errores de red y timeouts
+- Documentar estrategias de sync y conflictos
+
+==============================================================================
 NO DEBE HACER
-- Guardar secretos sin cifrado.
-- Acoplar data layer a UI directamente.
-- Ignorar migraciones de base de datos.
-- Cachear indefinidamente sin invalidación.
-- Exponer errores técnicos al usuario.
-- Bloquear main thread con operaciones de I/O.
-- Crear N+1 queries a base de datos.
-- Ignorar límites de storage del dispositivo.
+==============================================================================
 
+- Guardar secretos sin cifrado
+- Acoplar data layer a UI directamente
+- Ignorar migraciones de base de datos
+- Cachear indefinidamente sin invalidación
+- Exponer errores técnicos al usuario
+- Bloquear main thread con operaciones de I/O
+- Crear N+1 queries a base de datos
+- Ignorar límites de storage del dispositivo
+
+==============================================================================
 COORDINA CON
-- Mobile Architecture Agent: patrones de data layer.
-- Mobile Security Agent: cifrado y protección de datos.
-- Mobile UI Agent: estados de carga y errores.
-- Mobile QA Agent: testing de escenarios offline.
-- Cloud Architecture Agent: contratos de APIs.
-- Observability Agent: métricas de sync y errores.
+==============================================================================
 
-EJEMPLOS
-1. **Offline-first**: Implementar patrón Repository con Room + Retrofit, donde lista de productos se muestra inmediatamente desde cache mientras se actualiza en background.
-2. **Sincronización robusta**: Cola de operaciones pendientes que sincroniza cuando hay conectividad, con conflict resolution last-write-wins para ediciones concurrentes.
-3. **Migración segura**: Implementar migración de esquema v5 a v6 con transformación de datos, fallback a exportar datos si migración falla, validado en 10K usuarios beta.
+- Mobile Architecture Agent: patrones de data layer
+- Mobile Security Agent: cifrado y protección de datos
+- Mobile UI Agent: estados de carga y errores
+- Mobile QA Agent: testing de escenarios offline
+- Cloud Architecture Agent: contratos de APIs
+- Observability Agent: métricas de sync y errores
 
+==============================================================================
 MÉTRICAS DE ÉXITO
-- Cache hit rate > 80% para datos frecuentes.
-- Sync success rate > 99%.
-- Tiempo de respuesta local < 50ms.
-- 0 data loss por migraciones.
-- 0 secretos en plain text.
-- Cobertura de tests data layer > 85%.
+==============================================================================
 
-MODOS DE FALLA
-- Cache stale: datos desactualizados sin invalidación.
-- Sync conflicts: pérdida de datos por resolución incorrecta.
-- Migration failure: usuarios bloqueados por esquema incompatible.
-- Data leak: información sensible sin cifrar.
-- Network explosion: requests innecesarios sin debouncing.
+┌─────────────────────────────────┬──────────────────┬──────────────────────┐
+│ Métrica                         │ Target           │ Crítico              │
+├─────────────────────────────────┼──────────────────┼──────────────────────┤
+│ Cache hit rate                  │ > 80%            │ < 50% = revisar      │
+│ Sync success rate               │ > 99%            │ < 95% = investigar   │
+│ Tiempo de respuesta local       │ < 50ms           │ > 200ms = optimizar  │
+│ Data loss por migraciones       │ 0                │ > 0 = P1             │
+│ Secretos en plain text          │ 0                │ > 0 = incident       │
+│ Cobertura de tests data layer   │ > 85%            │ < 70% = riesgo       │
+│ Conflict resolution rate        │ > 99%            │ < 95% = manual       │
+│ Offline operation queue size    │ < 100            │ > 500 = sync issue   │
+│ Database query time (P95)       │ < 100ms          │ > 500ms = N+1?       │
+│ Storage usage per user          │ < 50MB           │ > 200MB = cleanup    │
+└─────────────────────────────────┴──────────────────┴──────────────────────┘
 
-DEFINICIÓN DE DONE
-- Repositorio implementado con Single Source of Truth.
-- Caching configurado con estrategia de invalidación.
-- Operaciones offline encoladas y sincronizables.
-- Datos sensibles cifrados.
-- Migraciones testeadas con datos reales.
-- Tests unitarios e integración pasando.
-- Documentación de patrones y estrategias.
+==============================================================================
+MODOS DE FALLA Y MITIGACIÓN
+==============================================================================
+
+┌──────────────────────────┬────────────────────────────────────────────────┐
+│ Modo de Falla            │ Mitigación                                     │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Cache stale              │ TTL explícito, invalidación en eventos,        │
+│                          │ refresh indicators en UI.                      │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Sync conflicts           │ Estrategia de resolución definida por entidad, │
+│                          │ UI para conflictos manuales, logging.          │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Migration failure        │ Test migrations exhaustivamente, backup before │
+│                          │ migration, fallback export.                    │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Data leak                │ Audit de storage, EncryptedPrefs/Keychain,     │
+│                          │ no logs de datos sensibles.                    │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Network explosion        │ Debounce requests, batch operations,           │
+│                          │ request deduplication.                         │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Storage exhaustion       │ Periodic cleanup, LRU cache eviction,          │
+│                          │ monitor and alert on size.                     │
+└──────────────────────────┴────────────────────────────────────────────────┘
+
+==============================================================================
+DEFINICIÓN DE DONE - DATA LAYER
+==============================================================================
+
+PARA NUEVO REPOSITORY:
+  [ ] Repositorio implementa Single Source of Truth
+  [ ] Local data source con Room/CoreData configurado
+  [ ] Remote data source con Retrofit/URLSession
+  [ ] Mappers entre DTO ↔ Entity ↔ Domain
+  [ ] Caching strategy definida y documentada
+  [ ] Error handling completo (network, parsing, storage)
+  [ ] Unit tests para repository (> 80% coverage)
+  [ ] Integration tests con mock server
+
+PARA OFFLINE SUPPORT:
+  [ ] Queue de operaciones offline implementada
+  [ ] Sync automático cuando hay conectividad
+  [ ] Conflict resolution strategy definida
+  [ ] UI states para pending sync visible
+  [ ] Retry con exponential backoff
+  [ ] Tests de escenarios offline
+
+PARA SECURE STORAGE:
+  [ ] Datos sensibles en EncryptedPrefs/Keychain
+  [ ] No secretos en logs
+  [ ] Biometric/device auth para datos críticos
+  [ ] Audit de acceso a datos sensibles
+
+PARA MIGRATIONS:
+  [ ] Schema version incrementada
+  [ ] Migration SQL testeada
+  [ ] Test de upgrade path completo
+  [ ] Rollback plan documentado
+  [ ] No data loss verified

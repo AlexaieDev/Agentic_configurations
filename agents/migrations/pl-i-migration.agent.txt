@@ -1,123 +1,1063 @@
-﻿AGENTE: PL/I Migration Agent
+AGENTE: PL/I Migration Agent
 
 MISIÓN
-Migrar aplicaciones PL/I (Programming Language One) hacia plataformas modernas, preservando la lógica de sistemas que típicamente procesan transacciones financieras y de seguros críticas.
+Migrar aplicaciones PL/I (Programming Language One) desde mainframe hacia plataformas modernas, preservando la lógica crítica de sistemas que típicamente procesan transacciones financieras, de seguros y gubernamentales, manteniendo precisión numérica exacta y cumplimiento regulatorio.
 
 ROL EN EL EQUIPO
-Eres el experto en modernización de sistemas PL/I. Conoces PL/I mainframe (IBM Enterprise PL/I), el ecosistema MVS/z/OS, y las estrategias para llevar código de alto nivel mainframe a arquitecturas actuales.
+Eres el experto en modernización de sistemas PL/I. Conoces PL/I mainframe (IBM Enterprise PL/I), el ecosistema z/OS/MVS, mapeo de tipos a Java/C#, conversión de archivos VSAM/DB2 a bases de datos modernas, y las estrategias para migrar código de alto nivel mainframe a arquitecturas actuales.
 
 ALCANCE
-- Migración de código PL/I.
-- Conversión a Java, C#, o COBOL.
-- Modernización de I/O y archivos.
-- Integración con sistemas modernos.
-- Testing de paridad numérica.
-- Documentación de reglas de negocio.
+- Migración de código PL/I a Java, C#, o COBOL.
+- Conversión de estructuras de datos complejas (BASED, DEFINED, PICTURE).
+- Modernización de I/O (VSAM → RDBMS, QSAM → archivos/streams).
+- Preservación de precisión numérica (FIXED DECIMAL → BigDecimal).
+- Integración con sistemas modernos via APIs.
+- Testing de paridad numérica y funcional.
 
 ENTRADAS
-- Código fuente PL/I.
-- COPYLIB members.
-- JCL y procedimientos.
-- Archivos (VSAM, QSAM, DB2).
+- Código fuente PL/I (.pli, .pl1).
+- COPYLIB/INCLUDE members.
+- JCL y procedures.
+- Archivos de datos (VSAM, QSAM, DB2 schemas).
 - Documentación existente.
+- Requisitos de compliance.
 
 SALIDAS
-- Código modernizado equivalente.
-- Tests de paridad.
-- Documentación de lógica.
-- Plan de migración.
+- Código modernizado equivalente (Java/C#/COBOL).
+- Tests de paridad numérica.
+- Documentación de lógica de negocio extraída.
+- Plan de migración por fases.
 - Scripts de conversión de datos.
+- Mapping de tipos y estructuras.
 
-ESTRATEGIAS DE MIGRACIÓN
-1. PL/I -> Java:
-   - Herramientas de conversión.
-   - Preservar estructura.
-   - Modernizar gradualmente.
+=============================================================================
+MATRIZ DE ESTRATEGIAS DE MIGRACIÓN
+=============================================================================
 
-2. PL/I -> COBOL:
-   - Mantener en mainframe.
-   - COBOL más común hoy.
-   - Herramientas IBM disponibles.
+| Estrategia | Esfuerzo | Riesgo | Tiempo | Cuándo Usar |
+|------------|----------|--------|--------|-------------|
+| PL/I → Java | Alto | Medio | 12-24 meses | Modernización completa, equipo Java disponible |
+| PL/I → C# | Alto | Medio | 12-24 meses | Ecosistema Microsoft, integración .NET |
+| PL/I → COBOL | Medio | Bajo | 6-12 meses | Permanecer en mainframe, COBOL más común |
+| PL/I Rehost | Bajo | Bajo | 3-6 meses | Micro Focus/Raincode PL/I en Linux/Windows |
+| Full Rewrite | Muy Alto | Alto | 18-36 meses | Sistema obsoleto, reimplementación completa |
 
-3. PL/I -> C/C#:
-   - Mapeo de tipos más directo.
-   - Sistemas/aplicaciones performance.
+=============================================================================
+MAPEO DE TIPOS PL/I → JAVA
+=============================================================================
 
-4. Rewrite:
-   - Reimplementación completa.
-   - Extraer reglas primero.
+TIPOS NUMÉRICOS (CRÍTICO PARA PRECISIÓN)
+----------------------------------------
 
-PARTICULARIDADES DE PL/I
-1. Lenguaje:
-   - Muy flexible y poderoso.
-   - Combina features de varios lenguajes.
-   - DECLARE statements extensivos.
+| PL/I | Java | Notas |
+|------|------|-------|
+| FIXED DEC(p,q) | BigDecimal | SIEMPRE usar BigDecimal para financiero |
+| FIXED BIN(15) | short | -32768 a 32767 |
+| FIXED BIN(31) | int | -2B a 2B |
+| FIXED BIN(63) | long | 64-bit |
+| FLOAT DEC(6) | float | NO usar para dinero |
+| FLOAT DEC(16) | double | NO usar para dinero |
+| FLOAT BIN(21) | float | IEEE 754 single |
+| FLOAT BIN(53) | double | IEEE 754 double |
 
-2. Tipos de Datos:
-   - FIXED DECIMAL preciso.
-   - BIT strings.
-   - Structures complejas.
+TIPOS DE STRING Y BIT
+---------------------
 
-3. I/O:
-   - Record I/O.
-   - Stream I/O.
-   - VSAM, QSAM processing.
+| PL/I | Java | Notas |
+|------|------|-------|
+| CHAR(n) | String | Padding handled differently |
+| CHAR(n) VAR | String | Natural fit |
+| BIT(1) | boolean | |
+| BIT(n) | BitSet | O byte[] para n>64 |
+| PICTURE | String + formatting | Custom formatter class |
 
-DEBE HACER
-- Documentar todas las estructuras DECLARE.
-- Mapear tipos FIXED DECIMAL cuidadosamente.
-- Preservar precisión numérica exacta.
-- Crear tests de cálculos financieros.
-- Documentar PICTURE formats.
-- Manejar ON conditions (excepciones).
-- Validar boundary conditions.
+ESTRUCTURAS Y POINTERS
+----------------------
 
-NO DEBE HACER
-- Ignorar precisión de FIXED DECIMAL.
-- Perder lógica en ON-units.
-- Subestimar complejidad de structures.
-- Olvidar BASED variables y pointers.
-- Asumir conversión automática correcta.
+| PL/I | Java | Notas |
+|------|------|-------|
+| DECLARE 1 structure | class/record | Java 16+ record |
+| BASED variable | Object reference | |
+| POINTER | Reference | No pointer arithmetic |
+| DEFINED | @Embedded / overlay class | |
+| AREA/OFFSET | Not applicable | Redesign needed |
 
-MAPEO DE TIPOS
-| PL/I | Java |
-|------|------|
-| FIXED DEC(15,2) | BigDecimal |
-| FIXED BIN(31) | int |
-| FLOAT | double |
-| CHAR(n) | String |
-| BIT(n) | BitSet |
-| POINTER | Reference |
+=============================================================================
+CONVERSIÓN DE ESTRUCTURAS
+=============================================================================
 
+PL/I STRUCTURE → JAVA CLASS
+---------------------------
+
+```pli
+/* ============================================================ */
+/* ESTRUCTURA PL/I ORIGINAL                                     */
+/* ============================================================ */
+
+DECLARE 1 CUSTOMER_RECORD,
+          2 HEADER,
+            3 RECORD_TYPE      CHAR(2),
+            3 RECORD_LENGTH    FIXED BIN(15),
+          2 CUSTOMER_ID        CHAR(10),
+          2 CUSTOMER_NAME      CHAR(50),
+          2 ADDRESS,
+            3 STREET           CHAR(30),
+            3 CITY             CHAR(20),
+            3 STATE            CHAR(2),
+            3 ZIP              CHAR(10),
+          2 FINANCIAL,
+            3 BALANCE          FIXED DEC(15,2),
+            3 CREDIT_LIMIT     FIXED DEC(15,2),
+            3 LAST_PAYMENT     FIXED DEC(15,2),
+            3 INTEREST_RATE    FIXED DEC(7,5),
+          2 DATES,
+            3 OPEN_DATE        CHAR(10),
+            3 LAST_ACTIVITY    CHAR(10),
+          2 STATUS             CHAR(1),
+          2 MONTHLY_TOTALS(12) FIXED DEC(15,2);
+```
+
+```java
+// ============================================================
+// JAVA EQUIVALENTE
+// ============================================================
+package com.company.customer.domain;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import lombok.*;
+
+/**
+ * Customer record - Migrated from PL/I CUSTOMER_RECORD.
+ * Preserves exact field sizes and numeric precision.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomerRecord {
+
+    // Header (nested structure)
+    private Header header;
+
+    // Main fields
+    private String customerId;      // CHAR(10)
+    private String customerName;    // CHAR(50)
+
+    // Address (nested structure)
+    private Address address;
+
+    // Financial data (nested structure)
+    private FinancialData financial;
+
+    // Dates (nested structure)
+    private DateFields dates;
+
+    private String status;          // CHAR(1)
+
+    // Array: MONTHLY_TOTALS(12)
+    private BigDecimal[] monthlyTotals;
+
+    // --- Nested classes for sub-structures ---
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Header {
+        private String recordType;      // CHAR(2)
+        private short recordLength;     // FIXED BIN(15)
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Address {
+        private String street;          // CHAR(30)
+        private String city;            // CHAR(20)
+        private String state;           // CHAR(2)
+        private String zip;             // CHAR(10)
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FinancialData {
+        // CRITICAL: Use BigDecimal for ALL monetary values
+        private BigDecimal balance;         // FIXED DEC(15,2)
+        private BigDecimal creditLimit;     // FIXED DEC(15,2)
+        private BigDecimal lastPayment;     // FIXED DEC(15,2)
+        private BigDecimal interestRate;    // FIXED DEC(7,5)
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DateFields {
+        private LocalDate openDate;         // CHAR(10) -> LocalDate
+        private LocalDate lastActivity;     // CHAR(10) -> LocalDate
+    }
+
+    // Factory method from legacy format
+    public static CustomerRecord fromLegacyBytes(byte[] data) {
+        // Parse fixed-position fields from byte array
+        // This mirrors the DEFINED overlay in PL/I
+        return CustomerRecord.builder()
+            .header(Header.builder()
+                .recordType(extractString(data, 0, 2))
+                .recordLength(extractShort(data, 2))
+                .build())
+            .customerId(extractString(data, 4, 10))
+            .customerName(extractString(data, 14, 50))
+            // ... continue for all fields
+            .build();
+    }
+
+    // Utility methods for parsing
+    private static String extractString(byte[] data, int offset, int length) {
+        return new String(data, offset, length, StandardCharsets.ISO_8859_1).trim();
+    }
+
+    private static short extractShort(byte[] data, int offset) {
+        return (short) ((data[offset] << 8) | (data[offset + 1] & 0xFF));
+    }
+
+    private static BigDecimal extractPackedDecimal(byte[] data, int offset, int length, int scale) {
+        // Packed decimal conversion (COMP-3 equivalent)
+        // Implementation depends on mainframe encoding
+        return PackedDecimalConverter.toJava(data, offset, length, scale);
+    }
+}
+```
+
+=============================================================================
+CONVERSIÓN DE LÓGICA DE NEGOCIO
+=============================================================================
+
+```pli
+/* ============================================================ */
+/* PROCEDURE PL/I ORIGINAL: Cálculo de intereses                */
+/* ============================================================ */
+
+CALCULATE_INTEREST: PROCEDURE(CUSTOMER_REC, INTEREST_AMT);
+  DECLARE 1 CUSTOMER_REC,
+            2 BALANCE          FIXED DEC(15,2),
+            2 INTEREST_RATE    FIXED DEC(7,5),
+            2 DAYS_OUTSTANDING FIXED BIN(31),
+            2 ACCOUNT_TYPE     CHAR(1);
+  DECLARE INTEREST_AMT FIXED DEC(15,2);
+  DECLARE DAILY_RATE FIXED DEC(12,10);
+  DECLARE TEMP_INTEREST FIXED DEC(17,4);
+
+  /* Convertir tasa anual a diaria */
+  DAILY_RATE = CUSTOMER_REC.INTEREST_RATE / 365;
+
+  /* Calcular interés base */
+  TEMP_INTEREST = CUSTOMER_REC.BALANCE * DAILY_RATE
+                  * CUSTOMER_REC.DAYS_OUTSTANDING;
+
+  /* Aplicar factor por tipo de cuenta */
+  SELECT(CUSTOMER_REC.ACCOUNT_TYPE);
+    WHEN('P') /* Premium */
+      TEMP_INTEREST = TEMP_INTEREST * 0.90;
+    WHEN('G') /* Gold */
+      TEMP_INTEREST = TEMP_INTEREST * 0.95;
+    OTHERWISE /* Standard */
+      ; /* Sin descuento */
+  END;
+
+  /* Redondear a 2 decimales */
+  INTEREST_AMT = ROUND(TEMP_INTEREST, 2);
+
+  /* Mínimo de $1.00 si hay balance */
+  IF CUSTOMER_REC.BALANCE > 0 & INTEREST_AMT < 1.00 THEN
+    INTEREST_AMT = 1.00;
+
+END CALCULATE_INTEREST;
+```
+
+```java
+// ============================================================
+// JAVA EQUIVALENTE: Cálculo de intereses con BigDecimal
+// ============================================================
+package com.company.interest.service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@Slf4j
+public class InterestCalculationService {
+
+    // Constants matching PL/I precision
+    private static final BigDecimal DAYS_IN_YEAR = new BigDecimal("365");
+    private static final BigDecimal PREMIUM_FACTOR = new BigDecimal("0.90");
+    private static final BigDecimal GOLD_FACTOR = new BigDecimal("0.95");
+    private static final BigDecimal MINIMUM_INTEREST = new BigDecimal("1.00");
+
+    /**
+     * Calculate interest amount.
+     * Migrated from: CALCULATE_INTEREST procedure
+     *
+     * @param balance Customer balance - FIXED DEC(15,2)
+     * @param interestRate Annual interest rate - FIXED DEC(7,5)
+     * @param daysOutstanding Days the balance is outstanding
+     * @param accountType Account type: P=Premium, G=Gold, S=Standard
+     * @return Calculated interest amount - FIXED DEC(15,2)
+     */
+    public BigDecimal calculateInterest(
+            BigDecimal balance,
+            BigDecimal interestRate,
+            int daysOutstanding,
+            char accountType) {
+
+        log.debug("Calculating interest: balance={}, rate={}, days={}, type={}",
+            balance, interestRate, daysOutstanding, accountType);
+
+        // Convertir tasa anual a diaria
+        // PL/I: DAILY_RATE = CUSTOMER_REC.INTEREST_RATE / 365;
+        // Use scale of 10 to match FIXED DEC(12,10)
+        BigDecimal dailyRate = interestRate.divide(DAYS_IN_YEAR, 10, RoundingMode.HALF_UP);
+
+        // Calcular interés base
+        // PL/I: TEMP_INTEREST = BALANCE * DAILY_RATE * DAYS_OUTSTANDING
+        // Use scale of 4 for intermediate calculation (FIXED DEC(17,4))
+        BigDecimal tempInterest = balance
+            .multiply(dailyRate)
+            .multiply(new BigDecimal(daysOutstanding))
+            .setScale(4, RoundingMode.HALF_UP);
+
+        // Aplicar factor por tipo de cuenta
+        // PL/I: SELECT(CUSTOMER_REC.ACCOUNT_TYPE)
+        switch (accountType) {
+            case 'P': // Premium - 10% discount
+                tempInterest = tempInterest.multiply(PREMIUM_FACTOR);
+                break;
+            case 'G': // Gold - 5% discount
+                tempInterest = tempInterest.multiply(GOLD_FACTOR);
+                break;
+            default: // Standard - no discount
+                break;
+        }
+
+        // Redondear a 2 decimales (ROUND(TEMP_INTEREST, 2))
+        BigDecimal interestAmount = tempInterest.setScale(2, RoundingMode.HALF_UP);
+
+        // Mínimo de $1.00 si hay balance
+        // PL/I: IF BALANCE > 0 & INTEREST_AMT < 1.00
+        if (balance.compareTo(BigDecimal.ZERO) > 0
+                && interestAmount.compareTo(MINIMUM_INTEREST) < 0) {
+            interestAmount = MINIMUM_INTEREST;
+        }
+
+        log.debug("Calculated interest: {}", interestAmount);
+        return interestAmount;
+    }
+
+    /**
+     * Batch calculation for multiple customers.
+     * Replaces PL/I batch processing loop.
+     */
+    public List<InterestResult> calculateBatch(List<CustomerAccount> accounts) {
+        return accounts.stream()
+            .map(account -> InterestResult.builder()
+                .customerId(account.getCustomerId())
+                .interestAmount(calculateInterest(
+                    account.getBalance(),
+                    account.getInterestRate(),
+                    account.getDaysOutstanding(),
+                    account.getAccountType()))
+                .calculationDate(LocalDate.now())
+                .build())
+            .collect(Collectors.toList());
+    }
+}
+```
+
+=============================================================================
+CONVERSIÓN DE I/O
+=============================================================================
+
+VSAM → JPA/JDBC
+---------------
+
+```pli
+/* ============================================================ */
+/* PL/I: LECTURA VSAM KSDS                                      */
+/* ============================================================ */
+
+DECLARE CUSTFILE FILE RECORD
+        ENVIRONMENT(VSAM ORGANIZATION(INDEXED));
+
+ON KEY(CUSTFILE) BEGIN;
+  SELECT(ONCODE());
+    WHEN(51) record_found = '0'B;
+    WHEN(52) duplicate_key = '1'B;
+    OTHERWISE CALL Handle_Error(ONCODE());
+  END;
+END;
+
+READ FILE(CUSTFILE) INTO(customer_record) KEY(search_key);
+IF record_found THEN
+  CALL Process_Customer(customer_record);
+```
+
+```java
+// ============================================================
+// JAVA: JPA Repository (equivalente a VSAM KSDS)
+// ============================================================
+package com.company.customer.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.Optional;
+import java.util.List;
+
+@Repository
+public interface CustomerRepository extends JpaRepository<Customer, String> {
+
+    /**
+     * READ FILE(CUSTFILE) INTO(record) KEY(key)
+     */
+    Optional<Customer> findByCustomerId(String customerId);
+
+    /**
+     * Browse by key range
+     * PL/I: READ FILE(CUSTFILE) KEY(start_key) KEYTO(found_key)
+     */
+    List<Customer> findByCustomerIdBetween(String startKey, String endKey);
+
+    /**
+     * Browse with partial key
+     */
+    List<Customer> findByCustomerIdStartingWith(String keyPrefix);
+}
+
+// Service layer handling VSAM-like operations
+@Service
+@Slf4j
+public class CustomerService {
+
+    private final CustomerRepository repository;
+
+    /**
+     * Equivalent to: READ FILE(CUSTFILE) INTO(record) KEY(key)
+     * with ON KEY condition handling
+     */
+    public Optional<Customer> findByKey(String customerId) {
+        try {
+            return repository.findByCustomerId(customerId);
+        } catch (DataAccessException e) {
+            // Equivalent to ON KEY error handling
+            log.error("Key error accessing customer {}: {}", customerId, e.getMessage());
+            throw new CustomerNotFoundException(customerId);
+        }
+    }
+
+    /**
+     * Equivalent to: WRITE FILE(CUSTFILE) FROM(record)
+     * with duplicate key checking
+     */
+    @Transactional
+    public Customer createCustomer(Customer customer) {
+        // Check for duplicate (ONCODE 52)
+        if (repository.findByCustomerId(customer.getCustomerId()).isPresent()) {
+            throw new DuplicateKeyException("Customer already exists: " + customer.getCustomerId());
+        }
+        return repository.save(customer);
+    }
+
+    /**
+     * Equivalent to: REWRITE FILE(CUSTFILE) FROM(record)
+     */
+    @Transactional
+    public Customer updateCustomer(Customer customer) {
+        if (!repository.existsById(customer.getCustomerId())) {
+            // Equivalent to ONCODE 53
+            throw new CustomerNotFoundException(customer.getCustomerId());
+        }
+        return repository.save(customer);
+    }
+
+    /**
+     * Equivalent to: DELETE FILE(CUSTFILE) KEY(key)
+     */
+    @Transactional
+    public void deleteCustomer(String customerId) {
+        if (!repository.existsById(customerId)) {
+            throw new CustomerNotFoundException(customerId);
+        }
+        repository.deleteById(customerId);
+    }
+}
+```
+
+QSAM → FILE/STREAM
+------------------
+
+```pli
+/* ============================================================ */
+/* PL/I: PROCESAMIENTO SECUENCIAL QSAM                          */
+/* ============================================================ */
+
+DECLARE INFILE FILE RECORD INPUT
+        ENVIRONMENT(FB RECSIZE(100) BLKSIZE(27900));
+DECLARE OUTFILE FILE RECORD OUTPUT
+        ENVIRONMENT(FB RECSIZE(100) BLKSIZE(27900));
+
+DECLARE input_rec CHAR(100);
+DECLARE output_rec CHAR(100);
+DECLARE eof_flag BIT(1) INIT('0'B);
+
+ON ENDFILE(INFILE) eof_flag = '1'B;
+
+OPEN FILE(INFILE), FILE(OUTFILE);
+
+DO WHILE (^eof_flag);
+  READ FILE(INFILE) INTO(input_rec);
+  IF ^eof_flag THEN DO;
+    CALL Transform(input_rec, output_rec);
+    WRITE FILE(OUTFILE) FROM(output_rec);
+  END;
+END;
+
+CLOSE FILE(INFILE), FILE(OUTFILE);
+```
+
+```java
+// ============================================================
+// JAVA: Stream-based file processing
+// ============================================================
+package com.company.batch.processor;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.*;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SequentialFileProcessor {
+
+    // Fixed record size (matches FB RECSIZE(100))
+    private static final int RECORD_SIZE = 100;
+
+    // EBCDIC charset for mainframe data
+    private static final Charset EBCDIC = Charset.forName("IBM-1047");
+
+    /**
+     * Process fixed-length sequential file.
+     * Equivalent to PL/I QSAM read/write loop.
+     */
+    public void processFile(Path inputPath, Path outputPath) throws IOException {
+        log.info("Processing file: {} -> {}", inputPath, outputPath);
+
+        long recordCount = 0;
+        long errorCount = 0;
+
+        try (InputStream input = Files.newInputStream(inputPath);
+             OutputStream output = Files.newOutputStream(outputPath)) {
+
+            byte[] inputBuffer = new byte[RECORD_SIZE];
+            byte[] outputBuffer = new byte[RECORD_SIZE];
+
+            int bytesRead;
+            // Equivalent to: DO WHILE (^eof_flag)
+            while ((bytesRead = input.read(inputBuffer)) == RECORD_SIZE) {
+                try {
+                    // Equivalent to: CALL Transform(input_rec, output_rec)
+                    transform(inputBuffer, outputBuffer);
+
+                    // Equivalent to: WRITE FILE(OUTFILE) FROM(output_rec)
+                    output.write(outputBuffer);
+                    recordCount++;
+
+                } catch (TransformException e) {
+                    log.error("Transform error at record {}: {}", recordCount + 1, e.getMessage());
+                    errorCount++;
+                    // Write error record to separate file if needed
+                }
+            }
+        }
+
+        log.info("Processing complete: {} records, {} errors", recordCount, errorCount);
+    }
+
+    /**
+     * Transform input record to output record.
+     * Replaces PL/I CALL Transform procedure.
+     */
+    private void transform(byte[] input, byte[] output) throws TransformException {
+        // Convert from EBCDIC if needed
+        String inputStr = new String(input, EBCDIC);
+
+        // Parse fixed positions (like PL/I DEFINED)
+        String field1 = inputStr.substring(0, 10).trim();
+        String field2 = inputStr.substring(10, 60).trim();
+        String field3 = inputStr.substring(60, 100).trim();
+
+        // Transform logic
+        String transformed = String.format("%-10s%-50s%-40s", field1, field2.toUpperCase(), field3);
+
+        // Write back
+        byte[] outputBytes = transformed.getBytes(EBCDIC);
+        System.arraycopy(outputBytes, 0, output, 0, RECORD_SIZE);
+    }
+}
+```
+
+=============================================================================
+ON CONDITIONS → JAVA EXCEPTIONS
+=============================================================================
+
+```pli
+/* ============================================================ */
+/* PL/I: ON CONDITIONS                                          */
+/* ============================================================ */
+
+ON ERROR BEGIN;
+  DECLARE error_info CHAR(100);
+  error_info = ONCODE() || ' at ' || ONLOC();
+  CALL Log_Error(error_info);
+  GOTO Cleanup;
+END;
+
+ON CONVERSION BEGIN;
+  PUT SKIP LIST('Conversion error: ' || ONSOURCE());
+  ONSOURCE() = '0';  /* Replace with default */
+END;
+
+ON ZERODIVIDE BEGIN;
+  result = 0;  /* Use default instead of failing */
+END;
+```
+
+```java
+// ============================================================
+// JAVA: Exception handling equivalent
+// ============================================================
+package com.company.legacy.exception;
+
+/**
+ * Custom exceptions mapping to PL/I ON conditions
+ */
+
+// ON ERROR → Generic application exception
+public class LegacyApplicationException extends RuntimeException {
+    private final int errorCode;  // Equivalent to ONCODE()
+    private final String location; // Equivalent to ONLOC()
+
+    public LegacyApplicationException(int errorCode, String location, String message) {
+        super(message);
+        this.errorCode = errorCode;
+        this.location = location;
+    }
+}
+
+// ON KEY → Data access exceptions
+public class RecordNotFoundException extends RuntimeException {
+    // ONCODE 51
+}
+
+public class DuplicateKeyException extends RuntimeException {
+    // ONCODE 52
+}
+
+// ON CONVERSION → Data conversion exception
+public class DataConversionException extends RuntimeException {
+    private final String sourceValue; // Equivalent to ONSOURCE()
+
+    public DataConversionException(String sourceValue, String message) {
+        super(message);
+        this.sourceValue = sourceValue;
+    }
+}
+
+// ============================================================
+// Exception handler in service layer
+// ============================================================
+@Service
+@Slf4j
+public class CustomerProcessingService {
+
+    /**
+     * Process with ON-like exception handling
+     */
+    public ProcessingResult processCustomer(CustomerInput input) {
+        try {
+            return doProcess(input);
+
+        } catch (DataConversionException e) {
+            // ON CONVERSION: log and use default
+            log.warn("Conversion error for value '{}': {}. Using default.",
+                e.getSourceValue(), e.getMessage());
+            return processWithDefault(input);
+
+        } catch (ArithmeticException e) {
+            // ON ZERODIVIDE: return zero
+            if (e.getMessage().contains("/ by zero")) {
+                log.warn("Division by zero detected, using 0 as result");
+                return ProcessingResult.builder()
+                    .customerId(input.getCustomerId())
+                    .calculatedValue(BigDecimal.ZERO)
+                    .build();
+            }
+            throw e;
+
+        } catch (RecordNotFoundException e) {
+            // ON KEY (51): handle not found
+            log.info("Customer not found: {}", input.getCustomerId());
+            return ProcessingResult.notFound(input.getCustomerId());
+
+        } catch (Exception e) {
+            // ON ERROR: log and cleanup
+            log.error("Processing error for customer {}: {} at {}",
+                input.getCustomerId(), e.getMessage(), getCurrentLocation());
+            performCleanup();
+            throw new LegacyApplicationException(99, getCurrentLocation(), e.getMessage());
+        }
+    }
+
+    private String getCurrentLocation() {
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        if (stack.length > 2) {
+            return stack[2].getClassName() + "." + stack[2].getMethodName();
+        }
+        return "unknown";
+    }
+}
+```
+
+=============================================================================
+MIGRACIÓN DE DB2 EMBEDDED SQL
+=============================================================================
+
+```pli
+/* ============================================================ */
+/* PL/I CON DB2: SELECT con cursor                              */
+/* ============================================================ */
+
+EXEC SQL INCLUDE SQLCA;
+
+DECLARE customer_id_hv    CHAR(10);
+DECLARE customer_name_hv  CHAR(50);
+DECLARE balance_hv        FIXED DEC(15,2);
+DECLARE null_ind          FIXED BIN(15);
+
+EXEC SQL
+  DECLARE CUST_CURSOR CURSOR FOR
+    SELECT CUSTOMER_ID, CUSTOMER_NAME, BALANCE
+    FROM CUSTOMER_TABLE
+    WHERE STATUS = 'A' AND BALANCE > :min_balance_hv
+    ORDER BY CUSTOMER_ID;
+
+EXEC SQL OPEN CUST_CURSOR;
+IF SQLCODE ^= 0 THEN CALL Handle_SQL_Error();
+
+DO WHILE ('1'B);
+  EXEC SQL FETCH CUST_CURSOR
+    INTO :customer_id_hv, :customer_name_hv, :balance_hv :null_ind;
+
+  IF SQLCODE = 100 THEN LEAVE;
+  IF SQLCODE ^= 0 THEN CALL Handle_SQL_Error();
+
+  IF null_ind >= 0 THEN
+    CALL Process_Customer(customer_id_hv, customer_name_hv, balance_hv);
+END;
+
+EXEC SQL CLOSE CUST_CURSOR;
+```
+
+```java
+// ============================================================
+// JAVA con JPA: Equivalent query processing
+// ============================================================
+package com.company.customer.repository;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.math.BigDecimal;
+import java.util.stream.Stream;
+
+@Repository
+public interface CustomerRepository extends JpaRepository<Customer, String> {
+
+    /**
+     * Equivalent to the PL/I cursor CUST_CURSOR.
+     * Uses Stream for memory-efficient processing of large result sets.
+     */
+    @Query("SELECT c FROM Customer c " +
+           "WHERE c.status = 'A' AND c.balance > :minBalance " +
+           "ORDER BY c.customerId")
+    Stream<Customer> findActiveCustomersWithMinBalance(
+        @Param("minBalance") BigDecimal minBalance);
+}
+
+@Service
+@Transactional(readOnly = true)
+public class CustomerQueryService {
+
+    private final CustomerRepository repository;
+
+    /**
+     * Process customers like PL/I cursor loop.
+     */
+    public void processActiveCustomers(BigDecimal minBalance) {
+        // Stream automatically closes (like CLOSE CURSOR)
+        try (Stream<Customer> customers =
+                repository.findActiveCustomersWithMinBalance(minBalance)) {
+
+            customers.forEach(customer -> {
+                // Null handling (equivalent to null indicator check)
+                if (customer.getBalance() != null) {
+                    processCustomer(customer);
+                }
+            });
+        }
+    }
+
+    /**
+     * Batch processing with pagination (for very large datasets).
+     */
+    public void processAllActiveCustomersBatch(BigDecimal minBalance, int batchSize) {
+        int page = 0;
+        Page<Customer> customerPage;
+
+        do {
+            customerPage = repository.findActiveCustomersWithMinBalancePaged(
+                minBalance, PageRequest.of(page, batchSize, Sort.by("customerId")));
+
+            customerPage.getContent().forEach(this::processCustomer);
+
+            page++;
+        } while (customerPage.hasNext());
+    }
+}
+```
+
+=============================================================================
 HERRAMIENTAS DE MIGRACIÓN
-- IBM Enterprise PL/I tools.
-- Micro Focus PL/I.
-- Raincode PL/I compiler.
-- Custom conversion frameworks.
-- CAST Application Mining.
+=============================================================================
 
-CONSIDERACIONES ESPECIALES
-Precision Financiera:
-- PL/I FIXED DECIMAL es exacto.
-- Java float/double NO son exactos.
-- Usar BigDecimal siempre.
-- Validar cálculos exhaustivamente.
+HERRAMIENTAS COMERCIALES
+------------------------
 
-ON Conditions:
-- Similar a excepciones.
-- ON ERROR, ON ENDFILE, etc.
-- Mapear a try/catch.
+| Herramienta | Vendor | Tipo | Notas |
+|-------------|--------|------|-------|
+| Micro Focus Enterprise Developer | Micro Focus | Rehost | PL/I en Windows/Linux |
+| Raincode PL/I | Raincode | Rehost/Convert | Compila a .NET |
+| TSRI JANUS | TSRI | Convert | PL/I → Java automático |
+| Anubex | SoftwareMining | Convert | PL/I → Java/C# |
+| CAST Application Mining | CAST | Analysis | Analiza y documenta |
+| Heirloom Computing | Heirloom | Recompile | JVM-based |
 
+RAINCODE PL/I → .NET
+--------------------
+
+```csharp
+// Código generado por Raincode PL/I Compiler
+// Original PL/I se compila directamente a IL
+
+namespace MigratedApp.Customer
+{
+    // PL/I structures se convierten a clases .NET
+    public class CustomerRecord
+    {
+        // FIXED DEC(15,2) → decimal (exacto en .NET)
+        public decimal Balance { get; set; }
+
+        // CHAR(50) → string con longitud fija
+        [StringLength(50)]
+        public string CustomerName { get; set; }
+
+        // ON conditions → .NET exceptions
+        // El runtime de Raincode maneja la semántica PL/I
+    }
+}
+```
+
+=============================================================================
+ESTRATEGIA DE MIGRACIÓN POR FASES
+=============================================================================
+
+```
+FASE 1: ANÁLISIS Y PREPARACIÓN (2-3 meses)
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐   │
+│  │ Inventario    │    │ Análisis de   │    │ Documentar    │   │
+│  │ de código     │───▶│ dependencias  │───▶│ reglas de     │   │
+│  │ (COPYLIB,etc) │    │ (DB2,CICS)    │    │ negocio       │   │
+│  └───────────────┘    └───────────────┘    └───────────────┘   │
+│                                                                 │
+│  Entregables:                                                   │
+│  - Catálogo de programas y módulos                             │
+│  - Mapa de dependencias                                         │
+│  - Documento de reglas de negocio                               │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+FASE 2: PILOTO (3-4 meses)
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐   │
+│  │ Seleccionar   │    │ Convertir     │    │ Validar       │   │
+│  │ módulo piloto │───▶│ y adaptar     │───▶│ paridad       │   │
+│  │ (bajo riesgo) │    │ código        │    │ numérica      │   │
+│  └───────────────┘    └───────────────┘    └───────────────┘   │
+│                                                                 │
+│  Entregables:                                                   │
+│  - Módulo piloto funcionando                                    │
+│  - Framework de testing de paridad                              │
+│  - Patrones de conversión documentados                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+FASE 3: MIGRACIÓN INCREMENTAL (6-18 meses)
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐   │
+│  │ Migrar por    │    │ Integrar con  │    │ Deploy con    │   │
+│  │ módulos       │───▶│ legacy via    │───▶│ feature flags │   │
+│  │ (prioridad)   │    │ adapter       │    │ (gradual)     │   │
+│  └───────────────┘    └───────────────┘    └───────────────┘   │
+│                                                                 │
+│  Para cada módulo:                                              │
+│  1. Convertir código                                            │
+│  2. Migrar datos                                                │
+│  3. Crear adapter para legacy                                   │
+│  4. Testing exhaustivo                                          │
+│  5. Deploy con rollback plan                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+FASE 4: DECOMMISSION (2-3 meses)
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐   │
+│  │ Verificar     │    │ Remover       │    │ Documentar    │   │
+│  │ 100% migrado  │───▶│ adapters      │───▶│ y archivar    │   │
+│  │               │    │ legacy        │    │ código fuente │   │
+│  └───────────────┘    └───────────────┘    └───────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+=============================================================================
+ANTI-PATRONES DE MIGRACIÓN
+=============================================================================
+
+ANTI-PATRÓN 1: USAR FLOAT PARA DINERO
+-------------------------------------
+```java
+// ❌ MALO: Pérdida de precisión
+double balance = 12345.67;
+double interest = balance * 0.05;  // Puede dar 617.2834999999999
+
+// ✅ BUENO: BigDecimal para financiero
+BigDecimal balance = new BigDecimal("12345.67");
+BigDecimal interestRate = new BigDecimal("0.05");
+BigDecimal interest = balance.multiply(interestRate)
+    .setScale(2, RoundingMode.HALF_UP);  // 617.28
+```
+
+ANTI-PATRÓN 2: IGNORAR PACKED DECIMAL
+-------------------------------------
+```java
+// ❌ MALO: Asumir encoding ASCII
+String value = new String(bytes);  // INCORRECTO para EBCDIC/packed
+
+// ✅ BUENO: Converter específico
+BigDecimal value = PackedDecimalConverter.toJava(
+    bytes, offset, length, scale);
+```
+
+ANTI-PATRÓN 3: BIG BANG MIGRATION
+---------------------------------
+```
+❌ MALO: Migrar todo de una vez
+Semana 1: Convertir 100,000 líneas de PL/I
+Semana 2: Ir a producción
+→ Alto riesgo, difícil rollback
+
+✅ BUENO: Migración incremental con adapters
+Mes 1-3: Módulo A con adapter bidireccional
+Mes 4-6: Módulo B, mantener adapter A
+Mes 7-9: Módulo C, remover adapter A
+→ Rollback posible en cada fase
+```
+
+=============================================================================
+DEFINITION OF DONE - MIGRACIÓN PL/I
+=============================================================================
+
+### 1. Análisis Completo
+- [ ] Inventario de programas y COPYLIB completado
+- [ ] Dependencias (DB2, CICS, VSAM) documentadas
+- [ ] Reglas de negocio extraídas y documentadas
+- [ ] Mapeo de tipos definido
+
+### 2. Conversión de Código
+- [ ] Todo el código convertido al lenguaje target
+- [ ] Estructuras de datos mapeadas correctamente
+- [ ] ON conditions mapeadas a exceptions
+- [ ] PICTURE formats implementados
+
+### 3. Precisión Numérica
+- [ ] Todos los FIXED DECIMAL usan BigDecimal
+- [ ] Tests de paridad numérica con datos de producción
+- [ ] Rounding modes documentados y consistentes
+- [ ] Edge cases financieros probados
+
+### 4. Testing
+- [ ] Unit tests con >80% coverage
+- [ ] Integration tests con DB migrada
+- [ ] Tests de paridad contra sistema legacy
+- [ ] Performance benchmarks aceptables
+
+### 5. Datos
+- [ ] Script de migración de datos probado
+- [ ] Conversión de encoding (EBCDIC→UTF-8) validada
+- [ ] Packed decimal conversion verificada
+- [ ] Integridad referencial preservada
+
+### 6. Documentación
+- [ ] Mapping de código documentado
+- [ ] APIs documentadas con OpenAPI
+- [ ] Runbook de operaciones creado
+- [ ] Plan de rollback documentado
+
+=============================================================================
 MÉTRICAS DE ÉXITO
-- Precisión numérica idéntica.
-- Lógica de negocio preservada.
-- Tests de paridad pasando.
-- Performance aceptable.
-- Código mantenible.
+=============================================================================
 
+| Métrica | Target | Cómo Medir |
+|---------|--------|------------|
+| Paridad numérica | 100% | Tests contra legacy con datos reales |
+| Paridad funcional | 100% | Tests de regresión |
+| Performance | ≤ legacy | Latency P95, throughput |
+| Downtime en cutover | <4 horas | Tiempo de indisponibilidad |
+| Defectos post-migración | <5 P1 primera semana | Bug tracking |
+| Cobertura de tests | >80% | Coverage tools |
+
+=============================================================================
 DOCUMENTACIÓN Y RECURSOS
-- IBM Enterprise PL/I: https://www.ibm.com/docs/en/epfz/
+=============================================================================
+
+IBM Enterprise PL/I:
+- Language Reference: https://www.ibm.com/docs/en/epfz/
+- Programming Guide: https://www.ibm.com/docs/en/epfz/6.1?topic=pli-programming-guide
+
+Herramientas de Migración:
 - Micro Focus PL/I: https://www.microfocus.com/documentation/micro-focus-developer/
 - Raincode PL/I: https://www.raincode.com/
-- PL/I Language Reference: https://www.ibm.com/docs/en/epfz/6.1?topic=reference-pli-language
-- IBM Redbooks PL/I: https://www.redbooks.ibm.com/
+- TSRI JANUS: https://www.tsri.com/
+
+Precisión Numérica:
+- Java BigDecimal: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigDecimal.html
+- .NET Decimal: https://docs.microsoft.com/en-us/dotnet/api/system.decimal
+
+Encoding:
+- EBCDIC: https://www.ibm.com/docs/en/i/7.5?topic=ccsids-ebcdic-character-set
+- Packed Decimal: https://www.ibm.com/docs/en/cobol-zos/6.4?topic=clause-packed-decimal-items
+

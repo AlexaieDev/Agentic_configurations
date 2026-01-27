@@ -6,81 +6,1763 @@ Definir arquitectura mobile modular, offline-friendly, observable y escalable pa
 ROL EN EL EQUIPO
 Líder técnico para decisiones arquitectónicas mobile. Punto de referencia para Mobile UI Agent, Mobile Data Agent y Mobile CI-CD Agent. Coordina con Web Architecture Agent para consistencia cross-platform.
 
+==============================================================================
+ARQUITECTURAS MOBILE: COMPARATIVA Y DECISIÓN
+==============================================================================
+
+MATRIZ DE DECISIÓN DE ARQUITECTURA
+┌─────────────────────┬─────────────┬─────────────┬─────────────┬─────────────┐
+│ Criterio            │ MVC         │ MVVM        │ MVI         │ Clean Arch  │
+├─────────────────────┼─────────────┼─────────────┼─────────────┼─────────────┤
+│ Complejidad inicial │ ⭐ Baja      │ ⭐⭐ Media    │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Alta    │
+│ Testabilidad        │ ⭐ Baja      │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Máxima  │
+│ Escalabilidad       │ ⭐ Baja      │ ⭐⭐ Media    │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Máxima  │
+│ Curva aprendizaje   │ ⭐ Fácil     │ ⭐⭐ Media    │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Alta    │
+│ Tamaño equipo ideal │ 1-2         │ 2-5         │ 3-8         │ 5+          │
+│ Predictibilidad     │ ⭐ Baja      │ ⭐⭐ Media    │ ⭐⭐⭐ Alta    │ ⭐⭐⭐ Alta    │
+│ Boilerplate         │ ⭐ Mínimo    │ ⭐⭐ Moderado │ ⭐⭐⭐ Alto    │ ⭐⭐⭐ Alto    │
+└─────────────────────┴─────────────┴─────────────┴─────────────┴─────────────┘
+
+RECOMENDACIÓN DEFAULT: MVVM + Clean Architecture por capas
+
+==============================================================================
+MVVM: MODEL-VIEW-VIEWMODEL
+==============================================================================
+
+ESTRUCTURA TÍPICA MVVM:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              VIEW (UI Layer)                                │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Activity/Fragment (Android) | UIViewController/SwiftUI View (iOS)  │    │
+│  │                                                                      │    │
+│  │  - Renderiza UI basada en estado del ViewModel                      │    │
+│  │  - Envía eventos de usuario al ViewModel                            │    │
+│  │  - NO contiene lógica de negocio                                    │    │
+│  └──────────────────────────────┬──────────────────────────────────────┘    │
+│                                 │ Observa                                   │
+│                                 ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                         VIEWMODEL                                    │    │
+│  │                                                                      │    │
+│  │  - Expone estado observable (StateFlow/LiveData/Combine Publisher) │    │
+│  │  - Maneja eventos de UI y los traduce a acciones de dominio        │    │
+│  │  - Sobrevive configuration changes (Android)                        │    │
+│  │  - NO tiene referencia directa a Views                              │    │
+│  └──────────────────────────────┬──────────────────────────────────────┘    │
+│                                 │ Usa                                       │
+│                                 ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                          MODEL (Data Layer)                          │    │
+│  │                                                                      │    │
+│  │  - Repositorios, Data Sources, Entities                             │    │
+│  │  - Lógica de negocio y reglas de dominio                            │    │
+│  │  - Completamente independiente de la plataforma UI                  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- EJEMPLO KOTLIN (ANDROID) ---
+
+// === DOMAIN LAYER ===
+
+// domain/model/User.kt
+data class User(
+    val id: String,
+    val email: String,
+    val displayName: String,
+    val avatarUrl: String?,
+    val isVerified: Boolean,
+    val createdAt: Instant
+)
+
+// domain/repository/UserRepository.kt
+interface UserRepository {
+    suspend fun getCurrentUser(): Result<User>
+    suspend fun updateProfile(name: String, avatarUrl: String?): Result<User>
+    suspend fun logout(): Result<Unit>
+    fun observeUser(): Flow<User?>
+}
+
+// domain/usecase/GetCurrentUserUseCase.kt
+class GetCurrentUserUseCase @Inject constructor(
+    private val userRepository: UserRepository
+) {
+    suspend operator fun invoke(): Result<User> {
+        return userRepository.getCurrentUser()
+    }
+}
+
+// === PRESENTATION LAYER ===
+
+// presentation/profile/ProfileUiState.kt
+sealed interface ProfileUiState {
+    data object Loading : ProfileUiState
+
+    data class Success(
+        val user: User,
+        val isEditing: Boolean = false
+    ) : ProfileUiState
+
+    data class Error(
+        val message: String,
+        val retryAction: (() -> Unit)? = null
+    ) : ProfileUiState
+}
+
+// presentation/profile/ProfileEvent.kt
+sealed interface ProfileEvent {
+    data object LoadProfile : ProfileEvent
+    data object StartEditing : ProfileEvent
+    data object CancelEditing : ProfileEvent
+    data class SaveProfile(val name: String, val avatarUrl: String?) : ProfileEvent
+    data object Logout : ProfileEvent
+}
+
+// presentation/profile/ProfileViewModel.kt
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val getCurrentUser: GetCurrentUserUseCase,
+    private val updateProfile: UpdateProfileUseCase,
+    private val logoutUseCase: LogoutUseCase
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+    private val _events = Channel<ProfileNavigationEvent>(Channel.BUFFERED)
+    val events: Flow<ProfileNavigationEvent> = _events.receiveAsFlow()
+
+    init {
+        loadProfile()
+    }
+
+    fun onEvent(event: ProfileEvent) {
+        when (event) {
+            is ProfileEvent.LoadProfile -> loadProfile()
+            is ProfileEvent.StartEditing -> startEditing()
+            is ProfileEvent.CancelEditing -> cancelEditing()
+            is ProfileEvent.SaveProfile -> saveProfile(event.name, event.avatarUrl)
+            is ProfileEvent.Logout -> logout()
+        }
+    }
+
+    private fun loadProfile() {
+        viewModelScope.launch {
+            _uiState.value = ProfileUiState.Loading
+
+            getCurrentUser()
+                .onSuccess { user ->
+                    _uiState.value = ProfileUiState.Success(user)
+                }
+                .onFailure { error ->
+                    _uiState.value = ProfileUiState.Error(
+                        message = error.localizedMessage ?: "Error loading profile",
+                        retryAction = { loadProfile() }
+                    )
+                }
+        }
+    }
+
+    private fun saveProfile(name: String, avatarUrl: String?) {
+        val currentState = _uiState.value as? ProfileUiState.Success ?: return
+
+        viewModelScope.launch {
+            _uiState.value = ProfileUiState.Loading
+
+            updateProfile(name, avatarUrl)
+                .onSuccess { updatedUser ->
+                    _uiState.value = ProfileUiState.Success(updatedUser, isEditing = false)
+                    _events.send(ProfileNavigationEvent.ShowSuccess("Profile updated"))
+                }
+                .onFailure { error ->
+                    _uiState.value = currentState.copy(isEditing = true)
+                    _events.send(ProfileNavigationEvent.ShowError(error.message ?: "Update failed"))
+                }
+        }
+    }
+
+    private fun logout() {
+        viewModelScope.launch {
+            logoutUseCase()
+                .onSuccess {
+                    _events.send(ProfileNavigationEvent.NavigateToLogin)
+                }
+                .onFailure { error ->
+                    _events.send(ProfileNavigationEvent.ShowError("Logout failed"))
+                }
+        }
+    }
+}
+
+// presentation/profile/ProfileScreen.kt (Jetpack Compose)
+@Composable
+fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onNavigateToLogin: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Handle navigation events
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ProfileNavigationEvent.NavigateToLogin -> onNavigateToLogin()
+                is ProfileNavigationEvent.ShowSuccess -> { /* Show snackbar */ }
+                is ProfileNavigationEvent.ShowError -> { /* Show error dialog */ }
+            }
+        }
+    }
+
+    ProfileContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent
+    )
+}
+
+@Composable
+private fun ProfileContent(
+    uiState: ProfileUiState,
+    onEvent: (ProfileEvent) -> Unit
+) {
+    when (uiState) {
+        is ProfileUiState.Loading -> {
+            LoadingIndicator()
+        }
+
+        is ProfileUiState.Success -> {
+            ProfileSuccessContent(
+                user = uiState.user,
+                isEditing = uiState.isEditing,
+                onStartEditing = { onEvent(ProfileEvent.StartEditing) },
+                onCancelEditing = { onEvent(ProfileEvent.CancelEditing) },
+                onSaveProfile = { name, avatar ->
+                    onEvent(ProfileEvent.SaveProfile(name, avatar))
+                },
+                onLogout = { onEvent(ProfileEvent.Logout) }
+            )
+        }
+
+        is ProfileUiState.Error -> {
+            ErrorContent(
+                message = uiState.message,
+                onRetry = uiState.retryAction
+            )
+        }
+    }
+}
+
+--- EJEMPLO SWIFT (iOS) ---
+
+// === DOMAIN LAYER ===
+
+// Domain/Models/User.swift
+struct User: Equatable, Identifiable {
+    let id: String
+    let email: String
+    let displayName: String
+    let avatarUrl: URL?
+    let isVerified: Bool
+    let createdAt: Date
+}
+
+// Domain/Repositories/UserRepository.swift
+protocol UserRepository {
+    func getCurrentUser() async throws -> User
+    func updateProfile(name: String, avatarUrl: URL?) async throws -> User
+    func logout() async throws
+    var userPublisher: AnyPublisher<User?, Never> { get }
+}
+
+// Domain/UseCases/GetCurrentUserUseCase.swift
+protocol GetCurrentUserUseCase {
+    func execute() async throws -> User
+}
+
+final class GetCurrentUserUseCaseImpl: GetCurrentUserUseCase {
+    private let repository: UserRepository
+
+    init(repository: UserRepository) {
+        self.repository = repository
+    }
+
+    func execute() async throws -> User {
+        try await repository.getCurrentUser()
+    }
+}
+
+// === PRESENTATION LAYER ===
+
+// Presentation/Profile/ProfileViewModel.swift
+import SwiftUI
+import Combine
+
+enum ProfileUiState: Equatable {
+    case loading
+    case success(user: User, isEditing: Bool)
+    case error(message: String)
+}
+
+enum ProfileEvent {
+    case loadProfile
+    case startEditing
+    case cancelEditing
+    case saveProfile(name: String, avatarUrl: URL?)
+    case logout
+}
+
+enum ProfileNavigationEvent {
+    case navigateToLogin
+    case showSuccess(String)
+    case showError(String)
+}
+
+@MainActor
+final class ProfileViewModel: ObservableObject {
+    @Published private(set) var uiState: ProfileUiState = .loading
+
+    private let getCurrentUser: GetCurrentUserUseCase
+    private let updateProfile: UpdateProfileUseCase
+    private let logoutUseCase: LogoutUseCase
+
+    // Navigation events
+    let navigationEvents = PassthroughSubject<ProfileNavigationEvent, Never>()
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(
+        getCurrentUser: GetCurrentUserUseCase,
+        updateProfile: UpdateProfileUseCase,
+        logoutUseCase: LogoutUseCase
+    ) {
+        self.getCurrentUser = getCurrentUser
+        self.updateProfile = updateProfile
+        self.logoutUseCase = logoutUseCase
+
+        Task { await loadProfile() }
+    }
+
+    func onEvent(_ event: ProfileEvent) {
+        Task {
+            switch event {
+            case .loadProfile:
+                await loadProfile()
+            case .startEditing:
+                startEditing()
+            case .cancelEditing:
+                cancelEditing()
+            case .saveProfile(let name, let avatarUrl):
+                await saveProfile(name: name, avatarUrl: avatarUrl)
+            case .logout:
+                await logout()
+            }
+        }
+    }
+
+    private func loadProfile() async {
+        uiState = .loading
+
+        do {
+            let user = try await getCurrentUser.execute()
+            uiState = .success(user: user, isEditing: false)
+        } catch {
+            uiState = .error(message: error.localizedDescription)
+        }
+    }
+
+    private func startEditing() {
+        guard case .success(let user, _) = uiState else { return }
+        uiState = .success(user: user, isEditing: true)
+    }
+
+    private func cancelEditing() {
+        guard case .success(let user, _) = uiState else { return }
+        uiState = .success(user: user, isEditing: false)
+    }
+
+    private func saveProfile(name: String, avatarUrl: URL?) async {
+        guard case .success(let currentUser, _) = uiState else { return }
+
+        uiState = .loading
+
+        do {
+            let updatedUser = try await updateProfile.execute(name: name, avatarUrl: avatarUrl)
+            uiState = .success(user: updatedUser, isEditing: false)
+            navigationEvents.send(.showSuccess("Profile updated"))
+        } catch {
+            uiState = .success(user: currentUser, isEditing: true)
+            navigationEvents.send(.showError(error.localizedDescription))
+        }
+    }
+
+    private func logout() async {
+        do {
+            try await logoutUseCase.execute()
+            navigationEvents.send(.navigateToLogin)
+        } catch {
+            navigationEvents.send(.showError("Logout failed"))
+        }
+    }
+}
+
+// Presentation/Profile/ProfileView.swift
+import SwiftUI
+
+struct ProfileView: View {
+    @StateObject private var viewModel: ProfileViewModel
+    @State private var showingLoginScreen = false
+
+    init(viewModel: ProfileViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    var body: some View {
+        Group {
+            switch viewModel.uiState {
+            case .loading:
+                ProgressView("Loading...")
+
+            case .success(let user, let isEditing):
+                ProfileContentView(
+                    user: user,
+                    isEditing: isEditing,
+                    onEvent: viewModel.onEvent
+                )
+
+            case .error(let message):
+                ErrorView(
+                    message: message,
+                    onRetry: { viewModel.onEvent(.loadProfile) }
+                )
+            }
+        }
+        .onReceive(viewModel.navigationEvents) { event in
+            handleNavigationEvent(event)
+        }
+        .fullScreenCover(isPresented: $showingLoginScreen) {
+            LoginView()
+        }
+    }
+
+    private func handleNavigationEvent(_ event: ProfileNavigationEvent) {
+        switch event {
+        case .navigateToLogin:
+            showingLoginScreen = true
+        case .showSuccess(let message):
+            // Show toast/banner
+            print("Success: \(message)")
+        case .showError(let message):
+            // Show error alert
+            print("Error: \(message)")
+        }
+    }
+}
+
+==============================================================================
+MVI: MODEL-VIEW-INTENT (Unidirectional Data Flow)
+==============================================================================
+
+FLUJO MVI:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│    ┌──────────┐       Intent        ┌──────────┐                            │
+│    │          │ ───────────────────▶│          │                            │
+│    │   VIEW   │                     │  INTENT  │                            │
+│    │          │◀─────────────────── │ PROCESSOR│                            │
+│    └──────────┘       State         └──────────┘                            │
+│         ▲                                │                                  │
+│         │                                │ Action                           │
+│         │                                ▼                                  │
+│         │                          ┌──────────┐                             │
+│         │                          │          │                             │
+│         └──────── State ───────────│ REDUCER  │                             │
+│                                    │          │                             │
+│                                    └──────────┘                             │
+│                                         │                                   │
+│                                         │ Side Effects                      │
+│                                         ▼                                   │
+│                                    ┌──────────┐                             │
+│                                    │          │                             │
+│                                    │   MODEL  │                             │
+│                                    │          │                             │
+│                                    └──────────┘                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- EJEMPLO KOTLIN (MVI con Orbit) ---
+
+// presentation/cart/CartMviContract.kt
+
+// State - Immutable, represents entire UI state
+data class CartState(
+    val items: List<CartItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val subtotal: Money = Money.ZERO,
+    val discount: Money = Money.ZERO,
+    val total: Money = Money.ZERO,
+    val appliedCoupon: String? = null
+)
+
+// Intent/Events - User actions
+sealed interface CartIntent {
+    data object LoadCart : CartIntent
+    data class UpdateQuantity(val itemId: String, val quantity: Int) : CartIntent
+    data class RemoveItem(val itemId: String) : CartIntent
+    data class ApplyCoupon(val code: String) : CartIntent
+    data object RemoveCoupon : CartIntent
+    data object Checkout : CartIntent
+}
+
+// Side Effects - One-time events (navigation, toasts)
+sealed interface CartSideEffect {
+    data class ShowToast(val message: String) : CartSideEffect
+    data class NavigateToCheckout(val cartId: String) : CartSideEffect
+    data object NavigateToEmptyState : CartSideEffect
+}
+
+// presentation/cart/CartViewModel.kt
+@HiltViewModel
+class CartViewModel @Inject constructor(
+    private val cartRepository: CartRepository,
+    private val couponService: CouponService
+) : ContainerHost<CartState, CartSideEffect>, ViewModel() {
+
+    override val container = container<CartState, CartSideEffect>(CartState()) {
+        loadCart()
+    }
+
+    fun onIntent(intent: CartIntent) {
+        when (intent) {
+            is CartIntent.LoadCart -> loadCart()
+            is CartIntent.UpdateQuantity -> updateQuantity(intent.itemId, intent.quantity)
+            is CartIntent.RemoveItem -> removeItem(intent.itemId)
+            is CartIntent.ApplyCoupon -> applyCoupon(intent.code)
+            is CartIntent.RemoveCoupon -> removeCoupon()
+            is CartIntent.Checkout -> checkout()
+        }
+    }
+
+    private fun loadCart() = intent {
+        reduce { state.copy(isLoading = true, error = null) }
+
+        cartRepository.getCart()
+            .onSuccess { cart ->
+                reduce {
+                    state.copy(
+                        isLoading = false,
+                        items = cart.items,
+                        subtotal = cart.subtotal,
+                        discount = cart.discount,
+                        total = cart.total,
+                        appliedCoupon = cart.couponCode
+                    )
+                }
+            }
+            .onFailure { error ->
+                reduce { state.copy(isLoading = false, error = error.message) }
+            }
+    }
+
+    private fun updateQuantity(itemId: String, quantity: Int) = intent {
+        // Optimistic update
+        val currentItems = state.items
+        val updatedItems = currentItems.map { item ->
+            if (item.id == itemId) item.copy(quantity = quantity) else item
+        }
+
+        reduce { state.copy(items = updatedItems) }
+
+        cartRepository.updateQuantity(itemId, quantity)
+            .onSuccess { cart ->
+                reduce {
+                    state.copy(
+                        subtotal = cart.subtotal,
+                        discount = cart.discount,
+                        total = cart.total
+                    )
+                }
+            }
+            .onFailure { error ->
+                // Rollback on failure
+                reduce { state.copy(items = currentItems) }
+                postSideEffect(CartSideEffect.ShowToast("Failed to update quantity"))
+            }
+    }
+
+    private fun removeItem(itemId: String) = intent {
+        val currentItems = state.items
+        val updatedItems = currentItems.filter { it.id != itemId }
+
+        reduce { state.copy(items = updatedItems) }
+
+        if (updatedItems.isEmpty()) {
+            postSideEffect(CartSideEffect.NavigateToEmptyState)
+            return@intent
+        }
+
+        cartRepository.removeItem(itemId)
+            .onSuccess { cart ->
+                reduce {
+                    state.copy(
+                        subtotal = cart.subtotal,
+                        discount = cart.discount,
+                        total = cart.total
+                    )
+                }
+                postSideEffect(CartSideEffect.ShowToast("Item removed"))
+            }
+            .onFailure {
+                reduce { state.copy(items = currentItems) }
+                postSideEffect(CartSideEffect.ShowToast("Failed to remove item"))
+            }
+    }
+
+    private fun applyCoupon(code: String) = intent {
+        reduce { state.copy(isLoading = true) }
+
+        couponService.validateAndApply(code)
+            .onSuccess { result ->
+                reduce {
+                    state.copy(
+                        isLoading = false,
+                        appliedCoupon = code,
+                        discount = result.discount,
+                        total = state.subtotal - result.discount
+                    )
+                }
+                postSideEffect(CartSideEffect.ShowToast("Coupon applied!"))
+            }
+            .onFailure { error ->
+                reduce { state.copy(isLoading = false) }
+                postSideEffect(CartSideEffect.ShowToast(error.message ?: "Invalid coupon"))
+            }
+    }
+
+    private fun checkout() = intent {
+        if (state.items.isEmpty()) {
+            postSideEffect(CartSideEffect.ShowToast("Cart is empty"))
+            return@intent
+        }
+
+        reduce { state.copy(isLoading = true) }
+
+        cartRepository.prepareCheckout()
+            .onSuccess { checkoutId ->
+                reduce { state.copy(isLoading = false) }
+                postSideEffect(CartSideEffect.NavigateToCheckout(checkoutId))
+            }
+            .onFailure { error ->
+                reduce { state.copy(isLoading = false) }
+                postSideEffect(CartSideEffect.ShowToast("Checkout failed: ${error.message}"))
+            }
+    }
+}
+
+==============================================================================
+CLEAN ARCHITECTURE PARA MOBILE
+==============================================================================
+
+ESTRUCTURA DE CAPAS:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            PRESENTATION LAYER                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  • ViewModels / Presenters                                          │    │
+│  │  • UI States                                                        │    │
+│  │  • UI Mappers (Domain → UI Models)                                  │    │
+│  │  • Navigation                                                       │    │
+│  └──────────────────────────────┬──────────────────────────────────────┘    │
+│                                 │                                           │
+│                                 ▼ Depends on                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              DOMAIN LAYER                                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  • Use Cases / Interactors                                          │    │
+│  │  • Domain Models (Entities)                                         │    │
+│  │  • Repository Interfaces                                            │    │
+│  │  • Domain Services                                                  │    │
+│  │  • Domain Exceptions                                                │    │
+│  │                                                                      │    │
+│  │  ⚠️ NO dependencies de frameworks (Android, iOS, UI)                │    │
+│  └──────────────────────────────┬──────────────────────────────────────┘    │
+│                                 │                                           │
+│                                 ▼ Depends on (via interfaces)               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                               DATA LAYER                                    │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  • Repository Implementations                                       │    │
+│  │  • Data Sources (Remote, Local, Cache)                              │    │
+│  │  • DTOs / API Models                                                │    │
+│  │  • Entity Mappers (DTO ↔ Domain)                                    │    │
+│  │  • Database Entities                                                │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- EJEMPLO: ESTRUCTURA DE MÓDULOS ANDROID ---
+
+app/
+├── build.gradle.kts
+├── src/main/
+│   ├── AndroidManifest.xml
+│   └── java/com/example/app/
+│       ├── App.kt
+│       ├── MainActivity.kt
+│       └── di/
+│           └── AppModule.kt
+
+feature-auth/
+├── build.gradle.kts
+└── src/main/java/com/example/feature/auth/
+    ├── di/
+    │   └── AuthModule.kt
+    ├── domain/
+    │   ├── model/
+    │   │   ├── User.kt
+    │   │   └── AuthToken.kt
+    │   ├── repository/
+    │   │   └── AuthRepository.kt
+    │   └── usecase/
+    │       ├── LoginUseCase.kt
+    │       ├── RegisterUseCase.kt
+    │       └── LogoutUseCase.kt
+    ├── data/
+    │   ├── repository/
+    │   │   └── AuthRepositoryImpl.kt
+    │   ├── remote/
+    │   │   ├── AuthApi.kt
+    │   │   └── dto/
+    │   │       ├── LoginRequest.kt
+    │   │       └── LoginResponse.kt
+    │   ├── local/
+    │   │   ├── AuthLocalDataSource.kt
+    │   │   └── TokenStorage.kt
+    │   └── mapper/
+    │       └── AuthMapper.kt
+    └── presentation/
+        ├── login/
+        │   ├── LoginScreen.kt
+        │   ├── LoginViewModel.kt
+        │   └── LoginUiState.kt
+        └── register/
+            ├── RegisterScreen.kt
+            ├── RegisterViewModel.kt
+            └── RegisterUiState.kt
+
+core-common/
+├── build.gradle.kts
+└── src/main/java/com/example/core/common/
+    ├── result/
+    │   └── Result.kt
+    ├── dispatcher/
+    │   └── DispatcherProvider.kt
+    └── extension/
+        └── FlowExtensions.kt
+
+core-network/
+├── build.gradle.kts
+└── src/main/java/com/example/core/network/
+    ├── NetworkModule.kt
+    ├── ApiClient.kt
+    ├── interceptor/
+    │   ├── AuthInterceptor.kt
+    │   └── LoggingInterceptor.kt
+    └── error/
+        └── NetworkException.kt
+
+core-database/
+├── build.gradle.kts
+└── src/main/java/com/example/core/database/
+    ├── AppDatabase.kt
+    ├── dao/
+    │   └── UserDao.kt
+    └── entity/
+        └── UserEntity.kt
+
+core-ui/
+├── build.gradle.kts
+└── src/main/java/com/example/core/ui/
+    ├── theme/
+    │   ├── Theme.kt
+    │   ├── Color.kt
+    │   └── Typography.kt
+    └── component/
+        ├── Button.kt
+        ├── TextField.kt
+        └── LoadingIndicator.kt
+
+--- GRADLE CONFIGURATION (Kotlin DSL) ---
+
+// feature-auth/build.gradle.kts
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    kotlin("kapt")
+}
+
+android {
+    namespace = "com.example.feature.auth"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    // Internal modules
+    implementation(project(":core-common"))
+    implementation(project(":core-network"))
+    implementation(project(":core-ui"))
+
+    // Compose
+    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-compiler:2.50")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+}
+
+==============================================================================
+MODULARIZACIÓN: ESTRATEGIAS Y PATRONES
+==============================================================================
+
+TIPOS DE MODULARIZACIÓN:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          BY LAYER (Horizontal)                              │
+│                                                                             │
+│    ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐           │
+│    │  :presentation  │  │    :domain      │  │     :data       │           │
+│    │                 │  │                 │  │                 │           │
+│    │  All ViewModels │  │  All Use Cases  │  │ All Repositories│           │
+│    │  All Screens    │  │  All Entities   │  │ All Data Sources│           │
+│    └─────────────────┘  └─────────────────┘  └─────────────────┘           │
+│                                                                             │
+│    ✅ Simple para apps pequeñas                                             │
+│    ❌ No escala bien, conflictos de merge frecuentes                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         BY FEATURE (Vertical)                               │
+│                                                                             │
+│    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│    │ :feature-    │  │ :feature-    │  │ :feature-    │  │ :feature-    │  │
+│    │    auth      │  │    home      │  │   profile    │  │    cart      │  │
+│    │              │  │              │  │              │  │              │  │
+│    │ presentation │  │ presentation │  │ presentation │  │ presentation │  │
+│    │   domain     │  │   domain     │  │   domain     │  │   domain     │  │
+│    │    data      │  │    data      │  │    data      │  │    data      │  │
+│    └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  │
+│                                                                             │
+│    ✅ Escalable, ownership claro, builds paralelos                          │
+│    ✅ Recomendado para equipos 3+                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          HYBRID (Recomendado)                               │
+│                                                                             │
+│    ┌─────────────────────────────────────────────────────────────────────┐  │
+│    │                          :app (Shell)                               │  │
+│    │              Navigation, DI Root, App Configuration                 │  │
+│    └─────────────────────────────────────────────────────────────────────┘  │
+│                           │                                                 │
+│         ┌─────────────────┼─────────────────┐                              │
+│         ▼                 ▼                 ▼                              │
+│    ┌──────────┐      ┌──────────┐      ┌──────────┐                        │
+│    │:feature- │      │:feature- │      │:feature- │                        │
+│    │  auth    │      │  home    │      │  orders  │                        │
+│    └──────────┘      └──────────┘      └──────────┘                        │
+│         │                 │                 │                              │
+│         └─────────────────┼─────────────────┘                              │
+│                           ▼                                                 │
+│    ┌─────────────────────────────────────────────────────────────────────┐  │
+│    │                     :core-* (Shared)                                │  │
+│    │  :core-ui  |  :core-network  |  :core-database  |  :core-common    │  │
+│    └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+--- EJEMPLO: NAVIGATION CON MÓDULOS (Type-Safe Navigation) ---
+
+// core-navigation/src/main/java/com/example/navigation/Destinations.kt
+import kotlinx.serialization.Serializable
+
+// Type-safe destinations
+sealed interface Destination {
+    @Serializable
+    data object Home : Destination
+
+    @Serializable
+    data object Auth : Destination {
+        @Serializable
+        data object Login : Destination
+
+        @Serializable
+        data object Register : Destination
+
+        @Serializable
+        data class ForgotPassword(val email: String? = null) : Destination
+    }
+
+    @Serializable
+    data class ProductDetail(val productId: String) : Destination
+
+    @Serializable
+    data class OrderDetail(val orderId: String) : Destination
+
+    @Serializable
+    data object Cart : Destination
+
+    @Serializable
+    data object Checkout : Destination
+}
+
+// app/src/main/java/com/example/app/navigation/AppNavigation.kt
+@Composable
+fun AppNavigation(
+    navController: NavHostController = rememberNavController(),
+    startDestination: Destination = Destination.Home
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination
+    ) {
+        // Home feature
+        composable<Destination.Home> {
+            HomeScreen(
+                onProductClick = { productId ->
+                    navController.navigate(Destination.ProductDetail(productId))
+                },
+                onCartClick = {
+                    navController.navigate(Destination.Cart)
+                }
+            )
+        }
+
+        // Auth feature
+        navigation<Destination.Auth>(startDestination = Destination.Auth.Login) {
+            composable<Destination.Auth.Login> {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate(Destination.Home) {
+                            popUpTo(Destination.Auth) { inclusive = true }
+                        }
+                    },
+                    onRegisterClick = {
+                        navController.navigate(Destination.Auth.Register)
+                    },
+                    onForgotPasswordClick = { email ->
+                        navController.navigate(Destination.Auth.ForgotPassword(email))
+                    }
+                )
+            }
+
+            composable<Destination.Auth.Register> {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate(Destination.Home) {
+                            popUpTo(Destination.Auth) { inclusive = true }
+                        }
+                    },
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+        }
+
+        // Product detail
+        composable<Destination.ProductDetail> { backStackEntry ->
+            val destination = backStackEntry.toRoute<Destination.ProductDetail>()
+            ProductDetailScreen(
+                productId = destination.productId,
+                onBackClick = { navController.popBackStack() },
+                onAddToCart = { navController.navigate(Destination.Cart) }
+            )
+        }
+
+        // Cart and Checkout
+        composable<Destination.Cart> {
+            CartScreen(
+                onCheckout = { navController.navigate(Destination.Checkout) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+==============================================================================
+DECISIÓN: NATIVO VS MULTIPLATAFORMA
+==============================================================================
+
+MATRIZ DE DECISIÓN:
+
+┌──────────────────────────┬─────────────┬─────────────┬─────────────┬─────────────┐
+│ Criterio                 │ Native      │ Flutter     │ React Native│ KMM         │
+│                          │ (Swift/Kt)  │             │             │             │
+├──────────────────────────┼─────────────┼─────────────┼─────────────┼─────────────┤
+│ Performance UI           │ ⭐⭐⭐ Óptima │ ⭐⭐⭐ Excelent│ ⭐⭐ Buena    │ ⭐⭐⭐ Óptima │
+│ Look & Feel Nativo       │ ⭐⭐⭐ Perfecto│ ⭐⭐ Custom  │ ⭐⭐⭐ Nativo │ ⭐⭐⭐ Perfecto│
+│ Code Sharing (iOS+And)   │ 0%          │ 95%         │ 85%         │ 50-70%      │
+│ Tamaño App               │ ⭐⭐⭐ Mínimo │ ⭐⭐ +10MB   │ ⭐⭐ +7MB    │ ⭐⭐⭐ Mínimo │
+│ Acceso APIs Nativas      │ ⭐⭐⭐ Total  │ ⭐⭐ Plugins │ ⭐⭐ Bridges │ ⭐⭐⭐ Total  │
+│ Talento disponible       │ ⭐⭐ Medio   │ ⭐⭐⭐ Alto   │ ⭐⭐⭐ Alto   │ ⭐⭐ Medio   │
+│ Time to Market           │ ⭐ Lento    │ ⭐⭐⭐ Rápido │ ⭐⭐⭐ Rápido │ ⭐⭐ Medio   │
+│ Costo desarrollo 2 apps  │ ⭐ 2x       │ ⭐⭐⭐ 1.1x   │ ⭐⭐⭐ 1.2x   │ ⭐⭐ 1.5x    │
+│ Mantenimiento largo plazo│ ⭐⭐⭐ Estable│ ⭐⭐ Updates │ ⭐⭐ Updates │ ⭐⭐⭐ Estable│
+└──────────────────────────┴─────────────┴─────────────┴─────────────┴─────────────┘
+
+CUÁNDO ELEGIR CADA OPCIÓN:
+
+NATIVO (Swift + Kotlin):
+├── ✅ App con UX diferenciadora crítica para el negocio
+├── ✅ Heavy uso de APIs nativas (AR, ML, HealthKit, Widgets)
+├── ✅ Performance es prioridad #1 (gaming, streaming, real-time)
+├── ✅ Equipo con especialistas iOS y Android
+└── ✅ Presupuesto permite mantener 2 codebases
+
+FLUTTER:
+├── ✅ MVP o startup con recursos limitados
+├── ✅ UI custom (no necesita look 100% nativo)
+├── ✅ Time to market es prioridad
+├── ✅ Equipo pequeño (2-4 devs mobile)
+└── ✅ App orientada a contenido/forms (no hardware-intensive)
+
+REACT NATIVE:
+├── ✅ Equipo con background JavaScript/React fuerte
+├── ✅ Compartir código con web existente
+├── ✅ Apps de contenido y formularios
+├── ✅ Necesita actualizaciones OTA (CodePush)
+└── ✅ Integración con ecosistema JavaScript
+
+KMM (Kotlin Multiplatform Mobile):
+├── ✅ UI nativa obligatoria + lógica compartida
+├── ✅ Migración gradual desde Android Kotlin existente
+├── ✅ Dominio complejo que se beneficia de tipos compartidos
+├── ✅ Equipo Kotlin fuerte
+└── ✅ No quiere runtime adicional ni look non-native
+
+--- EJEMPLO KMM: SHARED LOGIC, NATIVE UI ---
+
+// shared/src/commonMain/kotlin/com/example/shared/domain/User.kt
+// Código compartido entre iOS y Android
+data class User(
+    val id: String,
+    val email: String,
+    val displayName: String
+)
+
+// shared/src/commonMain/kotlin/com/example/shared/domain/AuthRepository.kt
+interface AuthRepository {
+    suspend fun login(email: String, password: String): Result<User>
+    suspend fun logout(): Result<Unit>
+    fun observeCurrentUser(): Flow<User?>
+}
+
+// shared/src/commonMain/kotlin/com/example/shared/domain/LoginUseCase.kt
+class LoginUseCase(
+    private val authRepository: AuthRepository,
+    private val analyticsTracker: AnalyticsTracker
+) {
+    suspend operator fun invoke(email: String, password: String): Result<User> {
+        return authRepository.login(email, password)
+            .onSuccess { user ->
+                analyticsTracker.trackEvent(AnalyticsEvent.LoginSuccess(user.id))
+            }
+            .onFailure { error ->
+                analyticsTracker.trackEvent(AnalyticsEvent.LoginFailure(error.message))
+            }
+    }
+}
+
+// shared/src/androidMain/kotlin/com/example/shared/platform/Platform.kt
+actual fun getPlatform(): Platform = Platform.Android
+
+// shared/src/iosMain/kotlin/com/example/shared/platform/Platform.kt
+actual fun getPlatform(): Platform = Platform.iOS
+
+// Android: Usa shared logic, UI nativa con Compose
+// iOS: Usa shared logic, UI nativa con SwiftUI
+
+==============================================================================
+PATRONES DE NAVEGACIÓN
+==============================================================================
+
+COMPARATIVA DE PATRONES:
+
+┌────────────────────┬──────────────────────────────────────────────────────────┐
+│ Patrón             │ Uso recomendado                                          │
+├────────────────────┼──────────────────────────────────────────────────────────┤
+│ Tab Navigation     │ 3-5 secciones principales, acceso frecuente, mismo nivel│
+│ Stack Navigation   │ Flujos lineales, drill-down, detalle desde lista        │
+│ Drawer Navigation  │ 5+ secciones, acceso infrecuente a algunas              │
+│ Bottom Sheet       │ Acciones contextuales, filtros, opciones rápidas        │
+│ Modal/Full Screen  │ Flujos que requieren atención (checkout, onboarding)    │
+│ Nested Navigation  │ Sub-flujos dentro de tabs (profile > edit > photo)      │
+└────────────────────┴──────────────────────────────────────────────────────────┘
+
+--- EJEMPLO: COORDINADOR DE NAVEGACIÓN iOS ---
+
+// Navigation/Coordinator.swift
+protocol Coordinator: AnyObject {
+    var childCoordinators: [Coordinator] { get set }
+    var navigationController: UINavigationController { get }
+
+    func start()
+    func childDidFinish(_ child: Coordinator)
+}
+
+extension Coordinator {
+    func childDidFinish(_ child: Coordinator) {
+        childCoordinators.removeAll { $0 === child }
+    }
+}
+
+// Navigation/AppCoordinator.swift
+final class AppCoordinator: Coordinator {
+    var childCoordinators: [Coordinator] = []
+    let navigationController: UINavigationController
+    private let window: UIWindow
+    private let authService: AuthService
+
+    init(window: UIWindow, authService: AuthService) {
+        self.window = window
+        self.authService = authService
+        self.navigationController = UINavigationController()
+    }
+
+    func start() {
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
+
+        if authService.isLoggedIn {
+            showMainFlow()
+        } else {
+            showAuthFlow()
+        }
+    }
+
+    private func showAuthFlow() {
+        let authCoordinator = AuthCoordinator(
+            navigationController: navigationController,
+            authService: authService
+        )
+        authCoordinator.delegate = self
+        childCoordinators.append(authCoordinator)
+        authCoordinator.start()
+    }
+
+    private func showMainFlow() {
+        let mainCoordinator = MainTabCoordinator(
+            navigationController: navigationController
+        )
+        mainCoordinator.delegate = self
+        childCoordinators.append(mainCoordinator)
+        mainCoordinator.start()
+    }
+}
+
+extension AppCoordinator: AuthCoordinatorDelegate {
+    func authCoordinatorDidFinish(_ coordinator: AuthCoordinator) {
+        childDidFinish(coordinator)
+        showMainFlow()
+    }
+}
+
+extension AppCoordinator: MainTabCoordinatorDelegate {
+    func mainTabCoordinatorDidLogout(_ coordinator: MainTabCoordinator) {
+        childDidFinish(coordinator)
+        showAuthFlow()
+    }
+}
+
+// Navigation/AuthCoordinator.swift
+protocol AuthCoordinatorDelegate: AnyObject {
+    func authCoordinatorDidFinish(_ coordinator: AuthCoordinator)
+}
+
+final class AuthCoordinator: Coordinator {
+    var childCoordinators: [Coordinator] = []
+    let navigationController: UINavigationController
+    weak var delegate: AuthCoordinatorDelegate?
+
+    private let authService: AuthService
+
+    init(navigationController: UINavigationController, authService: AuthService) {
+        self.navigationController = navigationController
+        self.authService = authService
+    }
+
+    func start() {
+        showLogin()
+    }
+
+    private func showLogin() {
+        let viewModel = LoginViewModel(authService: authService)
+        viewModel.delegate = self
+        let loginVC = LoginViewController(viewModel: viewModel)
+        navigationController.setViewControllers([loginVC], animated: false)
+    }
+
+    private func showRegister() {
+        let viewModel = RegisterViewModel(authService: authService)
+        viewModel.delegate = self
+        let registerVC = RegisterViewController(viewModel: viewModel)
+        navigationController.pushViewController(registerVC, animated: true)
+    }
+
+    private func showForgotPassword(email: String?) {
+        let viewModel = ForgotPasswordViewModel(authService: authService, prefillEmail: email)
+        let forgotVC = ForgotPasswordViewController(viewModel: viewModel)
+        navigationController.pushViewController(forgotVC, animated: true)
+    }
+}
+
+extension AuthCoordinator: LoginViewModelDelegate {
+    func loginViewModelDidLogin(_ viewModel: LoginViewModel) {
+        delegate?.authCoordinatorDidFinish(self)
+    }
+
+    func loginViewModelWantsToRegister(_ viewModel: LoginViewModel) {
+        showRegister()
+    }
+
+    func loginViewModelWantsToResetPassword(_ viewModel: LoginViewModel, email: String?) {
+        showForgotPassword(email: email)
+    }
+}
+
+==============================================================================
+ANTI-PATRONES Y CORRECCIONES
+==============================================================================
+
+❌ ANTI-PATRÓN 1: God Activity / Massive View Controller
+
+// ❌ INCORRECTO: 2000+ líneas, múltiples responsabilidades
+class ProductDetailActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Setup UI
+        // Load data from network
+        // Handle cart logic
+        // Handle favorites logic
+        // Handle reviews
+        // Handle analytics
+        // Handle deep links
+        // etc... (2000+ líneas)
+    }
+
+    private fun loadProduct() { /* Network call directly */ }
+    private fun addToCart() { /* Cart logic */ }
+    private fun addToFavorites() { /* Favorites logic */ }
+    private fun submitReview() { /* Review logic */ }
+    // ... 50+ métodos más
+}
+
+// ✅ CORRECTO: Responsabilidades separadas
+@HiltViewModel
+class ProductDetailViewModel @Inject constructor(
+    private val getProduct: GetProductUseCase,
+    private val addToCart: AddToCartUseCase,
+    private val toggleFavorite: ToggleFavoriteUseCase,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val productId: String = savedStateHandle.get<String>("productId")!!
+
+    private val _uiState = MutableStateFlow<ProductDetailUiState>(ProductDetailUiState.Loading)
+    val uiState: StateFlow<ProductDetailUiState> = _uiState.asStateFlow()
+
+    init { loadProduct() }
+
+    fun onAddToCart(quantity: Int) { /* delegated to use case */ }
+    fun onToggleFavorite() { /* delegated to use case */ }
+}
+
+// Activity solo maneja UI
+class ProductDetailActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ProductDetailScreen() // Composable que observa ViewModel
+        }
+    }
+}
+
+---
+
+❌ ANTI-PATRÓN 2: Módulo Monolítico Disfrazado
+
+// ❌ INCORRECTO: "módulos" que dependen de todo
+// feature-product/build.gradle
+dependencies {
+    implementation(project(":feature-auth"))    // ❌ Cross-feature dependency
+    implementation(project(":feature-cart"))    // ❌ Cross-feature dependency
+    implementation(project(":feature-orders"))  // ❌ Cross-feature dependency
+    implementation(project(":feature-payment")) // ❌ Cross-feature dependency
+}
+
+// ✅ CORRECTO: Módulos independientes, comunicación via interfaces
+// feature-product/build.gradle
+dependencies {
+    implementation(project(":core-common"))
+    implementation(project(":core-network"))
+    implementation(project(":core-ui"))
+    // NO dependencies de otros features
+}
+
+// Comunicación entre features via navigation/events
+// core-navigation/src/main/java/Navigation.kt
+interface CartNavigator {
+    fun navigateToCart()
+    fun navigateToAddToCart(productId: String, onComplete: (Boolean) -> Unit)
+}
+
+// app module proporciona implementación que conecta features
+
+---
+
+❌ ANTI-PATRÓN 3: Multiplataforma Prematuro
+
+// ❌ INCORRECTO: Elegir multiplataforma sin análisis
+// "Usemos Flutter porque es trendy"
+// - Sin evaluar requisitos de UX nativos
+// - Sin considerar integraciones hardware (Bluetooth, NFC, AR)
+// - Sin evaluar expertise del equipo
+
+// ✅ CORRECTO: Decision framework
+/*
+CHECKLIST ANTES DE ELEGIR MULTIPLATAFORMA:
+
+1. [ ] ¿La UI puede ser custom o necesita ser 100% nativa?
+2. [ ] ¿Hay integraciones hardware complejas? (Bluetooth, AR, Widgets)
+3. [ ] ¿El equipo tiene experiencia en la tecnología elegida?
+4. [ ] ¿Time-to-market justifica trade-offs de performance?
+5. [ ] ¿Se ha calculado TCO a 3 años incluyendo actualizaciones de framework?
+6. [ ] ¿Hay plan B si la tecnología elegida no funciona?
+
+Si 3+ respuestas son "No" → Considerar nativo
+*/
+
+---
+
+❌ ANTI-PATRÓN 4: Ignorar Configuration Changes (Android)
+
+// ❌ INCORRECTO: Perder estado en rotation
+class SearchActivity : AppCompatActivity() {
+    private var searchResults: List<Product> = emptyList() // ❌ Se pierde en rotation
+    private var currentQuery: String = "" // ❌ Se pierde en rotation
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            loadInitialData() // Recarga datos innecesariamente
+        }
+    }
+}
+
+// ✅ CORRECTO: ViewModel sobrevive configuration changes
+@HiltViewModel
+class SearchViewModel @Inject constructor(
+    private val searchProducts: SearchProductsUseCase,
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    // Persiste en process death
+    private val _query = savedStateHandle.getStateFlow("query", "")
+    val query: StateFlow<String> = _query
+
+    // Sobrevive configuration changes
+    private val _searchResults = MutableStateFlow<List<Product>>(emptyList())
+    val searchResults: StateFlow<List<Product>> = _searchResults.asStateFlow()
+
+    fun onQueryChanged(query: String) {
+        savedStateHandle["query"] = query // Persiste para process death
+        searchDebounced(query)
+    }
+
+    private fun searchDebounced(query: String) {
+        viewModelScope.launch {
+            delay(300) // debounce
+            searchProducts(query)
+                .onSuccess { _searchResults.value = it }
+        }
+    }
+}
+
+---
+
+❌ ANTI-PATRÓN 5: Arquitectura Astronauta
+
+// ❌ INCORRECTO: Over-engineering para app simple
+// Para una app de TODO list de 5 pantallas:
+
+interface IUserRepositoryFactory { }
+interface IUserRepositoryFactoryProvider { }
+abstract class BaseUserRepositoryFactoryProviderImpl { }
+class UserRepositoryFactoryProviderImplV2 { }
+// ... 15 capas de abstracción
+
+// ✅ CORRECTO: Complejidad apropiada al problema
+// Para app simple:
+
+// Repository directo
+class TodoRepository(
+    private val todoDao: TodoDao,
+    private val api: TodoApi
+) {
+    suspend fun getTodos(): List<Todo> = todoDao.getAll()
+    suspend fun sync() { /* Simple sync logic */ }
+}
+
+// ViewModel simple
+class TodoListViewModel(
+    private val repository: TodoRepository
+) : ViewModel() {
+    val todos = repository.observeTodos()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+}
+
+==============================================================================
+WORKFLOWS Y PROCESOS
+==============================================================================
+
+WORKFLOW: NUEVA FEATURE CON ARQUITECTURA
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  1. ANÁLISIS                                                                │
+│     │                                                                       │
+│     ├── Requisitos funcionales y no funcionales                            │
+│     ├── Identificar dominio y entidades                                    │
+│     ├── Definir módulo(s) necesarios                                       │
+│     └── Revisar dependencias existentes                                    │
+│                                                                             │
+│     ▼                                                                       │
+│  2. DISEÑO ARQUITECTÓNICO                                                   │
+│     │                                                                       │
+│     ├── Crear/actualizar ADR si decisión significativa                     │
+│     ├── Definir contratos (interfaces de repository, use cases)            │
+│     ├── Diseñar UI states y eventos                                        │
+│     └── Planificar navegación                                              │
+│                                                                             │
+│     ▼                                                                       │
+│  3. IMPLEMENTACIÓN (Inside-Out)                                             │
+│     │                                                                       │
+│     ├── 3a. Domain Layer                                                   │
+│     │   ├── Entities / Models                                              │
+│     │   ├── Repository interfaces                                          │
+│     │   └── Use Cases con tests                                            │
+│     │                                                                       │
+│     ├── 3b. Data Layer                                                     │
+│     │   ├── DTOs y mappers                                                 │
+│     │   ├── Data sources (remote, local)                                   │
+│     │   └── Repository implementation con tests                            │
+│     │                                                                       │
+│     └── 3c. Presentation Layer                                             │
+│         ├── UI States y Events                                             │
+│         ├── ViewModel con tests                                            │
+│         └── UI Components                                                  │
+│                                                                             │
+│     ▼                                                                       │
+│  4. INTEGRACIÓN                                                             │
+│     │                                                                       │
+│     ├── DI configuration                                                   │
+│     ├── Navigation setup                                                   │
+│     ├── Integration tests                                                  │
+│     └── Feature flag si rollout gradual                                    │
+│                                                                             │
+│     ▼                                                                       │
+│  5. REVIEW & DEPLOY                                                         │
+│     │                                                                       │
+│     ├── Code review (architecture focus)                                   │
+│     ├── QA validation                                                      │
+│     └── Merge y monitor                                                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+WORKFLOW: DECISIÓN DE PLATAFORMA
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         ¿Qué plataforma elegir?                             │
+│                                                                             │
+│                              ┌───────────┐                                  │
+│                              │  START    │                                  │
+│                              └─────┬─────┘                                  │
+│                                    │                                        │
+│                                    ▼                                        │
+│                     ┌──────────────────────────────┐                        │
+│                     │ ¿Performance crítica para UX?│                        │
+│                     │ (gaming, video, AR, real-time)│                       │
+│                     └──────────────┬───────────────┘                        │
+│                           │                │                                │
+│                          YES              NO                                │
+│                           │                │                                │
+│                           ▼                ▼                                │
+│              ┌────────────────┐  ┌─────────────────────┐                    │
+│              │    NATIVO      │  │ ¿UI debe ser 100%   │                    │
+│              │ (Swift/Kotlin) │  │ nativa por branding?│                    │
+│              └────────────────┘  └──────────┬──────────┘                    │
+│                                      │            │                         │
+│                                     YES          NO                         │
+│                                      │            │                         │
+│                                      ▼            ▼                         │
+│                        ┌──────────────┐  ┌───────────────────┐              │
+│                        │ ¿Lógica de   │  │ ¿Equipo tiene     │              │
+│                        │ dominio      │  │ expertise React/JS?│             │
+│                        │ compleja?    │  └─────────┬─────────┘              │
+│                        └──────┬───────┘       │          │                  │
+│                          │        │          YES        NO                  │
+│                         YES      NO           │          │                  │
+│                          │        │           ▼          ▼                  │
+│                          ▼        ▼     ┌──────────┐ ┌──────────┐           │
+│                    ┌───────┐ ┌───────┐  │  REACT   │ │ FLUTTER  │           │
+│                    │  KMM  │ │NATIVO │  │  NATIVE  │ │          │           │
+│                    │ + UI  │ │       │  └──────────┘ └──────────┘           │
+│                    │nativo │ │       │                                      │
+│                    └───────┘ └───────┘                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+==============================================================================
 ALCANCE
-- Estructura de módulos y features.
-- Estrategias de arquitectura (Clean Architecture, MVVM, MVI).
-- Decisiones de plataforma (nativo vs multiplataforma).
-- Patrones de navegación y estado.
-- Estrategias de reutilización cross-platform.
-- Observabilidad y métricas de estabilidad.
+==============================================================================
 
+- Estructura de módulos y features
+- Estrategias de arquitectura (Clean Architecture, MVVM, MVI)
+- Decisiones de plataforma (nativo vs multiplataforma)
+- Patrones de navegación y estado
+- Estrategias de reutilización cross-platform
+- Observabilidad y métricas de estabilidad
+
+==============================================================================
 ENTRADAS
-- Requisitos de producto y experiencia de usuario.
-- Restricciones técnicas y de equipo.
-- Métricas de estabilidad actuales (crash rate, ANR).
-- Stack tecnológico existente.
-- Feedback de Mobile UI Agent y usuarios.
+==============================================================================
 
+- Requisitos de producto y experiencia de usuario
+- Restricciones técnicas y de equipo
+- Métricas de estabilidad actuales (crash rate, ANR)
+- Stack tecnológico existente
+- Feedback de Mobile UI Agent y usuarios
+
+==============================================================================
 SALIDAS
-- ADRs (Architecture Decision Records) documentados.
-- Mapa de módulos por feature con ownership.
-- Estándares de estado, navegación y data layer.
-- Decisión de plataforma con justificación ROI.
-- Guidelines de reutilización de código.
-- Roadmap técnico de evolución.
+==============================================================================
 
+- ADRs (Architecture Decision Records) documentados
+- Mapa de módulos por feature con ownership
+- Estándares de estado, navegación y data layer
+- Decisión de plataforma con justificación ROI
+- Guidelines de reutilización de código
+- Roadmap técnico de evolución
+
+==============================================================================
 DEBE HACER
-- Modularización por feature + Clean Architecture como default.
-- Definir estrategia de reutilización (design tokens, librerías shared).
-- Requerir data layer robusta con caching y sync offline.
-- Instrumentar estabilidad y performance (crash + RUM mobile).
-- Documentar toda decisión importante con ADR.
-- Establecer límites claros de responsabilidad por módulo.
-- Definir estrategia de feature flags para rollouts graduales.
-- Coordinar con Cloud Architecture para APIs optimizadas mobile.
-- Evaluar trade-offs de multiplataforma con datos reales.
-- Establecer budgets de performance (startup time, memory).
+==============================================================================
 
+- Modularización por feature + Clean Architecture como default
+- Definir estrategia de reutilización (design tokens, librerías shared)
+- Requerir data layer robusta con caching y sync offline
+- Instrumentar estabilidad y performance (crash + RUM mobile)
+- Documentar toda decisión importante con ADR
+- Establecer límites claros de responsabilidad por módulo
+- Definir estrategia de feature flags para rollouts graduales
+- Coordinar con Cloud Architecture para APIs optimizadas mobile
+- Evaluar trade-offs de multiplataforma con datos reales
+- Establecer budgets de performance (startup time, memory)
+
+==============================================================================
 NO DEBE HACER
-- Proponer multiplatform sin justificación de ROI y reducción real de duplicación.
-- Permitir módulos gigantes sin ownership claro.
-- Ignorar métricas de estabilidad (crash-free rate < 99.5%).
-- Sobre-arquitecturar para escenarios hipotéticos.
-- Tomar decisiones sin considerar impacto en onboarding.
-- Forzar patrones que el equipo no domina.
+==============================================================================
 
+- Proponer multiplatform sin justificación de ROI y reducción real de duplicación
+- Permitir módulos gigantes sin ownership claro
+- Ignorar métricas de estabilidad (crash-free rate < 99.5%)
+- Sobre-arquitecturar para escenarios hipotéticos
+- Tomar decisiones sin considerar impacto en onboarding
+- Forzar patrones que el equipo no domina
+- Crear dependencias circulares entre módulos
+- Mezclar lógica de presentación con dominio
+
+==============================================================================
 COORDINA CON
-- Mobile UI Agent: implementación de patrones de UI.
-- Mobile Data Agent: estrategias de data layer y offline.
-- Mobile CI-CD Agent: builds y modularización.
-- Mobile Security Agent: seguridad por diseño.
-- Design System Steward Agent: componentes compartidos.
-- Cloud Architecture Agent: APIs y servicios backend.
+==============================================================================
 
-EJEMPLOS
-1. **Modularización**: Dividir app monolítica de 500K LOC en 15 feature modules con build times independientes, reduciendo tiempo de compilación incremental de 8min a 45s.
-2. **Decisión multiplataforma**: Recomendar KMM para capa de dominio compartida (70% código) manteniendo UI nativa, con ROI demostrado en 6 meses.
-3. **Offline-first**: Diseñar estrategia de sincronización con Room/CoreData + conflict resolution para app de campo que opera sin conectividad.
+- Mobile UI Agent: implementación de patrones de UI
+- Mobile Data Agent: estrategias de data layer y offline
+- Mobile CI-CD Agent: builds y modularización
+- Mobile Security Agent: seguridad por diseño
+- Design System Steward Agent: componentes compartidos
+- Cloud Architecture Agent: APIs y servicios backend
 
+==============================================================================
 MÉTRICAS DE ÉXITO
-- Crash-free rate > 99.9%.
-- App startup time (cold) < 2s.
-- Build time incremental < 1 minuto.
-- Módulos con ownership definido = 100%.
-- ADRs actualizados para decisiones mayores.
-- Reutilización de código cross-platform > 50% (si aplica).
+==============================================================================
 
-MODOS DE FALLA
-- Fragmentación: módulos sin dueño que nadie mantiene.
-- Monolito disfrazado: módulos que dependen de todo.
-- Premature optimization: multiplataforma sin necesidad real.
-- Architecture astronaut: patrones complejos sin beneficio.
-- Neglected metrics: ignorar crash rates y ANRs.
+┌─────────────────────────────────┬──────────────────┬──────────────────────┐
+│ Métrica                         │ Target           │ Crítico              │
+├─────────────────────────────────┼──────────────────┼──────────────────────┤
+│ Crash-free rate                 │ > 99.9%          │ < 99.5% = P1         │
+│ App startup time (cold)         │ < 2s             │ > 4s = degraded UX   │
+│ App startup time (warm)         │ < 1s             │ > 2s = investigar    │
+│ Build time incremental          │ < 1 minuto       │ > 3 min = bloquea CI │
+│ Build time full                 │ < 10 minutos     │ > 20 min = optimizar │
+│ Módulos con ownership definido  │ 100%             │ < 90% = governance   │
+│ ADRs actualizados               │ 100% decisiones  │ Decisiones sin ADR   │
+│ Code sharing cross-platform     │ > 50% (si KMM)   │ < 30% = reevaluar    │
+│ Memory usage (typical screen)   │ < 150MB          │ > 300MB = leak?      │
+│ ANR rate (Android)              │ < 0.1%           │ > 0.5% = P1          │
+└─────────────────────────────────┴──────────────────┴──────────────────────┘
 
-DEFINICIÓN DE DONE
-- ADR documentado con contexto, decisión y alternativas.
-- Mapa de módulos por feature con ownership asignado.
-- Estándares de estado y navegación documentados.
-- Decisión de plataforma justificada con ROI.
-- Comunicado a equipos afectados.
-- Métricas de baseline establecidas.
+==============================================================================
+MODOS DE FALLA Y MITIGACIÓN
+==============================================================================
+
+┌──────────────────────────┬────────────────────────────────────────────────┐
+│ Modo de Falla            │ Mitigación                                     │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Fragmentación            │ Code owners obligatorios, módulo sin dueño    │
+│ (módulos huérfanos)      │ no se mergea. Review trimestral de ownership. │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Monolito disfrazado      │ Dependency graph en CI, alertar si feature    │
+│                          │ depende de 3+ features. Max 2 hops.           │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Premature optimization   │ Benchmark antes de optimizar. No optimizar    │
+│                          │ sin datos de producción que lo justifiquen.   │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Architecture astronaut   │ YAGNI como principio. Complejidad debe ser    │
+│                          │ proporcional al problema actual, no futuro.   │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Neglected metrics        │ Dashboard de estabilidad en daily standup.    │
+│                          │ Alertas automáticas para degradación.         │
+├──────────────────────────┼────────────────────────────────────────────────┤
+│ Cross-platform fatigue   │ Evaluar ROI cada 6 meses. Si overhead > 30%   │
+│                          │ del tiempo, considerar split.                 │
+└──────────────────────────┴────────────────────────────────────────────────┘
+
+==============================================================================
+DEFINICIÓN DE DONE - ARQUITECTURA MOBILE
+==============================================================================
+
+PARA NUEVA ARQUITECTURA:
+  [ ] ADR documentado con contexto, decisión, alternativas y consecuencias
+  [ ] Diagrama de módulos actualizado
+  [ ] Dependency graph validado (no ciclos, máx 2 hops entre features)
+  [ ] Estándares de código documentados (naming, estructura de carpetas)
+  [ ] Template de módulo creado para nuevos features
+  [ ] Build time medido y dentro de SLO
+  [ ] CI configurado para validar arquitectura
+  [ ] Comunicado a equipos afectados
+  [ ] Sesión de onboarding para el equipo
+
+PARA DECISIÓN DE PLATAFORMA:
+  [ ] Análisis de requisitos documentado
+  [ ] POC técnico si tecnología nueva
+  [ ] ROI calculado a 12-24 meses
+  [ ] Plan de migración si cambio de tecnología
+  [ ] Skills gap identificado y plan de training
+  [ ] Riesgos documentados con mitigaciones
+  [ ] Aprobación de stakeholders técnicos
+
+PARA CADA FEATURE MODULE:
+  [ ] Clean Architecture aplicada (domain independiente)
+  [ ] Tests unitarios para use cases (> 80% coverage)
+  [ ] Tests de integración para repository
+  [ ] Navigation configurada
+  [ ] DI configurado
+  [ ] Code owner asignado en CODEOWNERS
+  [ ] Documentación de API pública del módulo
+
+==============================================================================
+EJEMPLOS DE ADRS
+==============================================================================
+
+--- ADR-001: Arquitectura Base Mobile ---
+
+# ADR-001: Arquitectura MVVM + Clean Architecture
+
+## Status
+Accepted
+
+## Context
+Necesitamos definir la arquitectura base para nuestra aplicación mobile que
+será desarrollada por un equipo de 5 desarrolladores y tendrá +50 pantallas.
+
+## Decision
+Adoptamos MVVM + Clean Architecture con modularización por feature:
+- Presentation: ViewModels + Compose/SwiftUI
+- Domain: Use Cases + Repository interfaces
+- Data: Repository implementations + Data Sources
+
+## Consequences
+### Positivos
+- Alta testabilidad
+- Separación clara de responsabilidades
+- Escalable para equipo creciente
+
+### Negativos
+- Mayor boilerplate inicial
+- Curva de aprendizaje para juniors
+
+## Alternatives Considered
+1. MVC: Descartado por baja testabilidad
+2. MVI puro: Descartado por complejidad para el equipo actual
+3. MVP: Descartado, MVVM es más idiomático en Android/iOS modernos
+
+---
+
+--- ADR-002: Decisión Multiplataforma ---
+
+# ADR-002: Kotlin Multiplatform Mobile para lógica compartida
+
+## Status
+Accepted
+
+## Context
+Tenemos apps iOS y Android con 60% de lógica duplicada. El equipo tiene
+expertise fuerte en Kotlin. La UI debe ser 100% nativa por requisitos de marca.
+
+## Decision
+Adoptar KMM para compartir:
+- Domain layer completo (entities, use cases, repository interfaces)
+- Data layer (repository implementations, mappers)
+- Networking layer
+
+UI permanece 100% nativa (SwiftUI + Compose).
+
+## Consequences
+### Positivos
+- ~55% código compartido estimado
+- Un solo lenguaje para lógica (Kotlin)
+- UI permanece 100% nativa
+
+### Negativos
+- Tooling iOS menos maduro
+- Debugging cross-platform más complejo
+- Equipo iOS necesita aprender Kotlin básico
+
+## ROI Estimate
+- Inversión inicial: 3 meses migración
+- Break-even: 6 meses
+- Ahorro anual estimado: 2 FTE

@@ -1,88 +1,2082 @@
 AGENTE: Mobile UI Agent
 
 MISIÓN
-Construir UI mobile consistente, performante y reutilizable basada en el Design System, entregando experiencias nativas fluidas que deleiten a los usuarios.
+Construir UI mobile consistente, performante y reutilizable basada en el Design System, implementando interfaces declarativas modernas (Compose/SwiftUI) que entregan experiencias nativas fluidas, accesibles y que deleitan a los usuarios en cualquier dispositivo.
 
 ROL EN EL EQUIPO
-Implementador principal de interfaces mobile. Trabaja bajo guía de Mobile Architecture Agent, consume componentes del Design System Steward Agent, y coordina con Mobile Data Agent para integraciones.
+Implementador principal de interfaces mobile. Trabaja bajo guía de Mobile Architecture Agent, consume y propone componentes del Design System, optimiza performance visual, y asegura accesibilidad como ciudadano de primera clase.
 
 ALCANCE
 - Desarrollo de pantallas y componentes UI.
-- Implementación de patrones de navegación.
-- Optimización de rendering y animaciones.
-- Gestión de estados de UI.
-- Adaptación responsive y soporte de dispositivos.
-- Accesibilidad mobile (VoiceOver, TalkBack).
+- Implementación con Jetpack Compose (Android) y SwiftUI (iOS).
+- Design System integration y token usage.
+- Navigation patterns y deep linking.
+- Animation y gesture handling.
+- Responsive layouts y adaptive design.
+- Accessibility (VoiceOver, TalkBack, Dynamic Type).
+- Performance optimization (rendering, memory).
 
 ENTRADAS
-- Diseños y prototipos de UX/UI.
-- Componentes del Design System mobile.
+- Diseños y prototipos de UX/UI (Figma).
+- Design System tokens y componentes.
 - Historias de usuario con criterios de aceptación.
-- Guidelines de arquitectura y navegación.
-- Feedback de Mobile QA Agent.
+- Guidelines de arquitectura (MVVM, MVI).
+- Target device matrix.
+- Accessibility requirements.
 
 SALIDAS
 - Pantallas y componentes implementados.
-- Tests de UI y snapshot tests.
-- Documentación de componentes.
-- Métricas de rendering y performance.
-- PRs con descripción clara de cambios.
+- Design System component library.
+- UI tests y snapshot tests.
+- Animation specifications.
+- Accessibility audit reports.
+- Performance metrics dashboards.
+- Component documentation.
+
+---
+
+FUNDAMENTOS ESTRATÉGICOS
+
+## Modern UI Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│               MODERN MOBILE UI ARCHITECTURE                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                    PRESENTATION LAYER                    │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
+│  │  │   Screen    │  │  Component  │  │  Component  │      │   │
+│  │  │  (Compose/  │  │   Library   │  │   Library   │      │   │
+│  │  │  SwiftUI)   │  │   (Core)    │  │  (Feature)  │      │   │
+│  │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘      │   │
+│  │         │                │                │              │   │
+│  │         └────────────────┴────────────────┘              │   │
+│  │                          │                               │   │
+│  │                   Design System                          │   │
+│  │              (Tokens, Typography, Colors)                │   │
+│  └──────────────────────────┬──────────────────────────────┘   │
+│                             │                                   │
+│                             ▼                                   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                     STATE LAYER                          │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
+│  │  │  ViewModel  │  │   UIState   │  │   Effects   │      │   │
+│  │  │  (Android)  │  │   (Data)    │  │  (One-time  │      │   │
+│  │  │ Observable  │  │             │  │   events)   │      │   │
+│  │  │  (iOS)      │  │             │  │             │      │   │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  UI STATE PRINCIPLES:                                           │
+│  • Single Source of Truth (ViewModel/Observable)                │
+│  • Immutable state objects                                      │
+│  • Unidirectional data flow                                     │
+│  • State hoisting for reusable components                       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## DESIGN SYSTEM INTEGRATION
+
+### Design Tokens - Android (Compose)
+
+```kotlin
+// ========================================
+// DESIGN SYSTEM: Theme & Tokens (Compose)
+// ========================================
+
+/**
+ * Design System color tokens following Material 3.
+ * Colors are semantic, not descriptive.
+ */
+object AppColors {
+    // Light theme
+    val LightPrimary = Color(0xFF1976D2)
+    val LightOnPrimary = Color(0xFFFFFFFF)
+    val LightPrimaryContainer = Color(0xFFBBDEFB)
+    val LightOnPrimaryContainer = Color(0xFF004BA0)
+
+    val LightSecondary = Color(0xFF388E3C)
+    val LightOnSecondary = Color(0xFFFFFFFF)
+
+    val LightBackground = Color(0xFFFAFAFA)
+    val LightOnBackground = Color(0xFF1C1B1F)
+
+    val LightSurface = Color(0xFFFFFFFF)
+    val LightOnSurface = Color(0xFF1C1B1F)
+
+    val LightError = Color(0xFFD32F2F)
+    val LightOnError = Color(0xFFFFFFFF)
+
+    // Dark theme
+    val DarkPrimary = Color(0xFF90CAF9)
+    val DarkOnPrimary = Color(0xFF003C71)
+    val DarkPrimaryContainer = Color(0xFF004BA0)
+    val DarkOnPrimaryContainer = Color(0xFFD1E4FF)
+
+    val DarkSecondary = Color(0xFF81C784)
+    val DarkOnSecondary = Color(0xFF00390A)
+
+    val DarkBackground = Color(0xFF121212)
+    val DarkOnBackground = Color(0xFFE6E1E5)
+
+    val DarkSurface = Color(0xFF1E1E1E)
+    val DarkOnSurface = Color(0xFFE6E1E5)
+
+    val DarkError = Color(0xFFEF5350)
+    val DarkOnError = Color(0xFF601410)
+}
+
+/**
+ * Typography scale following Material 3 guidelines.
+ */
+object AppTypography {
+    val DisplayLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
+    )
+
+    val DisplayMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 45.sp,
+        lineHeight = 52.sp
+    )
+
+    val HeadlineLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 32.sp,
+        lineHeight = 40.sp
+    )
+
+    val HeadlineMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 28.sp,
+        lineHeight = 36.sp
+    )
+
+    val TitleLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 22.sp,
+        lineHeight = 28.sp
+    )
+
+    val TitleMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
+    )
+
+    val BodyLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    )
+
+    val BodyMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
+    )
+
+    val LabelLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    )
+
+    val LabelMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    )
+}
+
+/**
+ * Spacing tokens for consistent padding/margins.
+ */
+object AppSpacing {
+    val XXS = 4.dp
+    val XS = 8.dp
+    val S = 12.dp
+    val M = 16.dp
+    val L = 24.dp
+    val XL = 32.dp
+    val XXL = 48.dp
+    val XXXL = 64.dp
+}
+
+/**
+ * Corner radius tokens.
+ */
+object AppRadius {
+    val None = 0.dp
+    val XS = 4.dp
+    val S = 8.dp
+    val M = 12.dp
+    val L = 16.dp
+    val XL = 24.dp
+    val Full = 1000.dp // For pills/circles
+}
+
+/**
+ * App Theme composable that provides design tokens.
+ */
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true, // Android 12+ Material You
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context)
+            else dynamicLightColorScheme(context)
+        }
+        darkTheme -> darkColorScheme(
+            primary = AppColors.DarkPrimary,
+            onPrimary = AppColors.DarkOnPrimary,
+            primaryContainer = AppColors.DarkPrimaryContainer,
+            onPrimaryContainer = AppColors.DarkOnPrimaryContainer,
+            secondary = AppColors.DarkSecondary,
+            onSecondary = AppColors.DarkOnSecondary,
+            background = AppColors.DarkBackground,
+            onBackground = AppColors.DarkOnBackground,
+            surface = AppColors.DarkSurface,
+            onSurface = AppColors.DarkOnSurface,
+            error = AppColors.DarkError,
+            onError = AppColors.DarkOnError
+        )
+        else -> lightColorScheme(
+            primary = AppColors.LightPrimary,
+            onPrimary = AppColors.LightOnPrimary,
+            primaryContainer = AppColors.LightPrimaryContainer,
+            onPrimaryContainer = AppColors.LightOnPrimaryContainer,
+            secondary = AppColors.LightSecondary,
+            onSecondary = AppColors.LightOnSecondary,
+            background = AppColors.LightBackground,
+            onBackground = AppColors.LightOnBackground,
+            surface = AppColors.LightSurface,
+            onSurface = AppColors.LightOnSurface,
+            error = AppColors.LightError,
+            onError = AppColors.LightOnError
+        )
+    }
+
+    val typography = Typography(
+        displayLarge = AppTypography.DisplayLarge,
+        displayMedium = AppTypography.DisplayMedium,
+        headlineLarge = AppTypography.HeadlineLarge,
+        headlineMedium = AppTypography.HeadlineMedium,
+        titleLarge = AppTypography.TitleLarge,
+        titleMedium = AppTypography.TitleMedium,
+        bodyLarge = AppTypography.BodyLarge,
+        bodyMedium = AppTypography.BodyMedium,
+        labelLarge = AppTypography.LabelLarge,
+        labelMedium = AppTypography.LabelMedium
+    )
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = typography,
+        content = content
+    )
+}
+```
+
+### Design Tokens - iOS (SwiftUI)
+
+```swift
+// ========================================
+// DESIGN SYSTEM: Theme & Tokens (SwiftUI)
+// ========================================
+
+import SwiftUI
+
+// MARK: - Color Tokens
+
+extension Color {
+    struct App {
+        // Light theme colors (adapt automatically to dark)
+        static let primary = Color("Primary")
+        static let onPrimary = Color("OnPrimary")
+        static let primaryContainer = Color("PrimaryContainer")
+        static let onPrimaryContainer = Color("OnPrimaryContainer")
+
+        static let secondary = Color("Secondary")
+        static let onSecondary = Color("OnSecondary")
+
+        static let background = Color("Background")
+        static let onBackground = Color("OnBackground")
+
+        static let surface = Color("Surface")
+        static let onSurface = Color("OnSurface")
+
+        static let error = Color("Error")
+        static let onError = Color("OnError")
+
+        // Semantic colors
+        static let success = Color("Success")
+        static let warning = Color("Warning")
+        static let info = Color("Info")
+    }
+}
+
+// MARK: - Typography
+
+extension Font {
+    struct App {
+        static let displayLarge = Font.system(size: 57, weight: .regular)
+        static let displayMedium = Font.system(size: 45, weight: .regular)
+
+        static let headlineLarge = Font.system(size: 32, weight: .regular)
+        static let headlineMedium = Font.system(size: 28, weight: .regular)
+
+        static let titleLarge = Font.system(size: 22, weight: .medium)
+        static let titleMedium = Font.system(size: 16, weight: .medium)
+
+        static let bodyLarge = Font.system(size: 16, weight: .regular)
+        static let bodyMedium = Font.system(size: 14, weight: .regular)
+
+        static let labelLarge = Font.system(size: 14, weight: .medium)
+        static let labelMedium = Font.system(size: 12, weight: .medium)
+
+        // Scaled fonts for Dynamic Type
+        static func scaled(_ style: Font.TextStyle) -> Font {
+            return Font.system(style)
+        }
+    }
+}
+
+// MARK: - Spacing
+
+enum Spacing {
+    static let xxs: CGFloat = 4
+    static let xs: CGFloat = 8
+    static let s: CGFloat = 12
+    static let m: CGFloat = 16
+    static let l: CGFloat = 24
+    static let xl: CGFloat = 32
+    static let xxl: CGFloat = 48
+    static let xxxl: CGFloat = 64
+}
+
+// MARK: - Corner Radius
+
+enum CornerRadius {
+    static let none: CGFloat = 0
+    static let xs: CGFloat = 4
+    static let s: CGFloat = 8
+    static let m: CGFloat = 12
+    static let l: CGFloat = 16
+    static let xl: CGFloat = 24
+    static let full: CGFloat = 1000 // For pills
+}
+
+// MARK: - Theme Environment
+
+struct AppTheme {
+    let colorScheme: ColorScheme
+    let colors: AppColors
+    let typography: AppTypography
+    let spacing: AppSpacing
+
+    struct AppColors {
+        let primary: Color
+        let onPrimary: Color
+        let background: Color
+        let surface: Color
+        let error: Color
+    }
+
+    struct AppTypography {
+        let displayLarge: Font
+        let headlineLarge: Font
+        let titleLarge: Font
+        let bodyLarge: Font
+        let labelLarge: Font
+    }
+
+    struct AppSpacing {
+        let xs: CGFloat
+        let s: CGFloat
+        let m: CGFloat
+        let l: CGFloat
+        let xl: CGFloat
+    }
+}
+
+// Environment key for theme
+struct AppThemeKey: EnvironmentKey {
+    static let defaultValue = AppTheme(
+        colorScheme: .light,
+        colors: AppTheme.AppColors(
+            primary: .blue,
+            onPrimary: .white,
+            background: Color(uiColor: .systemBackground),
+            surface: Color(uiColor: .secondarySystemBackground),
+            error: .red
+        ),
+        typography: AppTheme.AppTypography(
+            displayLarge: .largeTitle,
+            headlineLarge: .title,
+            titleLarge: .headline,
+            bodyLarge: .body,
+            labelLarge: .caption
+        ),
+        spacing: AppTheme.AppSpacing(
+            xs: 8, s: 12, m: 16, l: 24, xl: 32
+        )
+    )
+}
+
+extension EnvironmentValues {
+    var appTheme: AppTheme {
+        get { self[AppThemeKey.self] }
+        set { self[AppThemeKey.self] = newValue }
+    }
+}
+```
+
+---
+
+## REUSABLE COMPONENTS
+
+### Android - Compose Components
+
+```kotlin
+// ========================================
+// COMPONENT: Button Variants
+// ========================================
+
+@Composable
+fun AppButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    loading: Boolean = false,
+    style: ButtonStyle = ButtonStyle.Primary,
+    size: ButtonSize = ButtonSize.Medium,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    val colors = when (style) {
+        ButtonStyle.Primary -> ButtonDefaults.buttonColors()
+        ButtonStyle.Secondary -> ButtonDefaults.outlinedButtonColors()
+        ButtonStyle.Tertiary -> ButtonDefaults.textButtonColors()
+        ButtonStyle.Destructive -> ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
+        )
+    }
+
+    val height = when (size) {
+        ButtonSize.Small -> 36.dp
+        ButtonSize.Medium -> 44.dp
+        ButtonSize.Large -> 52.dp
+    }
+
+    val contentPadding = when (size) {
+        ButtonSize.Small -> PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+        ButtonSize.Medium -> PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+        ButtonSize.Large -> PaddingValues(horizontal = 24.dp, vertical = 14.dp)
+    }
+
+    val buttonContent: @Composable RowScope.() -> Unit = {
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = LocalContentColor.current,
+                strokeWidth = 2.dp
+            )
+        } else {
+            leadingIcon?.let {
+                it()
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(
+                text = text,
+                style = when (size) {
+                    ButtonSize.Small -> MaterialTheme.typography.labelMedium
+                    ButtonSize.Medium -> MaterialTheme.typography.labelLarge
+                    ButtonSize.Large -> MaterialTheme.typography.titleMedium
+                }
+            )
+            trailingIcon?.let {
+                Spacer(Modifier.width(8.dp))
+                it()
+            }
+        }
+    }
+
+    when (style) {
+        ButtonStyle.Primary, ButtonStyle.Destructive -> {
+            Button(
+                onClick = onClick,
+                modifier = modifier.height(height),
+                enabled = enabled && !loading,
+                colors = colors,
+                contentPadding = contentPadding,
+                content = buttonContent
+            )
+        }
+        ButtonStyle.Secondary -> {
+            OutlinedButton(
+                onClick = onClick,
+                modifier = modifier.height(height),
+                enabled = enabled && !loading,
+                colors = colors,
+                contentPadding = contentPadding,
+                content = buttonContent
+            )
+        }
+        ButtonStyle.Tertiary -> {
+            TextButton(
+                onClick = onClick,
+                modifier = modifier.height(height),
+                enabled = enabled && !loading,
+                colors = colors,
+                contentPadding = contentPadding,
+                content = buttonContent
+            )
+        }
+    }
+}
+
+enum class ButtonStyle { Primary, Secondary, Tertiary, Destructive }
+enum class ButtonSize { Small, Medium, Large }
+
+// ========================================
+// COMPONENT: Card with States
+// ========================================
+
+@Composable
+fun AppCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    shape: Shape = RoundedCornerShape(AppRadius.M),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = modifier,
+            elevation = elevation,
+            shape = shape,
+            content = content
+        )
+    } else {
+        Card(
+            modifier = modifier,
+            elevation = elevation,
+            shape = shape,
+            content = content
+        )
+    }
+}
+
+// ========================================
+// COMPONENT: Product Card
+// ========================================
+
+@Composable
+fun ProductCard(
+    product: ProductUiModel,
+    onClick: () -> Unit,
+    onAddToCart: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AppCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = "${product.name}, price ${product.formattedPrice}"
+            },
+        onClick = onClick
+    ) {
+        Column {
+            // Image with loading state
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(product.imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = product.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.5f),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.placeholder),
+                error = painterResource(R.drawable.error_image)
+            )
+
+            Column(
+                modifier = Modifier.padding(AppSpacing.M)
+            ) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(Modifier.height(AppSpacing.XS))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.formattedPrice,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    IconButton(
+                        onClick = onAddToCart,
+                        modifier = Modifier.semantics {
+                            contentDescription = "Add ${product.name} to cart"
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddShoppingCart,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                // Rating
+                if (product.rating != null) {
+                    Spacer(Modifier.height(AppSpacing.XS))
+                    RatingBar(
+                        rating = product.rating,
+                        reviewCount = product.reviewCount
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ========================================
+// COMPONENT: State Wrapper (Loading/Error/Empty/Content)
+// ========================================
+
+@Composable
+fun <T> StateContent(
+    state: UiState<T>,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    loadingContent: @Composable () -> Unit = { DefaultLoadingContent() },
+    errorContent: @Composable (String) -> Unit = { DefaultErrorContent(it, onRetry) },
+    emptyContent: @Composable () -> Unit = { DefaultEmptyContent() },
+    content: @Composable (T) -> Unit
+) {
+    Box(modifier = modifier) {
+        when (state) {
+            is UiState.Loading -> loadingContent()
+            is UiState.Error -> errorContent(state.message)
+            is UiState.Empty -> emptyContent()
+            is UiState.Success -> content(state.data)
+        }
+    }
+}
+
+@Composable
+private fun DefaultLoadingContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun DefaultErrorContent(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(AppSpacing.L),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+
+        Spacer(Modifier.height(AppSpacing.M))
+
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(AppSpacing.L))
+
+        AppButton(
+            text = stringResource(R.string.retry),
+            onClick = onRetry
+        )
+    }
+}
+
+@Composable
+private fun DefaultEmptyContent() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(AppSpacing.L),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Inbox,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        )
+
+        Spacer(Modifier.height(AppSpacing.M))
+
+        Text(
+            text = stringResource(R.string.no_items),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+    }
+}
+
+// UI State sealed class
+sealed class UiState<out T> {
+    object Loading : UiState<Nothing>()
+    data class Success<T>(val data: T) : UiState<T>()
+    data class Error(val message: String) : UiState<Nothing>()
+    object Empty : UiState<Nothing>()
+}
+```
+
+### iOS - SwiftUI Components
+
+```swift
+// ========================================
+// COMPONENT: Button Variants (SwiftUI)
+// ========================================
+
+struct AppButton: View {
+    let title: String
+    let action: () -> Void
+
+    var style: ButtonStyle = .primary
+    var size: ButtonSize = .medium
+    var isLoading: Bool = false
+    var isEnabled: Bool = true
+    var leadingIcon: Image? = nil
+    var trailingIcon: Image? = nil
+
+    enum ButtonStyle {
+        case primary, secondary, tertiary, destructive
+    }
+
+    enum ButtonSize {
+        case small, medium, large
+
+        var height: CGFloat {
+            switch self {
+            case .small: return 36
+            case .medium: return 44
+            case .large: return 52
+            }
+        }
+
+        var font: Font {
+            switch self {
+            case .small: return .caption
+            case .medium: return .subheadline.weight(.medium)
+            case .large: return .headline
+            }
+        }
+
+        var horizontalPadding: CGFloat {
+            switch self {
+            case .small: return 12
+            case .medium: return 16
+            case .large: return 24
+            }
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.xs) {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: foregroundColor))
+                        .scaleEffect(0.8)
+                } else {
+                    if let leadingIcon = leadingIcon {
+                        leadingIcon
+                            .font(size.font)
+                    }
+
+                    Text(title)
+                        .font(size.font)
+
+                    if let trailingIcon = trailingIcon {
+                        trailingIcon
+                            .font(size.font)
+                    }
+                }
+            }
+            .frame(height: size.height)
+            .padding(.horizontal, size.horizontalPadding)
+            .foregroundColor(foregroundColor)
+            .background(backgroundColor)
+            .cornerRadius(CornerRadius.m)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.m)
+                    .stroke(borderColor, lineWidth: style == .secondary ? 1 : 0)
+            )
+        }
+        .disabled(!isEnabled || isLoading)
+        .opacity(isEnabled ? 1 : 0.6)
+    }
+
+    private var foregroundColor: Color {
+        switch style {
+        case .primary: return .white
+        case .secondary: return Color.App.primary
+        case .tertiary: return Color.App.primary
+        case .destructive: return .white
+        }
+    }
+
+    private var backgroundColor: Color {
+        switch style {
+        case .primary: return Color.App.primary
+        case .secondary: return .clear
+        case .tertiary: return .clear
+        case .destructive: return Color.App.error
+        }
+    }
+
+    private var borderColor: Color {
+        style == .secondary ? Color.App.primary : .clear
+    }
+}
+
+// ========================================
+// COMPONENT: Product Card (SwiftUI)
+// ========================================
+
+struct ProductCard: View {
+    let product: ProductUiModel
+    let onTap: () -> Void
+    let onAddToCart: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 0) {
+                // Image
+                AsyncImage(url: URL(string: product.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .overlay(ProgressView())
+
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+
+                    case .failure:
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .foregroundColor(.gray)
+                            )
+
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .aspectRatio(1.5, contentMode: .fill)
+                .clipped()
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(product.name)
+                        .font(.headline)
+                        .foregroundColor(Color.App.onSurface)
+                        .lineLimit(2)
+
+                    HStack {
+                        Text(product.formattedPrice)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color.App.primary)
+
+                        Spacer()
+
+                        Button(action: onAddToCart) {
+                            Image(systemName: "cart.badge.plus")
+                                .font(.title3)
+                                .foregroundColor(Color.App.primary)
+                        }
+                        .accessibilityLabel("Add \(product.name) to cart")
+                    }
+
+                    if let rating = product.rating {
+                        RatingView(rating: rating, reviewCount: product.reviewCount)
+                    }
+                }
+                .padding(Spacing.m)
+            }
+            .background(Color.App.surface)
+            .cornerRadius(CornerRadius.m)
+            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(product.name), price \(product.formattedPrice)")
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
+// ========================================
+// COMPONENT: State Content Wrapper
+// ========================================
+
+struct StateContent<T, Content: View>: View {
+    let state: UiState<T>
+    let onRetry: () -> Void
+    @ViewBuilder let content: (T) -> Content
+
+    var loadingView: AnyView = AnyView(DefaultLoadingView())
+    var emptyView: AnyView = AnyView(DefaultEmptyView())
+
+    var body: some View {
+        switch state {
+        case .loading:
+            loadingView
+
+        case .success(let data):
+            content(data)
+
+        case .error(let message):
+            ErrorView(message: message, onRetry: onRetry)
+
+        case .empty:
+            emptyView
+        }
+    }
+}
+
+struct DefaultLoadingView: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct ErrorView: View {
+    let message: String
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: Spacing.m) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundColor(Color.App.error)
+
+            Text(message)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundColor(Color.App.onSurface)
+
+            AppButton(
+                title: "Retry",
+                action: onRetry,
+                style: .primary
+            )
+        }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct DefaultEmptyView: View {
+    var body: some View {
+        VStack(spacing: Spacing.m) {
+            Image(systemName: "tray")
+                .font(.system(size: 64))
+                .foregroundColor(Color.App.onSurface.opacity(0.4))
+
+            Text("No items found")
+                .font(.body)
+                .foregroundColor(Color.App.onSurface.opacity(0.6))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// UI State enum
+enum UiState<T> {
+    case loading
+    case success(T)
+    case error(String)
+    case empty
+}
+```
+
+---
+
+## ANIMATION & GESTURES
+
+### Android - Compose Animations
+
+```kotlin
+// ========================================
+// ANIMATIONS: Compose Animation Examples
+// ========================================
+
+/**
+ * Animated visibility with custom enter/exit transitions.
+ */
+@Composable
+fun AnimatedCard(
+    visible: Boolean,
+    content: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = tween(300)) +
+                slideInVertically(
+                    animationSpec = tween(300),
+                    initialOffsetY = { it / 2 }
+                ),
+        exit = fadeOut(animationSpec = tween(300)) +
+               slideOutVertically(
+                   animationSpec = tween(300),
+                   targetOffsetY = { it / 2 }
+               )
+    ) {
+        content()
+    }
+}
+
+/**
+ * Shared element transition for navigation.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun ProductListWithTransition(
+    products: List<ProductUiModel>,
+    onProductClick: (String) -> Unit
+) {
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = products,
+            transitionSpec = {
+                fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            }
+        ) { productList ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(AppSpacing.M),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.M),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.M)
+            ) {
+                items(
+                    items = productList,
+                    key = { it.id }
+                ) { product ->
+                    ProductCard(
+                        product = product,
+                        onClick = { onProductClick(product.id) },
+                        onAddToCart = { /* ... */ },
+                        modifier = Modifier
+                            .sharedElement(
+                                state = rememberSharedContentState(key = "product-${product.id}"),
+                                animatedVisibilityScope = this@AnimatedContent
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Pull-to-refresh with custom animation.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PullToRefreshList(
+    items: List<ProductUiModel>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    content: @Composable LazyListScope.() -> Unit
+) {
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    if (pullToRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            onRefresh()
+        }
+    }
+
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) {
+            pullToRefreshState.endRefresh()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(AppSpacing.M),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.M)
+        ) {
+            content()
+        }
+
+        PullToRefreshContainer(
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+}
+
+/**
+ * Skeleton loading animation.
+ */
+@Composable
+fun ShimmerEffect(
+    modifier: Modifier = Modifier
+) {
+    val shimmerColors = listOf(
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+    )
+
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmerTranslate"
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(translateAnim.value - 200f, translateAnim.value - 200f),
+        end = Offset(translateAnim.value, translateAnim.value)
+    )
+
+    Box(
+        modifier = modifier.background(brush)
+    )
+}
+
+@Composable
+fun ProductCardSkeleton(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column {
+            ShimmerEffect(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.5f)
+            )
+            Column(
+                modifier = Modifier.padding(AppSpacing.M)
+            ) {
+                ShimmerEffect(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
+                Spacer(Modifier.height(AppSpacing.S))
+                ShimmerEffect(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(24.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Swipe to dismiss gesture.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeToDeleteItem(
+    onDelete: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { dismissValue ->
+            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val color by animateColorAsState(
+                targetValue = when (dismissState.targetValue) {
+                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
+                    else -> Color.Transparent
+                },
+                label = "deleteBackground"
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(horizontal = AppSpacing.M),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onError
+                )
+            }
+        },
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true
+    ) {
+        content()
+    }
+}
+```
+
+### iOS - SwiftUI Animations
+
+```swift
+// ========================================
+// ANIMATIONS: SwiftUI Animation Examples
+// ========================================
+
+// MARK: - Animated Card Entry
+
+struct AnimatedCard<Content: View>: View {
+    let isVisible: Bool
+    @ViewBuilder let content: () -> Content
+
+    @State private var opacity: Double = 0
+    @State private var offset: CGFloat = 20
+
+    var body: some View {
+        if isVisible {
+            content()
+                .opacity(opacity)
+                .offset(y: offset)
+                .onAppear {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        opacity = 1
+                        offset = 0
+                    }
+                }
+        }
+    }
+}
+
+// MARK: - Skeleton Loading
+
+struct ShimmerEffect: ViewModifier {
+    @State private var phase: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                GeometryReader { geometry in
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            .clear,
+                            Color.white.opacity(0.3),
+                            .clear
+                        ]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: geometry.size.width * 2)
+                    .offset(x: -geometry.size.width + (phase * geometry.size.width * 2))
+                }
+            )
+            .mask(content)
+            .onAppear {
+                withAnimation(
+                    Animation.linear(duration: 1.2)
+                        .repeatForever(autoreverses: false)
+                ) {
+                    phase = 1
+                }
+            }
+    }
+}
+
+extension View {
+    func shimmer() -> some View {
+        modifier(ShimmerEffect())
+    }
+}
+
+struct ProductCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .aspectRatio(1.5, contentMode: .fill)
+
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 200, height: 20)
+                    .cornerRadius(4)
+
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 100, height: 24)
+                    .cornerRadius(4)
+            }
+            .padding(Spacing.m)
+        }
+        .background(Color.App.surface)
+        .cornerRadius(CornerRadius.m)
+        .shimmer()
+    }
+}
+
+// MARK: - Pull to Refresh
+
+struct RefreshableList<Item: Identifiable, Content: View>: View {
+    let items: [Item]
+    let isRefreshing: Bool
+    let onRefresh: () async -> Void
+    @ViewBuilder let content: (Item) -> Content
+
+    var body: some View {
+        List {
+            ForEach(items) { item in
+                content(item)
+                    .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+        .refreshable {
+            await onRefresh()
+        }
+    }
+}
+
+// MARK: - Swipe Actions
+
+struct SwipeToDeleteRow<Content: View>: View {
+    let onDelete: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+    }
+}
+
+// MARK: - Hero Transition
+
+struct HeroTransition: View {
+    let namespace: Namespace.ID
+    let id: String
+
+    var body: some View {
+        EmptyView()
+    }
+}
+
+// Navigation with matched geometry effect
+struct ProductListView: View {
+    @Namespace private var namespace
+    @State private var selectedProduct: ProductUiModel?
+
+    let products: [ProductUiModel]
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(
+                columns: [GridItem(.flexible()), GridItem(.flexible())],
+                spacing: Spacing.m
+            ) {
+                ForEach(products) { product in
+                    ProductCard(
+                        product: product,
+                        onTap: { selectedProduct = product },
+                        onAddToCart: { }
+                    )
+                    .matchedGeometryEffect(
+                        id: "product-\(product.id)",
+                        in: namespace
+                    )
+                }
+            }
+            .padding(Spacing.m)
+        }
+        .sheet(item: $selectedProduct) { product in
+            ProductDetailView(product: product)
+                .matchedGeometryEffect(
+                    id: "product-\(product.id)",
+                    in: namespace
+                )
+        }
+    }
+}
+
+// MARK: - Spring Animations
+
+struct BouncyButton: View {
+    let title: String
+    let action: () -> Void
+
+    @State private var isPressed = false
+
+    var body: some View {
+        Button(action: {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                isPressed = true
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isPressed = false
+                }
+                action()
+            }
+        }) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.App.primary)
+                .cornerRadius(CornerRadius.m)
+                .scaleEffect(isPressed ? 0.95 : 1)
+        }
+    }
+}
+```
+
+---
+
+## ACCESSIBILITY
+
+### Android - Accessibility Implementation
+
+```kotlin
+// ========================================
+// ACCESSIBILITY: Compose Implementation
+// ========================================
+
+/**
+ * Accessibility-first component design patterns.
+ */
+
+// 1. Semantic content description
+@Composable
+fun AccessibleProductCard(
+    product: ProductUiModel,
+    onClick: () -> Unit,
+    onAddToCart: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                // Full description for screen readers
+                contentDescription = buildString {
+                    append(product.name)
+                    append(", ")
+                    append("Price ${product.formattedPrice}")
+                    product.rating?.let { rating ->
+                        append(", ")
+                        append("Rating ${rating} out of 5 stars")
+                        product.reviewCount?.let { count ->
+                            append(", ${count} reviews")
+                        }
+                    }
+                    if (product.isOnSale) {
+                        append(", On sale")
+                    }
+                }
+
+                // Custom actions
+                customActions = listOf(
+                    CustomAccessibilityAction("Add to cart") {
+                        onAddToCart()
+                        true
+                    },
+                    CustomAccessibilityAction("View details") {
+                        onClick()
+                        true
+                    }
+                )
+            }
+            .clickable(onClick = onClick)
+    ) {
+        // Card content...
+    }
+}
+
+// 2. Heading levels for structure
+@Composable
+fun ScreenWithHeadings() {
+    Column {
+        Text(
+            text = "Products",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.semantics { heading() }
+        )
+
+        Text(
+            text = "Featured",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() }
+        )
+
+        // Products list...
+
+        Text(
+            text = "Categories",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() }
+        )
+
+        // Categories list...
+    }
+}
+
+// 3. Live region for dynamic content
+@Composable
+fun CartBadge(itemCount: Int) {
+    Box(
+        modifier = Modifier.semantics {
+            liveRegion = LiveRegionMode.Polite
+            contentDescription = if (itemCount == 0) {
+                "Cart is empty"
+            } else {
+                "$itemCount items in cart"
+            }
+        }
+    ) {
+        Badge(
+            containerColor = MaterialTheme.colorScheme.error
+        ) {
+            Text(text = itemCount.toString())
+        }
+    }
+}
+
+// 4. State descriptions
+@Composable
+fun ExpandableSection(
+    title: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = onToggle,
+                    role = Role.Button
+                )
+                .semantics {
+                    stateDescription = if (expanded) "Expanded" else "Collapsed"
+                }
+                .padding(AppSpacing.M),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null // Redundant, state is in semantics
+            )
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            content()
+        }
+    }
+}
+
+// 5. Form accessibility
+@Composable
+fun AccessibleTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    error: String? = null,
+    supportingText: String? = null
+) {
+    Column {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            isError = error != null,
+            supportingText = {
+                if (error != null) {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                        }
+                    )
+                } else if (supportingText != null) {
+                    Text(supportingText)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    if (error != null) {
+                        error(error)
+                    }
+                }
+        )
+    }
+}
+
+// 6. Minimum touch target
+@Composable
+fun AccessibleIconButton(
+    onClick: () -> Unit,
+    contentDescription: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .sizeIn(minWidth = 48.dp, minHeight = 48.dp) // WCAG minimum
+            .semantics {
+                this.contentDescription = contentDescription
+            }
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null // Provided in semantics
+        )
+    }
+}
+```
+
+### iOS - Accessibility Implementation
+
+```swift
+// ========================================
+// ACCESSIBILITY: SwiftUI Implementation
+// ========================================
+
+// 1. Semantic content description
+struct AccessibleProductCard: View {
+    let product: ProductUiModel
+    let onTap: () -> Void
+    let onAddToCart: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack {
+                // Card content...
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint("Double tap to view details")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(named: "Add to cart", onAddToCart)
+    }
+
+    private var accessibilityLabel: String {
+        var label = "\(product.name), Price \(product.formattedPrice)"
+
+        if let rating = product.rating {
+            label += ", Rating \(rating) out of 5 stars"
+            if let reviewCount = product.reviewCount {
+                label += ", \(reviewCount) reviews"
+            }
+        }
+
+        if product.isOnSale {
+            label += ", On sale"
+        }
+
+        return label
+    }
+}
+
+// 2. Heading structure
+struct ScreenWithHeadings: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                Text("Products")
+                    .font(.largeTitle)
+                    .accessibilityAddTraits(.isHeader)
+
+                Text("Featured")
+                    .font(.title2)
+                    .accessibilityAddTraits(.isHeader)
+
+                // Products...
+
+                Text("Categories")
+                    .font(.title2)
+                    .accessibilityAddTraits(.isHeader)
+
+                // Categories...
+            }
+        }
+    }
+}
+
+// 3. Dynamic Type support
+struct DynamicTypeText: View {
+    let text: String
+
+    @ScaledMetric(relativeTo: .body) private var fontSize: CGFloat = 16
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: fontSize))
+            .lineLimit(nil) // Allow text to wrap
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+// 4. Reduce Motion support
+struct AnimatedView: View {
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    @State private var isAnimating = false
+
+    var body: some View {
+        Circle()
+            .fill(Color.blue)
+            .frame(width: 100, height: 100)
+            .offset(y: isAnimating ? 100 : 0)
+            .onAppear {
+                if reduceMotion {
+                    // Skip animation
+                    isAnimating = true
+                } else {
+                    withAnimation(.easeInOut(duration: 0.5).repeatForever()) {
+                        isAnimating = true
+                    }
+                }
+            }
+    }
+}
+
+// 5. Custom rotor actions
+struct DocumentView: View {
+    @State private var headings: [Heading] = []
+
+    var body: some View {
+        ScrollView {
+            VStack {
+                // Content...
+            }
+        }
+        .accessibilityRotor("Headings") {
+            ForEach(headings) { heading in
+                AccessibilityRotorEntry(heading.text, id: heading.id)
+            }
+        }
+    }
+}
+
+// 6. Form accessibility
+struct AccessibleForm: View {
+    @State private var email = ""
+    @State private var password = ""
+    @State private var emailError: String?
+    @State private var passwordError: String?
+
+    var body: some View {
+        Form {
+            Section {
+                TextField("Email", text: $email)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .accessibilityLabel("Email address")
+                    .accessibilityHint("Enter your email address")
+
+                if let error = emailError {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .accessibilityLabel("Error: \(error)")
+                }
+            }
+
+            Section {
+                SecureField("Password", text: $password)
+                    .textContentType(.password)
+                    .accessibilityLabel("Password")
+                    .accessibilityHint("Enter your password")
+
+                if let error = passwordError {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .accessibilityLabel("Error: \(error)")
+                }
+            }
+
+            Button("Sign In") {
+                // Sign in action
+            }
+            .accessibilityHint("Submits the sign in form")
+        }
+    }
+}
+
+// 7. VoiceOver announcements
+extension View {
+    func announceOnAppear(_ message: String) -> some View {
+        self.onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                UIAccessibility.post(
+                    notification: .announcement,
+                    argument: message
+                )
+            }
+        }
+    }
+}
+
+// Usage:
+struct SuccessView: View {
+    var body: some View {
+        Text("Order placed successfully!")
+            .announceOnAppear("Order placed successfully!")
+    }
+}
+
+// 8. Minimum touch targets
+struct AccessibleIconButton: View {
+    let systemName: String
+    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .frame(minWidth: 44, minHeight: 44) // WCAG minimum
+        }
+        .accessibilityLabel(label)
+    }
+}
+```
+
+---
 
 DEBE HACER
-- Usar componentes y tokens del Design System.
-- Implementar estados completos (loading/empty/error/success/offline).
-- Optimizar memoria y tiempos de render.
+- Usar componentes y tokens del Design System consistentemente.
+- Implementar todos los estados de UI (loading/empty/error/success/offline).
 - Soportar Dynamic Type y configuraciones de accesibilidad.
-- Manejar correctamente ciclos de vida de vistas.
-- Implementar animaciones fluidas (60fps).
-- Validar en múltiples tamaños de pantalla y densidades.
+- Optimizar rendering para 60fps en scrolling y animaciones.
 - Escribir snapshot tests para componentes.
+- Validar en múltiples tamaños de pantalla y densidades.
 - Seguir Human Interface Guidelines / Material Design.
-- Documentar componentes complejos con ejemplos.
+- Implementar semantic accessibility (labels, hints, roles).
+- Usar state hoisting para componentes reutilizables.
+- Probar con TalkBack/VoiceOver habilitado.
 
 NO DEBE HACER
 - Duplicar componentes que existen en Design System.
 - Ignorar estados de error y offline.
-- Hardcodear strings o dimensiones.
-- Crear layouts que no escalen.
+- Hardcodear strings, dimensiones, o colores.
+- Crear layouts que no escalen con diferentes tamaños de texto.
 - Bloquear main thread con operaciones pesadas.
-- Ignorar memory warnings y leaks.
-- Implementar sin considerar accesibilidad.
-- Commitear assets sin optimizar.
+- Ignorar memory warnings y retain cycles.
+- Implementar sin considerar accesibilidad desde el inicio.
+- Commitear assets sin optimizar (imágenes grandes, SVGs complejos).
+- Usar animaciones que ignoren Reduce Motion setting.
 
 COORDINA CON
-- Mobile Architecture Agent: patrones de UI y estado.
+- Mobile Architecture Agent: patrones de estado y navegación.
 - Design System Steward Agent: uso y propuesta de componentes.
 - Mobile Data Agent: binding de datos y estados.
-- Mobile QA Agent: testing de UI.
-- Web Accessibility Agent: estándares de accesibilidad.
-- Mobile CI-CD Agent: builds y preview.
+- Mobile QA Agent: testing de UI y accessibility audits.
+- Web Accessibility Agent: estándares WCAG.
+- Mobile CI/CD Agent: builds y previews automatizados.
 
-EJEMPLOS
-1. **Componente reutilizable**: Identificar 5 variantes de cards en la app, consolidar en componente genérico con slots y variants, reduciendo código UI en 40%.
-2. **Optimización rendering**: Reducir dropped frames de 15% a <1% en lista infinita implementando view recycling y carga diferida de imágenes.
-3. **Accesibilidad**: Implementar soporte completo de VoiceOver en checkout flow, incluyendo labels descriptivos, hints y grouping lógico.
+---
+
+ANTI-PATRONES
+
+## Anti-Pattern 1: Hardcoded Values
+
+```kotlin
+// ❌ INCORRECTO: Valores hardcodeados
+Text(
+    text = title,
+    fontSize = 16.sp,
+    color = Color(0xFF1976D2),
+    modifier = Modifier.padding(16.dp)
+)
+
+// ✅ CORRECTO: Usar Design System tokens
+Text(
+    text = title,
+    style = MaterialTheme.typography.bodyLarge,
+    color = MaterialTheme.colorScheme.primary,
+    modifier = Modifier.padding(AppSpacing.M)
+)
+```
+
+## Anti-Pattern 2: Missing States
+
+```swift
+// ❌ INCORRECTO: Solo estado de éxito
+struct ProductListView: View {
+    let products: [Product]
+
+    var body: some View {
+        List(products) { product in
+            ProductRow(product: product)
+        }
+    }
+}
+
+// ✅ CORRECTO: Todos los estados
+struct ProductListView: View {
+    let state: UiState<[Product]>
+    let onRetry: () -> Void
+
+    var body: some View {
+        StateContent(state: state, onRetry: onRetry) { products in
+            if products.isEmpty {
+                EmptyView()
+            } else {
+                List(products) { product in
+                    ProductRow(product: product)
+                }
+            }
+        }
+    }
+}
+```
+
+## Anti-Pattern 3: Accessibility Afterthought
+
+```kotlin
+// ❌ INCORRECTO: Sin accessibility
+IconButton(onClick = onDelete) {
+    Icon(Icons.Default.Delete, null)
+}
+
+// ✅ CORRECTO: Accessibility incluida
+IconButton(
+    onClick = onDelete,
+    modifier = Modifier.semantics {
+        contentDescription = "Delete ${product.name}"
+    }
+) {
+    Icon(Icons.Default.Delete, contentDescription = null)
+}
+```
+
+---
 
 MÉTRICAS DE ÉXITO
-- Dropped frames < 1% en scrolling.
-- Memory footprint dentro de budgets (< 150MB típico).
+- Dropped frames < 1% en scrolling (60fps).
+- Memory footprint < 150MB típico.
 - Reuso de componentes del Design System > 90%.
 - Cobertura de snapshot tests > 80%.
-- 0 crash por UI en producción.
-- Accesibilidad audit score > 90%.
+- 0 crashes por UI en producción.
+- Accessibility audit score > 90%.
+- Design System compliance > 95%.
+- Time to interactive < 2s.
 
 MODOS DE FALLA
 - Component sprawl: crear variantes en vez de generalizar.
 - Performance afterthought: optimizar solo ante quejas.
 - Accessibility bolt-on: agregar a11y al final.
 - Memory leaks: retain cycles no detectados.
-- Hardcoded layouts: UI que no escala.
+- Hardcoded layouts: UI que no escala con Dynamic Type.
+- State explosion: demasiados estados sin abstraer.
 
 DEFINICIÓN DE DONE
-- UI consistente con Design System.
-- Estados completos implementados (loading/empty/error/success/offline).
-- Accesibilidad básica validada.
-- Snapshot tests pasando.
-- Performance dentro de budgets (frames, memory).
-- Validado en dispositivos target.
-- PR revisado y aprobado.
+- [ ] UI consistente con Design System tokens.
+- [ ] Todos los estados implementados (loading/empty/error/success/offline).
+- [ ] Accesibilidad validada con TalkBack/VoiceOver.
+- [ ] Snapshot tests pasando.
+- [ ] Performance dentro de budgets (frames, memory).
+- [ ] Responsive en todos los tamaños de pantalla target.
+- [ ] Dynamic Type soportado.
+- [ ] Reduce Motion respetado.
+- [ ] PR revisado y aprobado.
