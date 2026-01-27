@@ -116,7 +116,15 @@ foreach ($agent in $agentsData) {
     $escapedName = [System.Web.HttpUtility]::JavaScriptStringEncode($agent.name)
     $escapedConfig = [System.Web.HttpUtility]::JavaScriptStringEncode($agent.config)
 
-    $jsAgents += "            { name: `"$escapedName`", category: `"$($agent.category)`", platform: `"$($agent.platform)`", path: `"$($agent.path)`", config: `"$escapedConfig`" },`n"
+    # CRITICAL: Escape </ as <\/ to prevent browser from interpreting </script>
+    # as closing the script block. JavaScript interprets <\/ as </ correctly.
+    # This is a standard practice for JS embedded in HTML.
+    # Use .Replace() for literal replacement (not regex -replace)
+    $escapedConfig = $escapedConfig.Replace('</', '<\/')
+
+    # Build entry using string concatenation (NOT -f format operator!)
+    # The -f operator interprets { } in content as format placeholders, breaking the output
+    $jsAgents += '            { name: "' + $escapedName + '", category: "' + $agent.category + '", platform: "' + $agent.platform + '", path: "' + $agent.path + '", config: "' + $escapedConfig + '" },' + "`n"
 }
 $jsAgents += "        ];"
 
@@ -135,7 +143,10 @@ if (-not $template.Contains("// __AGENTS_DATA_PLACEHOLDER__")) {
 Write-Host "Injecting agents data into template..."
 
 # Replace placeholder with agents array
-$output = $template -replace "        // __AGENTS_DATA_PLACEHOLDER__", $jsAgents
+# CRITICAL: Use .Replace() method, NOT -replace operator!
+# The -replace operator uses regex and interprets $ in the replacement string
+# as backreferences, which breaks content containing $_ or similar patterns.
+$output = $template.Replace("        // __AGENTS_DATA_PLACEHOLDER__", $jsAgents)
 
 Write-Host "Writing output file..."
 
