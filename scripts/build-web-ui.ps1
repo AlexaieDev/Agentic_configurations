@@ -124,7 +124,7 @@ foreach ($agent in $agentsData) {
 
     # Build entry using string concatenation (NOT -f format operator!)
     # The -f operator interprets { } in content as format placeholders, breaking the output
-    $jsAgents += '            { name: "' + $escapedName + '", category: "' + $agent.category + '", platform: "' + $agent.platform + '", path: "' + $agent.path + '", config: "' + $escapedConfig + '" },' + "`n"
+    $jsAgents += '            { name: "' + $escapedName + '", pack: "v3.0", category: "' + $agent.category + '", platform: "' + $agent.platform + '", path: "' + $agent.path + '", config: "' + $escapedConfig + '" },' + "`n"
 }
 $jsAgents += "        ];"
 
