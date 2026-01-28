@@ -2322,8 +2322,8 @@
                 icon: '🐛',
                 color: 'cat-quality',
                 phase: 'testing',
-                agents: ['Bug Hunter', 'Test Strategy', 'Refactor & Code Quality', 'CI/CD', 'Observability'],
-                signals: ['Incidentes repetidos', 'PRs que rompen otros', 'Falta test regresion']
+                agents: ['Bug Hunter', 'Test Strategy', 'Refactor & Code Quality', 'CI/CD', 'Observability', 'Error Handling', 'Logging Strategy'],
+                signals: ['Incidentes repetidos', 'PRs que rompen otros', 'Falta test regresion', 'Logs insuficientes']
             },
             {
                 id: 'feature',
@@ -2331,8 +2331,8 @@
                 icon: '✨',
                 color: 'cat-development',
                 phase: 'desarrollo',
-                agents: ['Product-Discovery', 'Architecture', 'Dev (Frontend/Backend)', 'QA', 'CI/CD', 'Observability'],
-                signals: ['MVP requerido', 'Requisitos poco claros', 'Riesgo scope creep']
+                agents: ['Product-Discovery', 'User Research', 'Architecture', 'Prototyping', 'Dev (Frontend/Backend)', 'Design System Steward', 'QA', 'CI/CD', 'Observability', 'Estimation'],
+                signals: ['MVP requerido', 'Requisitos poco claros', 'Riesgo scope creep', 'UX sin validar']
             },
             {
                 id: 'debt',
@@ -2340,8 +2340,8 @@
                 icon: '🔧',
                 color: 'cat-transversal',
                 phase: 'mantenimiento',
-                agents: ['Refactor & Code Quality', 'Test Strategy', 'DX Agent', 'Architecture'],
-                signals: ['Copiar-pegar frecuente', 'PRs grandes', 'Modulos sin limites']
+                agents: ['Refactor & Code Quality', 'Technical Debt', 'Test Strategy', 'Dependency Management', 'Code Review', 'DX Agent', 'Architecture'],
+                signals: ['Copiar-pegar frecuente', 'PRs grandes', 'Modulos sin limites', 'Dependencias desactualizadas']
             },
             {
                 id: 'performance',
@@ -2349,8 +2349,8 @@
                 icon: '⚡',
                 color: 'cat-cloud',
                 phase: 'mantenimiento',
-                agents: ['Observability', 'Performance & Efficiency', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
-                signals: ['Core Web Vitals bajos', 'Latencia alta', 'Costo cloud creciendo']
+                agents: ['Observability', 'Performance & Efficiency', 'FinOps Cost', 'Cloud Architecture', 'CDN', 'Caching Strategy', 'Load Testing', 'Platform/DevOps', 'CI/CD'],
+                signals: ['Core Web Vitals bajos', 'Latencia alta', 'Costo cloud creciendo', 'Sin baseline de performance']
             },
             {
                 id: 'cicd',
@@ -2358,8 +2358,8 @@
                 icon: '🔄',
                 color: 'cat-ops',
                 phase: 'deploy',
-                agents: ['CI/CD Agent', 'Test Strategy', 'DX Agent', 'Cloud Security'],
-                signals: ['Pipelines >15min', 'Tests flaky', 'Configs dispares']
+                agents: ['CI/CD Agent', 'Test Strategy', 'DX Agent', 'Cloud Security', 'Container Orchestration', 'Infrastructure as Code', 'GitOps'],
+                signals: ['Pipelines >15min', 'Tests flaky', 'Configs dispares', 'Builds no reproducibles']
             },
             {
                 id: 'tech',
@@ -2367,8 +2367,8 @@
                 icon: '🔬',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['Technology Critic', 'Architecture', 'Security', 'DX Agent', 'CI/CD templates'],
-                signals: ['Framework sprawl', 'Propuestas por moda', 'Stacks dispares']
+                agents: ['Technology Critic', 'Architecture', 'Security', 'DX Agent', 'CI/CD templates', 'FinOps Cost', 'Dependency Management'],
+                signals: ['Framework sprawl', 'Propuestas por moda', 'Stacks dispares', 'Vendor lock-in']
             },
             {
                 id: 'architecture',
@@ -2376,8 +2376,8 @@
                 icon: '🏗️',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['Product/UX', 'Architecture', 'API Contracts', 'Dev', 'QA', 'CI/CD', 'Observability'],
-                signals: ['Escalabilidad limitada', 'Integraciones fragiles', 'Nuevo dominio']
+                agents: ['Product/UX', 'Architecture', 'Domain-Driven Design', 'Event-Driven Architecture', 'API Contracts', 'Dev', 'QA', 'CI/CD', 'Observability'],
+                signals: ['Escalabilidad limitada', 'Integraciones fragiles', 'Nuevo dominio', 'Bounded contexts indefinidos']
             },
             {
                 id: 'sre',
@@ -2385,8 +2385,8 @@
                 icon: '📊',
                 color: 'cat-cloud',
                 phase: 'mantenimiento',
-                agents: ['Observability', 'SRE', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD'],
-                signals: ['MTTR alto', 'Alertas ruidosas', 'Incidentes severos']
+                agents: ['Observability', 'SRE', 'Cloud Architecture', 'Platform/DevOps', 'CI/CD', 'Chaos & Resilience', 'Incident Commander', 'Error Handling'],
+                signals: ['MTTR alto', 'Alertas ruidosas', 'Incidentes severos', 'SLOs no definidos']
             },
             {
                 id: 'incident',
@@ -2394,8 +2394,8 @@
                 icon: '🚨',
                 color: 'cat-ops',
                 phase: 'mantenimiento',
-                agents: ['Incident Commander', 'Runbook & Operations', 'Postmortem', 'Chaos & Resilience', 'Capacity'],
-                signals: ['Servicio caido', 'Degradacion critica', 'Impacto usuarios']
+                agents: ['Incident Commander', 'Runbook & Operations', 'Postmortem', 'Chaos & Resilience', 'Capacity', 'Observability', 'Error Handling'],
+                signals: ['Servicio caido', 'Degradacion critica', 'Impacto usuarios', 'Rollback necesario']
             },
             {
                 id: 'compliance',
@@ -2403,8 +2403,8 @@
                 icon: '📋',
                 color: 'cat-security',
                 phase: 'mantenimiento',
-                agents: ['License Reviewer', 'Technology Critic', 'Docs & Knowledge', 'Quality Gatekeeper'],
-                signals: ['Auditoria pendiente', 'Dependencias desconocidas', 'Regulacion nueva']
+                agents: ['License Reviewer', 'Technology Critic', 'Docs & Knowledge', 'Quality Gatekeeper', 'Dependency Management', 'Security Testing', 'Supply Chain Security'],
+                signals: ['Auditoria pendiente', 'Dependencias desconocidas', 'Regulacion nueva', 'SBOM requerido']
             },
             {
                 id: 'api-design',
@@ -2412,8 +2412,8 @@
                 icon: '🔌',
                 color: 'cat-development',
                 phase: 'planificacion',
-                agents: ['API Design', 'GraphQL', 'Contract Testing', 'Documentador', 'Security'],
-                signals: ['API nueva', 'Integracion third-party', 'Versionado necesario']
+                agents: ['API Design', 'GraphQL', 'Contract Testing', 'Documentador', 'Security', 'API Gateway', 'Message Queue', 'Request-Response Pattern'],
+                signals: ['API nueva', 'Integracion third-party', 'Versionado necesario', 'OpenAPI requerido']
             },
             {
                 id: 'security-audit',
@@ -2421,8 +2421,8 @@
                 icon: '🛡️',
                 color: 'cat-security',
                 phase: 'testing',
-                agents: ['Ethical Hacker', 'Threat Modeling', 'Vulnerability Management', 'Authentication', 'Secret Management'],
-                signals: ['Pentest requerido', 'Breach detectado', 'Compliance SOC2/ISO']
+                agents: ['Ethical Hacker', 'Threat Modeling', 'Vulnerability Management', 'Authentication', 'Secret Management', 'Cloud Security', 'Security Testing', 'Supply Chain Security'],
+                signals: ['Pentest requerido', 'Breach detectado', 'Compliance SOC2/ISO', 'Dependencias vulnerables']
             },
             {
                 id: 'mobile-launch',
@@ -2430,8 +2430,8 @@
                 icon: '📱',
                 color: 'cat-mobile',
                 phase: 'deploy',
-                agents: ['Mobile Architecture', 'App Store Optimization', 'Push Notification', 'Mobile CI-CD', 'Mobile QA'],
-                signals: ['Nueva app', 'Release mayor', 'Expansion de mercado']
+                agents: ['Mobile Architecture', 'App Store Optimization', 'Push Notification', 'Mobile CI-CD', 'Mobile QA', 'Mobile Security', 'Mobile UI', 'Offline & Sync'],
+                signals: ['Nueva app', 'Release mayor', 'Expansion de mercado', 'App store review']
             },
             {
                 id: 'data-pipeline',
@@ -2439,8 +2439,8 @@
                 icon: '📈',
                 color: 'cat-data',
                 phase: 'desarrollo',
-                agents: ['Data Pipeline', 'Data Quality', 'ML Ops', 'Database Architect', 'Observability'],
-                signals: ['ETL necesario', 'Data warehouse', 'ML en produccion']
+                agents: ['Data Pipeline', 'Data Quality', 'ML Ops', 'Database Architect', 'Observability', 'Event-Driven Architecture', 'Message Queue'],
+                signals: ['ETL necesario', 'Data warehouse', 'ML en produccion', 'Streaming data']
             },
             {
                 id: 'i18n',
@@ -2448,8 +2448,8 @@
                 icon: '🌍',
                 color: 'cat-transversal',
                 phase: 'desarrollo',
-                agents: ['i18n Agent', 'Frontend', 'Mobile UI', 'QA', 'Documentador'],
-                signals: ['Nuevo mercado', 'Multi-idioma', 'RTL support']
+                agents: ['i18n Agent', 'Frontend', 'Mobile UI', 'QA', 'Documentador', 'User Research', 'Accessibility'],
+                signals: ['Nuevo mercado', 'Multi-idioma', 'RTL support', 'Localization QA']
             },
             {
                 id: 'documentation',
@@ -2457,8 +2457,8 @@
                 icon: '📚',
                 color: 'cat-transversal',
                 phase: 'desarrollo',
-                agents: ['Documentador', 'ADR Agent', 'Docs & Knowledge', 'API Design', 'Onboarding'],
-                signals: ['Docs desactualizados', 'Nuevo equipo', 'API publica']
+                agents: ['Documentador', 'ADR Agent', 'Docs & Knowledge', 'API Design', 'Onboarding', 'Release Manager'],
+                signals: ['Docs desactualizados', 'Nuevo equipo', 'API publica', 'Breaking changes']
             },
             {
                 id: 'dev-onboarding',
@@ -2466,8 +2466,8 @@
                 icon: '👋',
                 color: 'cat-transversal',
                 phase: 'planificacion',
-                agents: ['Onboarding', 'Documentador', 'DX Agent', 'Code Review', 'Configuration Management'],
-                signals: ['Nuevo developer', 'Rotacion alta', 'Setup complejo']
+                agents: ['Onboarding', 'Documentador', 'DX Agent', 'Code Review', 'Configuration Management', 'Docs & Knowledge', 'Architecture'],
+                signals: ['Nuevo developer', 'Rotacion alta', 'Setup complejo', 'Tiempo a productividad largo']
             },
             {
                 id: 'migration',
@@ -2475,8 +2475,8 @@
                 icon: '🚚',
                 color: 'cat-architecture',
                 phase: 'deploy',
-                agents: ['Migration', 'Monolith to Microservices', 'Database Architect', 'Feature Flag', 'Test Strategy'],
-                signals: ['Legacy system', 'Cloud migration', 'Database change']
+                agents: ['Migration', 'Monolith to Microservices', 'Database Architect', 'Feature Flag', 'Test Strategy', 'Platform Evolution Strategy', 'Legacy-COBOL Maintenance', 'Legacy-VB6 Maintenance'],
+                signals: ['Legacy system', 'Cloud migration', 'Database change', 'Modernizacion necesaria']
             },
             {
                 id: 'testing-strategy',
@@ -2484,8 +2484,8 @@
                 icon: '🧪',
                 color: 'cat-quality',
                 phase: 'testing',
-                agents: ['Test Strategy', 'E2E Testing', 'Contract Testing', 'Load Testing', 'Visual Regression'],
-                signals: ['Cobertura baja', 'Tests flaky', 'Sin integracion']
+                agents: ['Test Strategy', 'E2E Testing', 'Contract Testing', 'Load Testing', 'Visual Regression', 'Security Testing', 'Accessibility Testing', 'Mobile QA'],
+                signals: ['Cobertura baja', 'Tests flaky', 'Sin integracion', 'Performance no validado']
             },
             {
                 id: 'realtime',
@@ -2493,8 +2493,8 @@
                 icon: '⚡',
                 color: 'cat-development',
                 phase: 'desarrollo',
-                agents: ['WebSocket & Real-time', 'Message Queue', 'Event-Driven Architecture', 'Caching Strategy', 'Observability'],
-                signals: ['Chat/colaboracion', 'Notificaciones live', 'Datos en tiempo real']
+                agents: ['WebSocket & Real-time', 'Message Queue', 'Event-Driven Architecture', 'Caching Strategy', 'Observability', 'Load Balancer & Scaling'],
+                signals: ['Chat/colaboracion', 'Notificaciones live', 'Datos en tiempo real', 'Sincronizacion entre usuarios']
             },
             {
                 id: 'client-server',
@@ -2502,8 +2502,8 @@
                 icon: '🔗',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['Client-Server Architecture', 'API Gateway', 'Load Balancer & Scaling', 'Session & State Management', 'Request-Response Pattern'],
-                signals: ['Nueva app distribuida', 'Multiples clientes', 'Escalabilidad requerida']
+                agents: ['Client-Server Architecture', 'API Gateway', 'Load Balancer & Scaling', 'Session & State Management', 'Request-Response Pattern', 'Security', 'Observability'],
+                signals: ['Nueva app distribuida', 'Multiples clientes', 'Escalabilidad requerida', 'API first']
             },
             {
                 id: 'api-infrastructure',
@@ -2511,8 +2511,8 @@
                 icon: '🌐',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['API Gateway', 'Load Balancer & Scaling', 'Request-Response Pattern', 'Contract Testing', 'Observability'],
-                signals: ['API publica', 'Rate limiting necesario', 'Multiples consumidores']
+                agents: ['API Gateway', 'Load Balancer & Scaling', 'Request-Response Pattern', 'Contract Testing', 'Observability', 'Security', 'Cloud Security'],
+                signals: ['API publica', 'Rate limiting necesario', 'Multiples consumidores', 'DDoS protection']
             },
             {
                 id: 'high-availability',
@@ -2520,8 +2520,8 @@
                 icon: '🛡️',
                 color: 'cat-cloud',
                 phase: 'deploy',
-                agents: ['Load Balancer & Scaling', 'Session & State Management', 'Database Architect', 'Chaos & Resilience', 'SRE'],
-                signals: ['SLA 99.9%+', 'Sistema critico', 'Zero downtime requerido']
+                agents: ['Load Balancer & Scaling', 'Session & State Management', 'Database Architect', 'Chaos & Resilience', 'SRE', 'Observability', 'Runbook & Operations'],
+                signals: ['SLA 99.9%+', 'Sistema critico', 'Zero downtime requerido', 'Failover automatico']
             },
             {
                 id: 'distributed-auth',
@@ -2529,8 +2529,8 @@
                 icon: '🔐',
                 color: 'cat-security',
                 phase: 'planificacion',
-                agents: ['Session & State Management', 'Authentication', 'API Gateway', 'Client-Server Architecture', 'Security'],
-                signals: ['SSO requerido', 'Multi-tenant', 'OAuth/OIDC necesario']
+                agents: ['Session & State Management', 'Authentication', 'API Gateway', 'Client-Server Architecture', 'Security', 'Secret Management', 'Cloud Security'],
+                signals: ['SSO requerido', 'Multi-tenant', 'OAuth/OIDC necesario', 'Token management']
             },
             {
                 id: 'growth-monetization',
@@ -2538,7 +2538,7 @@
                 icon: '💰',
                 color: 'cat-transversal',
                 phase: 'desarrollo',
-                agents: ['Monetization Strategy', 'Marketing Campaigns', 'Data & Analytics', 'Product-Discovery', 'Observability'],
+                agents: ['Monetization Strategy', 'Marketing Campaigns', 'Data & Analytics', 'Product-Discovery', 'Observability', 'User Research', 'SEO'],
                 signals: ['Revenue estancado', 'Baja conversion', 'Lanzamiento de producto', 'Expansion de mercado']
             },
             {
@@ -2547,7 +2547,7 @@
                 icon: '🚀',
                 color: 'cat-transversal',
                 phase: 'deploy',
-                agents: ['Marketing Campaigns', 'Monetization Strategy', 'Product-Discovery', 'Observability', 'Data & Analytics'],
+                agents: ['Marketing Campaigns', 'Monetization Strategy', 'Product-Discovery', 'Observability', 'Data & Analytics', 'User Research', 'SEO', 'Growth Hacking'],
                 signals: ['Nuevo producto', 'Nueva feature premium', 'Entrada a mercado', 'Rebranding']
             },
             {
@@ -2556,7 +2556,7 @@
                 icon: '🎯',
                 color: 'cat-transversal',
                 phase: 'mantenimiento',
-                agents: ['Marketing Campaigns', 'Monetization Strategy', 'Data & Analytics', 'Observability', 'DX Agent'],
+                agents: ['Marketing Campaigns', 'Monetization Strategy', 'Data & Analytics', 'Observability', 'User Research', 'Growth Hacking', 'Push Notification'],
                 signals: ['Churn alto', 'Usuarios inactivos', 'Baja engagement', 'Competencia agresiva']
             },
             {
@@ -2565,7 +2565,7 @@
                 icon: '🔄',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['Platform Evolution Strategy', 'Architecture', 'Migration', 'Client-Server Architecture', 'Database Architect'],
+                agents: ['Platform Evolution Strategy', 'Architecture', 'Migration', 'Client-Server Architecture', 'Database Architect', 'Technology Critic', 'FinOps Cost'],
                 signals: ['Desktop sin version mobile', 'Monolito limitante', 'Expansion multi-plataforma', 'Modernizacion legacy']
             },
             {
@@ -2574,7 +2574,7 @@
                 icon: '☁️',
                 color: 'cat-cloud',
                 phase: 'planificacion',
-                agents: ['Platform Evolution Strategy', 'Client-Server Architecture', 'API Gateway', 'Cloud Architecture', 'Database Architect'],
+                agents: ['Platform Evolution Strategy', 'Client-Server Architecture', 'API Gateway', 'Cloud Architecture', 'Database Architect', 'Migration', 'Security'],
                 signals: ['App desktop exitosa', 'Usuarios remotos', 'Necesidad de colaboracion', 'Escalabilidad requerida']
             },
             {
@@ -2583,7 +2583,7 @@
                 icon: '📱',
                 color: 'cat-mobile',
                 phase: 'planificacion',
-                agents: ['Platform Evolution Strategy', 'Mobile Architecture', 'API Gateway', 'Mobile UI', 'Mobile QA'],
+                agents: ['Platform Evolution Strategy', 'Mobile Architecture', 'API Gateway', 'Mobile UI', 'Mobile QA', 'Mobile Security', 'Offline & Sync'],
                 signals: ['Usuarios moviles', 'Competencia con app', 'Acceso offline necesario', 'Push notifications']
             },
             {
@@ -2592,7 +2592,7 @@
                 icon: '💳',
                 color: 'cat-transversal',
                 phase: 'desarrollo',
-                agents: ['Billing & Invoicing', 'Payment Gateway', 'Notification Engine', 'Multi-tenant SaaS', 'Database Architect'],
+                agents: ['Billing & Invoicing', 'Payment Gateway', 'Notification Engine', 'Multi-tenant SaaS', 'Database Architect', 'Security', 'Monetization Strategy'],
                 signals: ['Nuevo SaaS', 'Modelo suscripcion', 'Pagos recurrentes', 'Facturacion automatica']
             },
             {
@@ -2601,8 +2601,117 @@
                 icon: '🏢',
                 color: 'cat-architecture',
                 phase: 'planificacion',
-                agents: ['Multi-tenant SaaS', 'Domain-Driven Design', 'Cloud Architecture', 'Database Architect', 'Security'],
+                agents: ['Multi-tenant SaaS', 'Domain-Driven Design', 'Cloud Architecture', 'Database Architect', 'Security', 'Authentication', 'Session & State Management'],
                 signals: ['SaaS B2B', 'Aislamiento datos', 'Configuracion por cliente', 'Compliance multi-tenant']
+            },
+            // ========== NEW WORKFLOWS ==========
+            {
+                id: 'legacy-maintenance',
+                title: 'Mantenimiento Legacy',
+                icon: '🔧',
+                color: 'cat-transversal',
+                phase: 'mantenimiento',
+                agents: ['Legacy-COBOL Maintenance', 'Legacy-VB6 Maintenance', 'Legacy-Delphi Maintenance', 'Legacy-FoxPro Maintenance', 'Test Strategy', 'Documentador', 'Bug Hunter'],
+                signals: ['Sistema legacy critico', 'Conocimiento concentrado', 'Documentacion escasa', 'Personal jubilándose']
+            },
+            {
+                id: 'legacy-cobol',
+                title: 'Mantenimiento COBOL',
+                icon: '🏦',
+                color: 'cat-transversal',
+                phase: 'mantenimiento',
+                agents: ['Legacy-COBOL Maintenance', 'COBOL-to-Modern Migration', 'Database Architect', 'Test Strategy', 'Documentador', 'Security'],
+                signals: ['Sistema bancario COBOL', 'Batch jobs criticos', 'JCL complejos', 'Mainframe z/OS']
+            },
+            {
+                id: 'legacy-desktop',
+                title: 'Mantenimiento Apps Desktop Legacy',
+                icon: '🖥️',
+                color: 'cat-transversal',
+                phase: 'mantenimiento',
+                agents: ['Legacy-VB6 Maintenance', 'Legacy-Delphi Maintenance', 'Legacy-FoxPro Maintenance', 'Desktop Architecture', 'Test Strategy', 'Documentador'],
+                signals: ['App VB6/Delphi en uso', 'Windows Forms legacy', 'Base datos local', 'Sin soporte original']
+            },
+            {
+                id: 'legacy-4gl',
+                title: 'Mantenimiento 4GL/RAD',
+                icon: '⚙️',
+                color: 'cat-transversal',
+                phase: 'mantenimiento',
+                agents: ['Legacy-Oracle Forms Maintenance', 'Legacy-PowerBuilder Maintenance', 'Legacy-RPG AS400 Maintenance', 'Database Architect', 'Test Strategy', 'Documentador'],
+                signals: ['Oracle Forms en produccion', 'PowerBuilder activo', 'RPG/AS400 critico', 'Progress/Clarion en uso']
+            },
+            {
+                id: 'cobol-modernization',
+                title: 'Modernizacion COBOL',
+                icon: '🔄',
+                color: 'cat-architecture',
+                phase: 'planificacion',
+                agents: ['COBOL-to-Modern Migration', 'Legacy-COBOL Maintenance', 'Cloud Architecture', 'Microservices', 'Database Architect', 'Test Strategy', 'Platform Evolution Strategy'],
+                signals: ['Mainframe costoso', 'Skills escasos', 'Integracion moderna requerida', 'Cloud mandatorio']
+            },
+            {
+                id: 'vb6-modernization',
+                title: 'Modernizacion VB6/.NET',
+                icon: '🔄',
+                color: 'cat-architecture',
+                phase: 'planificacion',
+                agents: ['VB6-to-Modern Migration', 'Legacy-VB6 Maintenance', 'Desktop Architecture', 'Web Architecture', 'Database Architect', 'Test Strategy', 'Platform Evolution Strategy'],
+                signals: ['VB6 sin soporte', 'Windows 11 incompatible', 'Migracion a web/cloud', 'Actualizacion COM/ActiveX']
+            },
+            {
+                id: 'stack-adoption',
+                title: 'Adopcion Nuevo Stack',
+                icon: '📚',
+                color: 'cat-architecture',
+                phase: 'planificacion',
+                agents: ['Technology Critic', 'Architecture', 'DX Agent', 'Onboarding', 'Test Strategy', 'FinOps Cost', 'Training'],
+                signals: ['Nuevo framework', 'Cambio de lenguaje', 'Adopcion gradual', 'PoC requerido']
+            },
+            {
+                id: 'cloud-native',
+                title: 'Arquitectura Cloud-Native',
+                icon: '☁️',
+                color: 'cat-cloud',
+                phase: 'planificacion',
+                agents: ['Cloud Architecture', 'Container Orchestration', 'Serverless', 'Infrastructure as Code', 'GitOps', 'SRE', 'FinOps Cost', 'Cloud Security'],
+                signals: ['Migracion a cloud', 'Kubernetes adoption', 'Serverless first', 'Multi-cloud strategy']
+            },
+            {
+                id: 'design-system',
+                title: 'Design System',
+                icon: '🎨',
+                color: 'cat-transversal',
+                phase: 'desarrollo',
+                agents: ['Design System Steward', 'Frontend', 'Mobile UI', 'Accessibility', 'Documentador', 'Prototyping', 'Visual Regression'],
+                signals: ['Inconsistencia UI', 'Componentes duplicados', 'Nuevo branding', 'Multi-producto']
+            },
+            {
+                id: 'ux-discovery',
+                title: 'UX Discovery',
+                icon: '🔍',
+                color: 'cat-transversal',
+                phase: 'planificacion',
+                agents: ['User Research', 'Product-Discovery', 'UX Audit', 'Prototyping', 'Usability Testing', 'Data & Analytics', 'Accessibility'],
+                signals: ['Nuevo producto', 'Redesign UX', 'Baja satisfaccion', 'Conversion baja']
+            },
+            {
+                id: 'accessibility-audit',
+                title: 'Auditoria Accesibilidad',
+                icon: '♿',
+                color: 'cat-quality',
+                phase: 'testing',
+                agents: ['Accessibility', 'Frontend', 'Mobile UI', 'Test Strategy', 'Documentador', 'UX Audit', 'i18n Agent'],
+                signals: ['WCAG compliance', 'Demanda legal', 'Gobierno/educacion', 'Inclusividad']
+            },
+            {
+                id: 'supply-chain-security',
+                title: 'Seguridad Supply Chain',
+                icon: '🔗',
+                color: 'cat-security',
+                phase: 'mantenimiento',
+                agents: ['Supply Chain Security', 'Dependency Management', 'License Reviewer', 'Vulnerability Management', 'Security Testing', 'CI/CD Agent', 'Quality Gatekeeper'],
+                signals: ['SBOM requerido', 'Dependencias criticas', 'Compliance supply chain', 'Auditorias externas']
             }
         ];
 
