@@ -1774,8 +1774,6 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             color: var(--text-primary);
-            max-height: 350px;
-            overflow-y: auto;
         }
 
         .modal-footer {
@@ -5092,6 +5090,7 @@ ${workflow.agents.join(' → ')}`;
             copyBtn.querySelector('.copy-icon').textContent = '📋';
 
             // Show modal
+            document.querySelector('.modal-body').scrollTop = 0;
             document.getElementById('agent-modal').classList.add('show');
             document.body.style.overflow = 'hidden';
         }
