@@ -5280,7 +5280,20 @@ ${workflow.agents.join(' → ')}`;
         // ==================== MODAL FUNCTIONS ====================
         let currentAgentConfig = '';
 
+        // Store original modal body structure to restore after AI Tools modal
+        const originalModalBodyHTML = '<pre class="modal-config" id="modal-config"></pre>';
+
+        // Reset modal body to original structure (needed after AI Tools modal modifies it)
+        function resetModalBody() {
+            const modalBody = document.querySelector('.modal-body');
+            if (modalBody && !document.getElementById('modal-config')) {
+                modalBody.innerHTML = originalModalBodyHTML;
+            }
+        }
+
         function openAgentModal(agentName) {
+            // Restore original modal structure if it was modified by AI Tools modal
+            resetModalBody();
             // First check if there's a mapping for this workflow agent name
             const mappedName = agentNameMapping[agentName] || agentName;
 
