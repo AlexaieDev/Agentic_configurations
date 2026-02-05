@@ -128,6 +128,104 @@ foreach ($agent in $agentsData) {
 }
 $jsAgents += "        ];"
 
+# ==================== AI TOOLS ====================
+Write-Host "Building AI Tools data..."
+
+$aiToolsPath = Join-Path $basePath "system-prompts-and-models-of-ai-tools"
+
+# Tool category mapping
+$toolCategories = @{
+    "Cursor Prompts" = "ide"
+    "Windsurf" = "ide"
+    "VSCode Agent" = "ide"
+    "Xcode" = "ide"
+    "Augment Code" = "ide"
+    "Trae" = "ide"
+    "Z.ai Code" = "ide"
+    "v0 Prompts and Tools" = "platform"
+    "Lovable" = "platform"
+    "Replit" = "platform"
+    "Same.dev" = "platform"
+    "Leap.new" = "platform"
+    "Orchids.app" = "platform"
+    "Qoder" = "platform"
+    "Anthropic" = "cli"
+    "Warp.dev" = "cli"
+    "Open Source prompts" = "cli"
+    "Google" = "cli"
+    "Devin AI" = "agent"
+    "Manus Agent Tools & Prompt" = "agent"
+    "Junie" = "agent"
+    "Kiro" = "agent"
+    "Traycer AI" = "agent"
+    "Emergent" = "agent"
+    "CodeBuddy Prompts" = "agent"
+    "Perplexity" = "browser"
+    "Comet Assistant" = "browser"
+    "NotionAi" = "browser"
+    "Cluely" = "browser"
+    "Poke" = "browser"
+    "dia" = "browser"
+    "Amp" = "cli"
+}
+
+$jsAITools = "const aiTools = [`n"
+
+if (Test-Path $aiToolsPath) {
+    $aiToolFolders = Get-ChildItem -Path $aiToolsPath -Directory | Where-Object { $_.Name -ne "assets" }
+    Write-Host "Found $($aiToolFolders.Count) AI tool folders"
+
+    foreach ($folder in $aiToolFolders) {
+        $toolName = $folder.Name
+        $prompts = @()
+
+        # Get all prompt files recursively
+        $promptFiles = Get-ChildItem -Path $folder.FullName -Recurse -Include "*.txt", "*.json", "*.yaml" -File -ErrorAction SilentlyContinue
+
+        foreach ($file in $promptFiles) {
+            # Skip README and LICENSE files
+            if ($file.Name -match "README|LICENSE") { continue }
+
+            $content = Get-Content $file.FullName -Raw -Encoding UTF8
+            if (-not $content) { continue }
+
+            $relativePath = $file.FullName.Substring($folder.FullName.Length + 1) -replace "\\", "/"
+
+            # Escape content
+            $escapedContent = [System.Web.HttpUtility]::JavaScriptStringEncode($content)
+            $escapedContent = $escapedContent.Replace('</', '<\/')
+            $escapedName = [System.Web.HttpUtility]::JavaScriptStringEncode($file.BaseName)
+
+            $prompts += '{ id: "' + ($file.BaseName -replace " ", "-").ToLower() + '", name: "' + $escapedName + '", content: "' + $escapedContent + '" }'
+        }
+
+        if ($prompts.Count -gt 0) {
+            $toolId = ($toolName -replace " ", "-" -replace "[^a-zA-Z0-9-]", "").ToLower()
+            $displayName = $toolName -replace " Prompts?$", "" -replace " and Tools$", ""
+            $category = $toolCategories[$toolName]
+            if (-not $category) { $category = "agent" }
+            # Assign icon based on category
+            switch ($category) {
+                "ide" { $icon = [char]::ConvertFromUtf32(0x1F4BB) }       # laptop
+                "platform" { $icon = [char]::ConvertFromUtf32(0x1F3D7) } # building
+                "cli" { $icon = [char]::ConvertFromUtf32(0x2328) }       # keyboard
+                "agent" { $icon = [char]::ConvertFromUtf32(0x1F916) }    # robot
+                "browser" { $icon = [char]::ConvertFromUtf32(0x1F310) }  # globe
+                default { $icon = [char]::ConvertFromUtf32(0x1F916) }    # robot
+            }
+
+            $escapedDisplayName = [System.Web.HttpUtility]::JavaScriptStringEncode($displayName)
+            $promptsArray = $prompts -join ", "
+
+            $jsAITools += '            { id: "' + $toolId + '", name: "' + $escapedDisplayName + '", company: "' + $escapedDisplayName + '", category: "' + $category + '", icon: "' + $icon + '", prompts: [' + $promptsArray + '] },' + "`n"
+        }
+    }
+} else {
+    Write-Host "AI Tools folder not found at: $aiToolsPath (skipping)"
+}
+
+$jsAITools += "        ];"
+
 Write-Host "Reading template..."
 
 # Read the template
@@ -147,6 +245,9 @@ Write-Host "Injecting agents data into template..."
 # The -replace operator uses regex and interprets $ in the replacement string
 # as backreferences, which breaks content containing $_ or similar patterns.
 $output = $template.Replace("        // __AGENTS_DATA_PLACEHOLDER__", $jsAgents)
+
+# Replace AI Tools placeholder
+$output = $output.Replace("        // __AI_TOOLS_DATA_PLACEHOLDER__", $jsAITools)
 
 Write-Host "Writing output file..."
 

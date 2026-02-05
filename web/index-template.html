@@ -389,6 +389,175 @@
             font-size: 1.1rem;
         }
 
+        /* ==================== AI TOOLS SECTION ==================== */
+        .ai-tools-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+
+        .ai-tools-filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .ai-tools-filter-btn:hover,
+        .ai-tools-filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .ai-tools-search {
+            max-width: 400px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .ai-tools-search input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .ai-tools-search input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .ai-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .ai-tool-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .ai-tool-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ai-tool-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-tool-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .ai-tool-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .ai-tool-company {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .ai-tool-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-tool-tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .ai-tool-tag.tag-category {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+
+        .ai-tool-tag.tag-prompt-count {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .ai-tool-prompts-preview {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* AI Tool Modal Tabs */
+        .ai-tool-modal-tabs {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0;
+        }
+
+        .ai-tool-modal-tab {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .ai-tool-modal-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .ai-tool-modal-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .ai-tool-modal-content {
+            display: none;
+        }
+
+        .ai-tool-modal-content.active {
+            display: block;
+        }
+
         /* ==================== WIZARD ==================== */
         #wizard {
             background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
@@ -1898,6 +2067,7 @@
         <div class="container">
             <ul class="nav-links">
                 <li><a href="#catalog-section" class="active" data-section="catalog-section">Catalogo</a></li>
+                <li><a href="#ai-tools-section" data-section="ai-tools-section">AI Tools</a></li>
                 <li><a href="#wizard-section" data-section="wizard-section">Wizard</a></li>
                 <li><a href="#workflows-section" data-section="workflows-section">Workflows</a></li>
                 <li><a href="#phases-section" data-section="phases-section">Por Fase</a></li>
@@ -2024,6 +2194,36 @@
 
                 <div class="agents-grid" id="agents-container">
                     <!-- Agents will be injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Tools Section -->
+        <section id="ai-tools-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>AI Tools System Prompts</h2>
+                    <p>Explora system prompts de herramientas AI lideres (Cursor, Windsurf, Claude, v0, Devin, etc.)</p>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div class="ai-tools-filters">
+                    <button class="ai-tools-filter-btn active" data-category="">Todos</button>
+                    <button class="ai-tools-filter-btn" data-category="ide">IDE / Editor</button>
+                    <button class="ai-tools-filter-btn" data-category="platform">Platform</button>
+                    <button class="ai-tools-filter-btn" data-category="cli">CLI</button>
+                    <button class="ai-tools-filter-btn" data-category="agent">Agent</button>
+                    <button class="ai-tools-filter-btn" data-category="browser">Browser</button>
+                </div>
+
+                <!-- Search -->
+                <div class="ai-tools-search">
+                    <input type="text" id="ai-tools-search-input" placeholder="Buscar herramientas AI...">
+                </div>
+
+                <!-- Tools Grid -->
+                <div class="ai-tools-grid" id="ai-tools-grid">
+                    <!-- AI Tools will be injected by JS -->
                 </div>
             </div>
         </section>
@@ -2715,6 +2915,16 @@
 
         // __AGENTS_DATA_PLACEHOLDER__
 
+        // AI Tools Category Configuration
+        const aiToolCategories = {
+            ide: { name: 'IDE / Editor', icon: '💻', color: 'rgba(59, 130, 246, 0.2)' },
+            platform: { name: 'Platform', icon: '🏗️', color: 'rgba(139, 92, 246, 0.2)' },
+            cli: { name: 'CLI Tool', icon: '⌨️', color: 'rgba(245, 158, 11, 0.2)' },
+            agent: { name: 'Autonomous Agent', icon: '🤖', color: 'rgba(20, 184, 166, 0.2)' },
+            browser: { name: 'Browser', icon: '🌐', color: 'rgba(34, 197, 94, 0.2)' }
+        };
+
+        // __AI_TOOLS_DATA_PLACEHOLDER__
 
         // Sistema de keywords semánticas para búsqueda inteligente
         const searchKeywords = {
@@ -4293,6 +4503,162 @@ ${workflow.agents.join(' → ')}`;
             }
         }
 
+        // ==================== AI TOOLS ====================
+        // Render AI Tools Grid
+        function renderAITools(filteredTools = (typeof aiTools !== 'undefined' ? aiTools : [])) {
+            const container = document.getElementById('ai-tools-grid');
+            if (!container || !filteredTools.length) {
+                if (container) container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No hay herramientas AI disponibles</p>';
+                return;
+            }
+            container.innerHTML = filteredTools.map(tool => `
+                <div class="ai-tool-card fade-in" data-tool-id="${tool.id}" data-category="${tool.category}">
+                    <div class="ai-tool-header">
+                        <div class="ai-tool-icon" style="background: ${aiToolCategories[tool.category]?.color || 'var(--bg-tertiary)'}">
+                            ${tool.icon || '🤖'}
+                        </div>
+                        <div>
+                            <div class="ai-tool-name">${tool.name}</div>
+                            <div class="ai-tool-company">${tool.company || ''}</div>
+                        </div>
+                    </div>
+                    <div class="ai-tool-meta">
+                        <span class="ai-tool-tag tag-category">${aiToolCategories[tool.category]?.name || tool.category}</span>
+                        <span class="ai-tool-tag tag-prompt-count">${tool.prompts?.length || 0} prompt${(tool.prompts?.length || 0) !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="ai-tool-prompts-preview">
+                        ${tool.prompts?.slice(0, 3).map(p => p.name).join(', ') || ''}${(tool.prompts?.length || 0) > 3 ? '...' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter AI Tools
+        function filterAITools() {
+            if (typeof aiTools === 'undefined') return;
+
+            const search = document.getElementById('ai-tools-search-input')?.value?.toLowerCase().trim() || '';
+            const activeBtn = document.querySelector('.ai-tools-filter-btn.active');
+            const activeCategory = activeBtn?.dataset.category || '';
+
+            const filtered = aiTools.filter(tool => {
+                const matchSearch = !search ||
+                    tool.name.toLowerCase().includes(search) ||
+                    (tool.company || '').toLowerCase().includes(search) ||
+                    tool.prompts?.some(p => p.name.toLowerCase().includes(search));
+
+                const matchCategory = !activeCategory || tool.category === activeCategory;
+
+                return matchSearch && matchCategory;
+            });
+
+            renderAITools(filtered);
+        }
+
+        // Open AI Tool Modal
+        let currentAIToolPrompt = '';
+        function openAIToolModal(toolId) {
+            if (typeof aiTools === 'undefined') return;
+
+            const tool = aiTools.find(t => t.id === toolId);
+            if (!tool) return;
+
+            // Build tabs HTML if multiple prompts
+            let tabsHtml = '';
+            let contentHtml = '';
+
+            if (tool.prompts && tool.prompts.length > 1) {
+                tabsHtml = `<div class="ai-tool-modal-tabs">
+                    ${tool.prompts.map((prompt, idx) => `
+                        <button class="ai-tool-modal-tab ${idx === 0 ? 'active' : ''}" data-prompt-idx="${idx}">
+                            ${prompt.name}
+                        </button>
+                    `).join('')}
+                </div>`;
+
+                contentHtml = tool.prompts.map((prompt, idx) => `
+                    <div class="ai-tool-modal-content ${idx === 0 ? 'active' : ''}" data-prompt-idx="${idx}">
+                        <pre class="modal-config">${escapeHtml(prompt.content || '')}</pre>
+                    </div>
+                `).join('');
+            } else if (tool.prompts && tool.prompts.length === 1) {
+                contentHtml = `<pre class="modal-config">${escapeHtml(tool.prompts[0].content || '')}</pre>`;
+            }
+
+            // Update modal header
+            document.getElementById('modal-icon').className = 'modal-icon';
+            document.getElementById('modal-icon').style.background = aiToolCategories[tool.category]?.color || 'var(--bg-tertiary)';
+            document.getElementById('modal-icon').textContent = tool.icon || '🤖';
+            document.getElementById('modal-title').textContent = tool.name;
+            document.getElementById('modal-subtitle').textContent = `${tool.company || ''} | ${aiToolCategories[tool.category]?.name || tool.category}`;
+
+            // Inject content into modal body
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                ${tabsHtml}
+                <div style="padding: 1.5rem;">
+                    ${contentHtml}
+                </div>
+            `;
+
+            // Set current prompt for copy
+            currentAIToolPrompt = tool.prompts?.[0]?.content || '';
+            currentAgentConfig = currentAIToolPrompt; // For copy button compatibility
+
+            // Tab click handlers
+            if (tool.prompts && tool.prompts.length > 1) {
+                modalBody.querySelectorAll('.ai-tool-modal-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const idx = parseInt(tab.dataset.promptIdx);
+                        modalBody.querySelectorAll('.ai-tool-modal-tab').forEach(t => t.classList.remove('active'));
+                        modalBody.querySelectorAll('.ai-tool-modal-content').forEach(c => c.classList.remove('active'));
+                        tab.classList.add('active');
+                        modalBody.querySelector(`.ai-tool-modal-content[data-prompt-idx="${idx}"]`).classList.add('active');
+                        currentAIToolPrompt = tool.prompts[idx]?.content || '';
+                        currentAgentConfig = currentAIToolPrompt;
+                    });
+                });
+            }
+
+            // Show modal
+            document.querySelector('.modal-body').scrollTop = 0;
+            document.getElementById('agent-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Setup AI Tools event listeners
+        function setupAIToolsListeners() {
+            // Filter buttons
+            document.querySelectorAll('.ai-tools-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.ai-tools-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterAITools();
+                });
+            });
+
+            // Search input
+            const searchInput = document.getElementById('ai-tools-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterAITools);
+            }
+
+            // Card clicks
+            document.getElementById('ai-tools-grid')?.addEventListener('click', (e) => {
+                const card = e.target.closest('.ai-tool-card');
+                if (card) {
+                    openAIToolModal(card.dataset.toolId);
+                }
+            });
+        }
+
         // Render Kits
         function renderKits() {
             const container = document.getElementById('kits-content');
@@ -4428,7 +4794,8 @@ ${workflow.agents.join(' → ')}`;
                 const results = {
                     agents: [],
                     workflows: [],
-                    kits: []
+                    kits: [],
+                    aiTools: []
                 };
 
                 // Search agents
@@ -4463,12 +4830,24 @@ ${workflow.agents.join(' → ')}`;
                     }
                 });
 
+                // Search AI Tools
+                if (typeof aiTools !== 'undefined') {
+                    aiTools.forEach(tool => {
+                        const matchName = tool.name.toLowerCase().includes(query);
+                        const matchCompany = (tool.company || '').toLowerCase().includes(query);
+                        const matchPrompts = tool.prompts?.some(p => p.name.toLowerCase().includes(query));
+                        if (matchName || matchCompany || matchPrompts) {
+                            results.aiTools.push(tool);
+                        }
+                    });
+                }
+
                 // Render results
                 renderGlobalSearchResults(results, query);
             }
 
             function renderGlobalSearchResults(results, query) {
-                const totalResults = results.agents.length + results.workflows.length + results.kits.length;
+                const totalResults = results.agents.length + results.workflows.length + results.kits.length + (results.aiTools?.length || 0);
 
                 if (totalResults === 0) {
                     searchResults.innerHTML = `
@@ -4537,6 +4916,25 @@ ${workflow.agents.join(' → ')}`;
                     `;
                 }
 
+                // AI Tools
+                if (results.aiTools && results.aiTools.length > 0) {
+                    html += `
+                        <div class="search-result-group">
+                            <div class="search-result-group-title">AI Tools (${results.aiTools.length})</div>
+                            ${results.aiTools.slice(0, 5).map(tool => `
+                                <div class="search-result-item" data-type="ai-tool" data-tool-id="${tool.id}">
+                                    <span class="search-result-icon">${tool.icon || '🤖'}</span>
+                                    <div class="search-result-text">
+                                        <div class="search-result-name">${tool.name}</div>
+                                        <div class="search-result-meta">${tool.prompts?.length || 0} prompts</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${results.aiTools.length > 5 ? `<div class="search-result-item"><span class="search-result-meta">+${results.aiTools.length - 5} más...</span></div>` : ''}
+                        </div>
+                    `;
+                }
+
                 searchResults.innerHTML = html;
                 searchResults.classList.add('show');
 
@@ -4559,6 +4957,11 @@ ${workflow.agents.join(' → ')}`;
                             }
                         } else if (type === 'kit') {
                             document.getElementById('kits-section').scrollIntoView({ behavior: 'smooth' });
+                        } else if (type === 'ai-tool') {
+                            const toolId = item.dataset.toolId;
+                            if (toolId) {
+                                openAIToolModal(toolId);
+                            }
                         } else if (type === 'more-agents') {
                             document.getElementById('search-input').value = searchInput.value;
                             filterAgents();
@@ -4785,10 +5188,12 @@ ${workflow.agents.join(' → ')}`;
             renderCategoryDashboard();
             renderAgents();
             renderKits();
+            renderAITools();
             setupNavigation();
             setupGlobalSearch();
             setupStackBuilder();
             setupJourneyView();
+            setupAIToolsListeners();
             updateWizardUI();
 
             // Wizard option clicks
