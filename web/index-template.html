@@ -4288,6 +4288,9 @@
             const workflow = workflows.find(w => w.id === workflowId);
             if (!workflow) return;
 
+            // Restore original modal structure if it was modified by AI Tools modal
+            resetModalBody();
+
             const phase = phases.find(p => p.id === workflow.phase);
             const workflowText = `WORKFLOW: ${workflow.title}
 
