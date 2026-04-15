@@ -11,6 +11,10 @@
     "required_sections": ["MISIÓN", "DEBE HACER", "NO DEBE HACER", "DEFINICIÓN DE DONE"],
     "recommended_sections": ["ROL EN EL EQUIPO", "ALCANCE", "ENTRADAS", "SALIDAS", "COORDINA CON", "EJEMPLOS", "MÉTRICAS DE ÉXITO", "MODOS DE FALLA"]
   },
+  "documentation": {
+    "usage_guide": "COMO_USAR.md",
+    "description": "Guía completa para usar los agentes en VS Code con Claude Opus"
+  },
   "global_policy_file": "agents/global/Global Policy Agent Rules.txt",
   "router_agent_file": "agents/global/Agent Selector & Orchestration Advisor.txt",
   "human_index_file": "agents/global/index.txt",
