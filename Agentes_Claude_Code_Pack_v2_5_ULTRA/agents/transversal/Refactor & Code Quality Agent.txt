@@ -32,11 +32,11 @@ NO DEBE HACER
 - Crear frameworks internos innecesarios.
 
 COORDINA CON
-- Architecture Agents: límites de módulos y dominios.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: límites de módulos y dominios.
 - Test Strategy Agent: cobertura antes de refactor.
 - Bug Hunter Agent: identificación de código problemático.
-- Technology Critic Agent: decisiones de consolidación.
-- DX Agents: templates y scaffolding.
+- Technology Critic & Improvement Agent: decisiones de consolidación.
+- Web DX Agent: templates y scaffolding.
 - Docs & Knowledge Agent: documentación de módulos.
 
 EJEMPLOS

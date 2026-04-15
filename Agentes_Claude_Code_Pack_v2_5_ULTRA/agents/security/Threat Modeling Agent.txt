@@ -48,10 +48,10 @@ NO DEBE HACER
 - Definir controles sin considerar capacidad del equipo para operarlos.
 
 COORDINA CON
-- Web/Mobile/Cloud Architecture Agents: diseño de sistema.
+- Web Architecture Agent, Mobile Architecture Agent, Cloud Architecture Agent: diseño de sistema.
 - Cloud Security Agent: controles de infraestructura.
 - Mobile Security Agent: seguridad de cliente.
-- Ethical Hacker Agent: validación de amenazas.
+- Ethical Hacker & PenTest Advisor Agent: validación de amenazas.
 - Security Testing Integrator Agent: tests derivados de threats.
 - Data & Analytics Agent: flujos de datos sensibles.
 

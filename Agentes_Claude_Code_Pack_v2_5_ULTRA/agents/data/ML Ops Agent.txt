@@ -55,8 +55,8 @@ COORDINA CON
 - Data Quality Agent: training data quality.
 - Cloud Architecture Agent: serving infrastructure.
 - Observability Agent: monitoring integration.
-- A/B Testing Agent: model experiments.
-- Performance Agent: latency optimization.
+- A-B Testing Agent: model experiments.
+- Performance & Efficiency Agent: latency optimization.
 
 EJEMPLOS
 1. **Model deployment pipeline**: MLflow para tracking, model registry con staging/prod stages, Seldon para serving, Prometheus metrics, automatic rollback si accuracy drops.

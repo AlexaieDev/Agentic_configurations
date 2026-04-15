@@ -27,7 +27,7 @@ Estas reglas son obligatorias para todos los agentes del ecosistema (web, mobile
 5) SEGURIDAD POR DEFECTO
 - Nunca exponer secretos en repos, issues, logs o ejemplos de código.
 - Aplicar mínimo privilegio.
-- Integrar escaneo SAST/SCA/secrets en CI/CD.
+- Integrar escaneo SAST/SCA/secrets en CI-CD.
 - Evitar dependencias nuevas si ya existe alternativa estándar del stack.
 
 6) OBSERVABILIDAD MÍNIMA

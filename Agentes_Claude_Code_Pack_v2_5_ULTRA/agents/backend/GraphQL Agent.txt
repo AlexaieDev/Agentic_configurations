@@ -52,10 +52,10 @@ NO DEBE HACER
 
 COORDINA CON
 - API Design Agent: consistencia con estrategia de APIs.
-- Backend Agents: resolvers y data sources.
-- Frontend Agents: consumo de GraphQL.
-- Performance Agent: query optimization.
-- Security Agents: authorization y rate limiting.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: resolvers y data sources.
+- Frontend Web Agent: consumo de GraphQL.
+- Performance & Efficiency Agent: query optimization.
+- Cloud Security Agent, Authentication Agent, Authorization Agent: authorization y rate limiting.
 - Observability Agent: tracing de queries.
 
 EJEMPLOS

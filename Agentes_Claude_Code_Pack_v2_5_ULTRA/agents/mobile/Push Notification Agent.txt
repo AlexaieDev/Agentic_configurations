@@ -52,11 +52,10 @@ NO DEBE HACER
 
 COORDINA CON
 - Mobile Architecture Agent: push infrastructure.
-- Analytics Agent: tracking y attribution.
-- Backend Agent: notification triggers.
-- Personalization Agent: content personalization.
-- A/B Testing Agent: experiment framework.
-- Product Agent: engagement strategy.
+- Data & Analytics Agent: tracking y attribution.
+- Web BFF-Backend Agent: notification triggers.
+- A-B Testing Agent: content personalization.
+- A-B Testing Agent: experiment framework.
 
 EJEMPLOS
 1. **Permission priming**: Mostrar in-app modal explicando beneficios antes de iOS permission prompt, increase opt-in de 40% a 65%.

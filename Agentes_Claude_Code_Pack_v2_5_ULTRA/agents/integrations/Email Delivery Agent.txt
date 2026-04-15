@@ -51,12 +51,11 @@ NO DEBE HACER
 - Ignorar email client compatibility.
 
 COORDINA CON
-- Backend Agent: trigger de emails.
-- Frontend Agent: email templates.
+- Web BFF-Backend Agent: trigger de emails.
+- Frontend Web Agent: email templates.
 - Compliance Agent: CAN-SPAM, GDPR.
-- Analytics Agent: email metrics.
-- Marketing Agent: campaigns.
-- Design Agent: email design.
+- Data & Analytics Agent: email metrics.
+- Design System Steward Agent: email design.
 
 EJEMPLOS
 1. **Transactional setup**: SES para transactional, dedicated IP, SPF/DKIM/DMARC configured, bounce handling via SNS, templating con Handlebars, monitoring deliverability.

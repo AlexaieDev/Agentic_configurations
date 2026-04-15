@@ -51,12 +51,12 @@ NO DEBE HACER
 - Ejecutar E2E en serie (slow feedback).
 
 COORDINA CON
-- Web/Mobile QA Agents: estrategia de testing.
+- Web QA Agent, Mobile QA Agent: estrategia de testing.
 - Test Strategy Agent: balance de pirámide.
-- CI-CD Agents: integration en pipeline.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: integration en pipeline.
 - Visual Regression Agent: UI testing.
-- Performance Agent: E2E performance.
-- DX Agent: developer experience de E2E.
+- Performance & Efficiency Agent: E2E performance.
+- Web DX Agent: developer experience de E2E.
 
 EJEMPLOS
 1. **Critical path coverage**: Implementar E2E para checkout flow (login → add to cart → checkout → payment → confirmation), con test data isolation, cleanup automático, y retry en CI.

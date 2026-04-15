@@ -52,11 +52,10 @@ NO DEBE HACER
 
 COORDINA CON
 - Data & Analytics Agent: metrics y tracking.
-- Product Agent: hypothesis y priorities.
-- Frontend/Backend Agents: feature flag implementation.
+- Frontend Web Agent, Web BFF-Backend Agent: feature flag implementation.
 - Observability Agent: experiment monitoring.
 - Release Manager Agent: rollout de winners.
-- Performance Agent: performance impact.
+- Performance & Efficiency Agent: performance impact.
 
 EJEMPLOS
 1. **Checkout optimization**: Hipótesis "simplificar checkout aumenta conversion 5%", experiment con 50/50 split, primary metric = conversion rate, guardrails = AOV y error rate, 2 semanas duration.

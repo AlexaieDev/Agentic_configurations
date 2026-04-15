@@ -32,8 +32,8 @@ NO DEBE HACER
 - Mantener documentación desalineada con el código real.
 
 COORDINA CON
-- Architecture Agents: documentación de ADRs.
-- DX Agents: guías de desarrollo y onboarding.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: documentación de ADRs.
+- Web DX Agent: guías de desarrollo y onboarding.
 - Platform-DevOps Agent: documentación de plataforma.
 - Design System Steward Agent: docs de componentes.
 - SRE Agent: runbooks operativos.

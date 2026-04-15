@@ -53,10 +53,8 @@ NO DEBE HACER
 COORDINA CON
 - Mobile UI Agent: screenshots y branding.
 - i18n Agent: localization de listings.
-- Product Agent: USPs y positioning.
-- Analytics Agent: tracking de conversions.
-- Marketing Agent: campaign alignment.
-- QA Agent: rating-impacting bugs.
+- Data & Analytics Agent: tracking de conversions.
+- Web QA Agent: rating-impacting bugs.
 
 EJEMPLOS
 1. **Keyword optimization**: Research con App Annie, identificar "budget tracker" con alto volumen y medium difficulty, incorporar en título y descripción, monitorear ranking weekly.

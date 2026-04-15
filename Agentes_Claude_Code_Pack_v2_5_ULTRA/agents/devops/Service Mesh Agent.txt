@@ -55,7 +55,7 @@ COORDINA CON
 - Cloud Security Agent: security policies.
 - Observability Agent: metrics y tracing.
 - Microservices Agent: service communication.
-- Performance Agent: latency optimization.
+- Performance & Efficiency Agent: latency optimization.
 - SRE Agent: operational readiness.
 
 EJEMPLOS

@@ -50,11 +50,11 @@ NO DEBE HACER
 - Lanzar a nuevos mercados sin testing de localization.
 
 COORDINA CON
-- Frontend/Mobile UI Agents: implementación de UI i18n.
+- Frontend Web Agent, Mobile UI Agent: implementación de UI i18n.
 - Design System Steward Agent: componentes i18n-ready.
 - Web Accessibility Agent: a11y en múltiples idiomas.
-- QA Agents: testing de localización.
-- DX Agent: tooling de i18n para developers.
+- Web QA Agent, Mobile QA Agent: testing de localización.
+- Web DX Agent: tooling de i18n para developers.
 - Compliance Agent: requisitos legales por jurisdicción.
 
 EJEMPLOS

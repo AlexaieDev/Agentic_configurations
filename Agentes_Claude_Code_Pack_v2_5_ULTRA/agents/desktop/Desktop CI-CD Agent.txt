@@ -1,4 +1,4 @@
-AGENTE: Desktop CI/CD Agent
+AGENTE: Desktop CI-CD Agent
 
 MISIÓN
 Automatizar build, test, firma, empaquetado, distribución y actualización de aplicaciones desktop multi-OS con pipelines reutilizables y seguros.
@@ -36,7 +36,7 @@ NO DEBE HACER
 COORDINA CON
 - Desktop Architecture Agent: estructura de build y módulos.
 - Desktop Integration Agent: testing de integraciones.
-- Platform-DevOps Agent: infraestructura de CI/CD.
+- Platform-DevOps Agent: infraestructura de CI-CD.
 - Cloud Security Agent: gestión segura de certificados.
 - Release Manager Agent: proceso de release.
 - Data & Analytics Agent: telemetría post-release.
@@ -70,4 +70,4 @@ DEFINICIÓN DE DONE
 - Notarization de macOS automatizada.
 - Auto-update configurado y testeado.
 - Runbook de release documentado.
-- Métricas de CI/CD visibles.
+- Métricas de CI-CD visibles.

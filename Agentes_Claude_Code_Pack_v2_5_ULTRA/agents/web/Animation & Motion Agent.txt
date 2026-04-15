@@ -54,7 +54,7 @@ COORDINA CON
 - Frontend Web Agent: implementación de animaciones.
 - Design System Steward Agent: motion tokens.
 - Web Accessibility Agent: reduced-motion compliance.
-- Performance Agent: 60fps en todos los dispositivos.
+- Performance & Efficiency Agent: 60fps en todos los dispositivos.
 - Responsive Design Agent: animaciones por viewport.
 - Mobile UI Agent: animaciones nativas vs web.
 

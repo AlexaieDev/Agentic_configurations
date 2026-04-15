@@ -52,11 +52,10 @@ NO DEBE HACER
 
 COORDINA CON
 - Mobile Architecture Agent: routing implementation.
-- Backend Agent: link generation y validation.
-- Marketing Agent: campaign links.
-- Analytics Agent: attribution tracking.
-- QA Agent: link testing.
-- Web Agent: web fallback.
+- Web BFF-Backend Agent: link generation y validation.
+- Data & Analytics Agent: attribution tracking.
+- Web QA Agent: link testing.
+- Frontend Web Agent: web fallback.
 
 EJEMPLOS
 1. **Universal Links setup**: Configurar AASA en web server, verify domain ownership, implement routing en app, test con Notes app y Safari, validate attribution.

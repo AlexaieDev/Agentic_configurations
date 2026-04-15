@@ -51,8 +51,8 @@ NO DEBE HACER
 - Modificar source data in place.
 
 COORDINA CON
-- Database Agent: source y destination databases.
-- Analytics Agent: data warehouse requirements.
+- Database Architect Agent: source y destination databases.
+- Data & Analytics Agent: data warehouse requirements.
 - Observability Agent: pipeline monitoring.
 - Data Quality Agent: quality gates.
 - Cloud Architecture Agent: infrastructure.

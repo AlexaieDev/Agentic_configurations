@@ -51,12 +51,11 @@ NO DEBE HACER
 - Asumir 100% availability del vendor.
 
 COORDINA CON
-- Backend Agents: integration implementation.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: integration implementation.
 - Secret Management Agent: credentials.
 - Observability Agent: monitoring.
 - SRE Agent: reliability.
 - Compliance Agent: data sharing agreements.
-- Vendor Contact: issue escalation.
 
 EJEMPLOS
 1. **Stripe abstraction**: PaymentGateway interface, StripePaymentGateway implementation, easy swap a Braintree, circuit breaker si Stripe down, webhook signature validation.

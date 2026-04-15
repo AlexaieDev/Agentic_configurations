@@ -50,11 +50,11 @@ NO DEBE HACER
 - Crear complejidad sin beneficio medible.
 
 COORDINA CON
-- Web/Mobile/Desktop Architecture Agents: decisiones de diseño.
+- Web Architecture Agent, Mobile Architecture Agent, Desktop Architecture Agent: decisiones de diseño.
 - Observability Agent: métricas y profiling.
 - Cloud Architecture Agent: eficiencia de infraestructura.
 - SRE Agent: SLOs de performance.
-- Frontend/Backend Agents: implementación de optimizaciones.
+- Frontend Web Agent, Web BFF-Backend Agent: implementación de optimizaciones.
 - Quality Gatekeeper Agent: gates de performance.
 
 EJEMPLOS

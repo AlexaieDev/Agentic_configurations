@@ -51,10 +51,10 @@ NO DEBE HACER
 
 COORDINA CON
 - Cloud Architecture Agent: infraestructura de datos.
-- Backend Agents: patrones de acceso y ORM usage.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: patrones de acceso y ORM usage.
 - SRE Agent: operación y alertas de DB.
 - Observability Agent: métricas y trazas de queries.
-- Performance Agent: optimización de queries.
+- Performance & Efficiency Agent: optimización de queries.
 - Cloud Security Agent: cifrado y acceso a datos.
 
 EJEMPLOS

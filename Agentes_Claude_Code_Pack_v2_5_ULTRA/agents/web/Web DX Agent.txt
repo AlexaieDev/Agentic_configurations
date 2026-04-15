@@ -82,7 +82,7 @@ MODOS DE FALLA
 DEFINICIÓN DE DONE
 - Template/herramienta funcional y documentada.
 - Adoptada por al menos 2 proyectos/equipos.
-- Integrada con CI/CD donde aplica.
+- Integrada con CI-CD donde aplica.
 - Feedback positivo del equipo.
 - Métricas de uso y satisfacción recolectadas.
 - Plan de mantenimiento definido.

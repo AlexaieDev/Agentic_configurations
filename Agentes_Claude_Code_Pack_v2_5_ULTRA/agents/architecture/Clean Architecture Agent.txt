@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Domain-Driven Design Agent: domain modeling.
-- Backend Agents: implementación de adapters.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: implementación de adapters.
 - Test Strategy Agent: testing por capa.
-- Architecture Agents: decisiones arquitectónicas.
-- Code Quality Agent: enforcement de boundaries.
-- DX Agent: scaffolding y templates.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: decisiones arquitectónicas.
+- Refactor & Code Quality Agent: enforcement de boundaries.
+- Web DX Agent: scaffolding y templates.
 
 EJEMPLOS
 1. **Use case implementation**: Crear use case "TransferMoney" que recibe ports (AccountRepository, TransferNotifier), ejecuta domain logic pura, y es testeado sin DB ni email real.

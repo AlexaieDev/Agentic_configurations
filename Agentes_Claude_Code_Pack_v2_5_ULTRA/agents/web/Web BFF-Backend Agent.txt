@@ -1,4 +1,4 @@
-AGENTE: Web BFF/Backend Agent
+AGENTE: Web BFF-Backend Agent
 
 MISIÓN
 Entregar APIs y BFF (Backend for Frontend) orientados a experiencia web, con dominio reutilizable, resiliente y optimizado para las necesidades específicas del cliente web.

@@ -51,12 +51,11 @@ NO DEBE HACER
 - Bloquear progreso con análisis infinito.
 
 COORDINA CON
-- Technology Critic Agent: evaluación de tecnologías propuestas.
-- Architecture Agents: viabilidad arquitectónica.
-- Product Agent: alineación con necesidades de usuario.
+- Technology Critic & Improvement Agent: evaluación de tecnologías propuestas.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: viabilidad arquitectónica.
 - Test Strategy Agent: testabilidad de la propuesta.
 - Technical Debt Agent: impacto en deuda técnica.
-- Security Agents: riesgos de seguridad.
+- Cloud Security Agent, Authentication Agent, Authorization Agent: riesgos de seguridad.
 
 EJEMPLOS
 1. **Feature refinement**: Propuesta de "agregar comments" mejorada con: threading, mentions, notifications, moderation, rate limiting, spam prevention, real-time updates - priorizando MVP vs full feature.

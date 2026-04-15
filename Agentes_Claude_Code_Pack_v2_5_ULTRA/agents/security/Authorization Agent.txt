@@ -53,9 +53,9 @@ NO DEBE HACER
 COORDINA CON
 - Authentication Agent: identity verification.
 - API Design Agent: API authorization design.
-- Backend Agents: authorization middleware.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: authorization middleware.
 - Compliance Agent: access control requirements.
-- Audit Agent: audit logging.
+- Compliance Agent: audit logging.
 - Cloud Security Agent: infrastructure access.
 
 EJEMPLOS

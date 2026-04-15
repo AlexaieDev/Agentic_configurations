@@ -56,7 +56,7 @@ COORDINA CON
 - API Design Agent: auth en APIs.
 - Mobile Security Agent: mobile auth flows.
 - Compliance Agent: regulatory requirements.
-- DX Agent: developer auth experience.
+- Web DX Agent: developer auth experience.
 
 EJEMPLOS
 1. **OAuth2 implementation**: Implementar OAuth2 con PKCE para SPA, refresh token rotation, secure storage en httpOnly cookies, y silent refresh para UX.

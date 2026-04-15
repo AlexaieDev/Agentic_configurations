@@ -51,12 +51,12 @@ NO DEBE HACER
 - Cachear errores por mucho tiempo.
 
 COORDINA CON
-- Performance Agent: métricas de mejora.
-- Database Agent: query patterns y load reduction.
+- Performance & Efficiency Agent: métricas de mejora.
+- Database Architect Agent: query patterns y load reduction.
 - CDN Agent: edge caching.
-- Backend Agents: application-level caching.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: application-level caching.
 - Cloud Architecture Agent: cache infrastructure.
-- Security Agent: datos sensibles en cache.
+- Cloud Security Agent: datos sensibles en cache.
 
 EJEMPLOS
 1. **Multi-layer caching**: Implementar browser cache (1h) + CDN (5min) + Redis (30s) para product catalog, con invalidation webhook desde CMS que purga todas las capas.

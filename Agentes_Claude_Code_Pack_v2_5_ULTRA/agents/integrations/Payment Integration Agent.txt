@@ -51,12 +51,11 @@ NO DEBE HACER
 - Ignorar PCI requirements.
 
 COORDINA CON
-- Backend Agent: API integration.
-- Frontend Agent: checkout UI.
-- Security Agent: PCI compliance.
+- Web BFF-Backend Agent: API integration.
+- Frontend Web Agent: checkout UI.
+- Cloud Security Agent: PCI compliance.
 - Compliance Agent: regulatory requirements.
-- Analytics Agent: payment metrics.
-- Support Agent: dispute handling.
+- Data & Analytics Agent: payment metrics.
 
 EJEMPLOS
 1. **Stripe integration**: Payment Intents API, webhooks para async events, idempotency keys, 3D Secure for SCA, subscription con trials y proration.

@@ -53,7 +53,7 @@ NO DEBE HACER
 COORDINA CON
 - Frontend Web Agent: implementación de estado.
 - API Design Agent: shape de datos para client state.
-- Performance Agent: memoization y re-renders.
+- Performance & Efficiency Agent: memoization y re-renders.
 - Test Strategy Agent: testing de estado.
 - PWA Agent: persistence y offline state.
 - Web DX Agent: DevTools y debugging experience.

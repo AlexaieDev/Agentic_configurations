@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Mobile Data Agent: local persistence.
-- Backend Agent: sync APIs.
+- Web BFF-Backend Agent: sync APIs.
 - Mobile Architecture Agent: offline architecture.
-- UX Agent: offline UI patterns.
-- QA Agent: offline testing.
-- Performance Agent: sync performance.
+- Web Accessibility Agent, Responsive Design Agent: offline UI patterns.
+- Web QA Agent: offline testing.
+- Performance & Efficiency Agent: sync performance.
 
 EJEMPLOS
 1. **CRDT-based sync**: Implementar CRDTs para collaborative notes, merge automático sin conflictos, sync via WebSocket cuando online, local-first always.

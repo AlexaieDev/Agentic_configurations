@@ -51,10 +51,10 @@ NO DEBE HACER
 - Usar keyword analyzer para texto que necesita análisis.
 
 COORDINA CON
-- Database Agent: sync entre DB y search index.
-- Backend Agents: search API implementation.
-- Frontend Agents: search UI y UX.
-- Performance Agent: latency optimization.
+- Database Architect Agent: sync entre DB y search index.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: search API implementation.
+- Frontend Web Agent: search UI y UX.
+- Performance & Efficiency Agent: latency optimization.
 - i18n Agent: analyzers multi-idioma.
 - Observability Agent: search metrics.
 

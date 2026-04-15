@@ -32,14 +32,14 @@ TRANSVERSALES (Code Health)
 - Test Strategy Agent
 - Technology Critic & Improvement Agent
 - Docs / Knowledge Agent (si lo agregas a tu set)
-- Developer Experience (DX) Agent
+- Web DX Agent
 
 WEB
 - Web Architecture Agent
 - Frontend Web Agent
-- Web BFF/Backend Agent
+- Web BFF-Backend Agent
 - Web QA Agent
-- Web CI/CD Agent
+- Web CI-CD Agent
 - Web DX Agent
 - Web Product-Discovery Agent
 
@@ -48,17 +48,17 @@ MOBILE
 - Mobile UI Agent
 - Mobile Data Agent
 - Mobile QA Agent
-- Mobile CI/CD Agent
+- Mobile CI-CD Agent
 
 DESKTOP
 - Desktop Architecture Agent
 - Desktop Integration Agent
-- Desktop CI/CD Agent
+- Desktop CI-CD Agent
 
 CLOUD / PLATFORM
 - Cloud Architecture Agent
-- Platform/DevOps Agent
-- GitOps CI/CD Cloud Agent
+- Platform-DevOps Agent
+- GitOps CI-CD Cloud Agent
 - SRE Agent
 - Cloud Security Agent
 - Observability Agent
@@ -75,8 +75,8 @@ WEB (si es tu core)
 NÚCLEO
 - Web Architecture Agent (ligero)
 - Frontend Web Agent
-- Web BFF/Backend Agent
-- Web CI/CD Agent
+- Web BFF-Backend Agent
+- Web CI-CD Agent
 
 CALIDAD MÍNIMA
 - Bug Hunter Agent
@@ -91,14 +91,14 @@ NÚCLEO
 - Mobile Architecture Agent
 - Mobile UI Agent
 - Mobile Data Agent
-- Mobile CI/CD Agent
+- Mobile CI-CD Agent
 
 CALIDAD MÍNIMA
 - Bug Hunter Agent
 - Test Strategy Agent
 
 CLOUD
-- Platform/DevOps Agent (muy liviano, enfoque IaC básico)
+- Platform-DevOps Agent (muy liviano, enfoque IaC básico)
 - Cloud Security Agent (solo guardrails esenciales)
 
 Nota práctica:
@@ -112,9 +112,9 @@ WEB
 NÚCLEO
 - Web Architecture Agent
 - Frontend Web Agent
-- Web BFF/Backend Agent
+- Web BFF-Backend Agent
 - Web QA Agent
-- Web CI/CD Agent
+- Web CI-CD Agent
 
 TRANSVERSALES YA OBLIGATORIOS
 - Bug Hunter Agent
@@ -132,7 +132,7 @@ NÚCLEO
 - Mobile UI Agent
 - Mobile Data Agent
 - Mobile QA Agent
-- Mobile CI/CD Agent
+- Mobile CI-CD Agent
 
 TRANSVERSALES
 - Bug Hunter Agent
@@ -141,8 +141,8 @@ TRANSVERSALES
 
 CLOUD
 - Cloud Architecture Agent
-- Platform/DevOps Agent
-- GitOps CI/CD Cloud Agent
+- Platform-DevOps Agent
+- GitOps CI-CD Cloud Agent
 - Observability Agent
 - Cloud Security Agent (con gates básicos)
 
@@ -153,9 +153,9 @@ Objetivo: estandarización, escalabilidad organizacional y confiabilidad.
 WEB
 - Web Architecture Agent (con ADRs y estándares)
 - Frontend Web Agent
-- Web BFF/Backend Agent
+- Web BFF-Backend Agent
 - Web QA Agent
-- Web CI/CD Agent
+- Web CI-CD Agent
 - Web DX Agent
 - Web Product-Discovery Agent
 
@@ -171,17 +171,17 @@ MOBILE
 - Mobile UI Agent
 - Mobile Data Agent
 - Mobile QA Agent
-- Mobile CI/CD Agent
+- Mobile CI-CD Agent
 
 DESKTOP (si aplica)
 - Desktop Architecture Agent
 - Desktop Integration Agent
-- Desktop CI/CD Agent
+- Desktop CI-CD Agent
 
 CLOUD / PLATFORM
 - Cloud Architecture Agent
-- Platform/DevOps Agent
-- GitOps CI/CD Cloud Agent
+- Platform-DevOps Agent
+- GitOps CI-CD Cloud Agent
 - SRE Agent
 - Cloud Security Agent
 - Observability Agent
@@ -196,9 +196,9 @@ Objetivo: gobernanza fuerte, control de riesgos, resiliencia y compliance.
 WEB
 - Web Architecture Agent (con gobernanza de dominios)
 - Frontend Web Agent
-- Web BFF/Backend Agent
+- Web BFF-Backend Agent
 - Web QA Agent
-- Web CI/CD Agent
+- Web CI-CD Agent
 - Web DX Agent
 - Web Product-Discovery Agent
 
@@ -211,8 +211,8 @@ TRANSVERSALES (obligatorios)
 
 CLOUD / PLATFORM (obligatorios)
 - Cloud Architecture Agent
-- Platform/DevOps Agent
-- GitOps CI/CD Cloud Agent
+- Platform-DevOps Agent
+- GitOps CI-CD Cloud Agent
 - SRE Agent
 - Cloud Security Agent
 - Observability Agent
@@ -280,7 +280,7 @@ D) PROPUESTA DE ADOPCIÓN EN 4 FASES
 
 Fase 1 — “Ship fast con higiene”
 - Agentes core de tu plataforma
-- Web/Mobile CI/CD
+- Web/Mobile CI-CD
 - Bug Hunter
 - Test Strategy
 
@@ -292,7 +292,7 @@ Fase 2 — “No dejes crecer la deuda”
 Fase 3 — “Operar con datos”
 - Observability
 - Performance & Efficiency
-- Cloud Architecture + Platform/DevOps
+- Cloud Architecture + Platform-DevOps
 
 Fase 4 — “Escala organizacional”
 - Technology Critic

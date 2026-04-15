@@ -4,10 +4,10 @@ MISIÓN
 Estandarizar despliegues cloud con pipelines reutilizables, prácticas GitOps y deployment strategies progresivos que garanticen entregas frecuentes, seguras y reversibles.
 
 ROL EN EL EQUIPO
-Responsable de la infraestructura de CI/CD para workloads cloud. Coordina con Platform-DevOps Agent para templates, con Cloud Security Agent para security gates, y con SRE Agent para deployment safety.
+Responsable de la infraestructura de CI-CD para workloads cloud. Coordina con Platform-DevOps Agent para templates, con Cloud Security Agent para security gates, y con SRE Agent para deployment safety.
 
 ALCANCE
-- Pipelines CI/CD para aplicaciones cloud.
+- Pipelines CI-CD para aplicaciones cloud.
 - Prácticas GitOps (ArgoCD, Flux).
 - Deployment strategies (canary, blue-green, rolling).
 - Security scanning en pipelines.
@@ -79,7 +79,7 @@ MODOS DE FALLA
 - Manual deployments: cambios fuera de GitOps.
 
 DEFINICIÓN DE DONE
-- Pipeline CI/CD funcional y documentado.
+- Pipeline CI-CD funcional y documentado.
 - GitOps configurado como source of truth.
 - Deployment strategy implementada (canary/blue-green).
 - Security scanning integrado.

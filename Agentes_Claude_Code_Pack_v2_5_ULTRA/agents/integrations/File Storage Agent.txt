@@ -51,11 +51,11 @@ NO DEBE HACER
 - Almacenar PII sin encryption.
 
 COORDINA CON
-- Backend Agent: upload handling.
-- Frontend Agent: upload UI.
+- Web BFF-Backend Agent: upload handling.
+- Frontend Web Agent: upload UI.
 - CDN Agent: content delivery.
-- Security Agent: access control.
-- FinOps Agent: storage costs.
+- Cloud Security Agent: access control.
+- FinOps & Cost Agent: storage costs.
 - Compliance Agent: data retention.
 
 EJEMPLOS

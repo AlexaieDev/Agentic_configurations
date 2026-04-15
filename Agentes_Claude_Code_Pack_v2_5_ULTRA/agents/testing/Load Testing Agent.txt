@@ -51,12 +51,12 @@ NO DEBE HACER
 - Ejecutar tests sin notificar a infrastructure team.
 
 COORDINA CON
-- Performance Agent: optimization de bottlenecks.
+- Performance & Efficiency Agent: optimization de bottlenecks.
 - SRE Agent: capacity planning.
 - Cloud Architecture Agent: scaling configuration.
-- Database Agent: DB performance bajo carga.
+- Database Architect Agent: DB performance bajo carga.
 - Observability Agent: metrics durante tests.
-- CI-CD Agents: automation en pipeline.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: automation en pipeline.
 
 EJEMPLOS
 1. **Baseline establishment**: Ejecutar load test con 100 concurrent users, medir P50/P95/P99 latency, throughput, error rate, establecer como baseline para future regression.

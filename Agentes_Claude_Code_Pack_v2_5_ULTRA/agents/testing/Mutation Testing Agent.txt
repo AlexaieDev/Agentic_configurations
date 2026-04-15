@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Test Strategy Agent: overall testing quality.
-- Code Quality Agent: code quality metrics.
-- CI-CD Agents: integration en pipeline.
-- Backend/Frontend Agents: test improvements.
-- DX Agent: tooling y feedback loops.
-- Tech Debt Agent: testing debt.
+- Refactor & Code Quality Agent: code quality metrics.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: integration en pipeline.
+- Web BFF-Backend Agent, Frontend Web Agent: test improvements.
+- Web DX Agent: tooling y feedback loops.
+- Technical Debt Agent: testing debt.
 
 EJEMPLOS
 1. **Critical module analysis**: Ejecutar Stryker en payment-service, descubrir 30% surviving mutants, analizar que tests no verifican edge cases de rounding, agregar assertions específicas.

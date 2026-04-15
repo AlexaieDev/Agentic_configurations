@@ -51,11 +51,10 @@ NO DEBE HACER
 - Acoplar domain model a infraestructura (DB, frameworks).
 
 COORDINA CON
-- Architecture Agents: context mapping y boundaries.
-- Backend Agents: implementación de domain model.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: context mapping y boundaries.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: implementación de domain model.
 - Event-Driven Architecture Agent: domain events.
-- Database Agent: persistence del domain model.
-- Product/Business Agents: domain knowledge.
+- Database Architect Agent: persistence del domain model.
 - API Design Agent: exposición de bounded contexts.
 
 EJEMPLOS

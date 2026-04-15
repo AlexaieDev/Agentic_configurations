@@ -51,12 +51,12 @@ NO DEBE HACER
 - Forzar adopción sin buy-in de equipos.
 
 COORDINA CON
-- Technology Critic Agent: evaluación crítica de propuestas.
-- Architecture Agents: fit arquitectónico de tecnologías.
-- DX Agent: developer experience de nuevas tecnologías.
+- Technology Critic & Improvement Agent: evaluación crítica de propuestas.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: fit arquitectónico de tecnologías.
+- Web DX Agent: developer experience de nuevas tecnologías.
 - Platform-DevOps Agent: operabilidad de tecnologías.
-- Training/Docs Agent: capacitación en adopciones.
-- License Reviewer Agent: licensing de tecnologías.
+- Docs & Knowledge Agent: capacitación en adopciones.
+- License Reviewer & OSS Alternatives Agent: licensing de tecnologías.
 
 EJEMPLOS
 1. **Framework evaluation**: Evaluar Remix vs Next.js para nuevo proyecto, con POC de 2 semanas, métricas de DX, performance, deployment complexity, y recomendación documentada.

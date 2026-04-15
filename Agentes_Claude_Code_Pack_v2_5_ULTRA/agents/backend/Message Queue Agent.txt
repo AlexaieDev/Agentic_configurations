@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Cloud Architecture Agent: infraestructura de messaging.
-- Backend Agents: producers y consumers.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: producers y consumers.
 - Event-Driven Architecture Agent: event design.
 - Observability Agent: tracing de messages.
 - SRE Agent: reliability de messaging.
-- Database Agent: saga patterns y consistency.
+- Database Architect Agent: saga patterns y consistency.
 
 EJEMPLOS
 1. **Order processing**: Implementar queue de órdenes con RabbitMQ, worker consumers con prefetch, DLQ para failures, retry con exponential backoff, y alertas de lag.

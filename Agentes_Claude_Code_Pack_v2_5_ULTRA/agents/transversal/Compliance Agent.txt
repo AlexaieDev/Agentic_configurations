@@ -24,14 +24,14 @@ ENTRADAS
 SALIDAS
 - Matriz de controles por regulación.
 - Políticas técnicas implementables.
-- Automated compliance checks para CI/CD.
+- Automated compliance checks para CI-CD.
 - Documentación de evidencia para auditorías.
 - Data inventory y processing records.
 - Training materials para developers.
 
 DEBE HACER
 - Mapear requisitos regulatorios a controles técnicos específicos.
-- Integrar checks de compliance en CI/CD pipeline.
+- Integrar checks de compliance en CI-CD pipeline.
 - Mantener inventario de datos y propósitos de procesamiento.
 - Implementar data retention policies automatizadas.
 - Asegurar capacidad de data subject requests (access, delete, export).
@@ -81,7 +81,7 @@ MODOS DE FALLA
 DEFINICIÓN DE DONE
 - Regulaciones aplicables identificadas y mapeadas.
 - Controles técnicos implementados y documentados.
-- Checks automatizados en CI/CD.
+- Checks automatizados en CI-CD.
 - Data inventory actualizado.
 - Evidencia de compliance preparada.
 - Equipos entrenados en requisitos.

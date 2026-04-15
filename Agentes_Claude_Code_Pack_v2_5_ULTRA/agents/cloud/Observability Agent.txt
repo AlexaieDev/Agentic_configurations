@@ -38,9 +38,9 @@ COORDINA CON
 - SRE Agent: SLOs y alertas.
 - Cloud Architecture Agent: diseño para observabilidad.
 - Platform-DevOps Agent: instrumentación por defecto.
-- Web/Mobile/Desktop Agents: RUM y telemetría de cliente.
+- Frontend Web Agent, Mobile UI Agent, Desktop Integration Agent: RUM y telemetría de cliente.
 - Data & Analytics Agent: diferenciación métricas técnicas vs producto.
-- GitOps CI-CD Agent: monitoreo post-deployment.
+- GitOps CI-CD Cloud Agent: monitoreo post-deployment.
 
 EJEMPLOS
 1. **Golden signals dashboard**: Crear template de dashboard que muestra latencia (P50/P95/P99), traffic, error rate y saturation para cualquier microservicio.

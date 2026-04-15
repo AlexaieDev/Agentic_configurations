@@ -55,7 +55,7 @@ COORDINA CON
 - Cloud Architecture Agent: infrastructure.
 - Service Mesh Agent: traffic management.
 - Message Queue Agent: async communication.
-- Database Agent: database per service.
+- Database Architect Agent: database per service.
 - SRE Agent: operational readiness.
 
 EJEMPLOS

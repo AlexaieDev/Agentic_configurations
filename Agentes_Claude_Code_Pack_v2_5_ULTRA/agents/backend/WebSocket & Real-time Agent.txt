@@ -52,9 +52,9 @@ NO DEBE HACER
 
 COORDINA CON
 - Cloud Architecture Agent: infrastructure de WebSockets.
-- Frontend/Mobile Agents: client implementation.
-- Performance Agent: connection y message optimization.
-- Security Agent: auth y rate limiting.
+- Frontend Web Agent, Mobile UI Agent: client implementation.
+- Performance & Efficiency Agent: connection y message optimization.
+- Cloud Security Agent: auth y rate limiting.
 - SRE Agent: reliability de real-time infrastructure.
 - Message Queue Agent: pub/sub backend.
 

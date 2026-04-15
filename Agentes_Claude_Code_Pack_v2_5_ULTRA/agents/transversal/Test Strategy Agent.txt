@@ -50,9 +50,9 @@ NO DEBE HACER
 - Testear implementación en vez de comportamiento.
 
 COORDINA CON
-- Web/Mobile/Desktop QA Agents: implementación de estrategia.
-- CI-CD Agents: integración en pipelines.
-- Architecture Agents: diseño para testabilidad.
+- Web QA Agent, Mobile QA Agent: implementación de estrategia.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: integración en pipelines.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: diseño para testabilidad.
 - Bug Hunter Agent: análisis de regresiones.
 - Performance & Efficiency Agent: testing de performance.
 - Security Testing Integrator Agent: testing de seguridad.

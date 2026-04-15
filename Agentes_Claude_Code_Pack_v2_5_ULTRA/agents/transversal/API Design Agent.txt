@@ -48,11 +48,11 @@ NO DEBE HACER
 - Ignorar casos de error y edge cases en diseño.
 
 COORDINA CON
-- Backend Agents: implementación de APIs.
-- Frontend/Mobile Agents: consumidores de APIs.
-- DX Agent: developer experience de APIs.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: implementación de APIs.
+- Frontend Web Agent, Mobile UI Agent: consumidores de APIs.
+- Web DX Agent: developer experience de APIs.
 - Docs & Knowledge Agent: documentación de APIs.
-- Security Agents: autenticación y autorización de APIs.
+- Cloud Security Agent, Authentication Agent, Authorization Agent: autenticación y autorización de APIs.
 - Test Strategy Agent: contract testing.
 
 EJEMPLOS

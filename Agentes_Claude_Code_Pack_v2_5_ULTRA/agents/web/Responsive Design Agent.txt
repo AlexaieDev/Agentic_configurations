@@ -52,7 +52,7 @@ COORDINA CON
 - Frontend Web Agent: implementación de componentes.
 - Web Accessibility Agent: a11y en todos los breakpoints.
 - Design System Steward Agent: tokens responsive.
-- Performance Agent: optimización de assets por viewport.
+- Performance & Efficiency Agent: optimización de assets por viewport.
 - Mobile UI Agent: consistencia con apps nativas.
 - Web QA Agent: testing multi-dispositivo.
 

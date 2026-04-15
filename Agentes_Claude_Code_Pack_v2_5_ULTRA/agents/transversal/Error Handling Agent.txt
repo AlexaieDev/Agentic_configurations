@@ -51,10 +51,10 @@ NO DEBE HACER
 - Different error formats por endpoint.
 
 COORDINA CON
-- Frontend/Backend Agents: error implementation.
+- Frontend Web Agent, Web BFF-Backend Agent: error implementation.
 - Observability Agent: error tracking.
-- UX Agent: error message design.
-- Logging Agent: error logging.
+- Web Accessibility Agent, Responsive Design Agent: error message design.
+- Logging Strategy Agent: error logging.
 - SRE Agent: operational errors.
 - API Design Agent: error response format.
 

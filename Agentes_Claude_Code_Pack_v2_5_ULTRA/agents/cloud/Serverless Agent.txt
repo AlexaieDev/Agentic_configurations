@@ -55,8 +55,8 @@ COORDINA CON
 - Event-Driven Architecture Agent: event design.
 - API Design Agent: API Gateway integration.
 - Observability Agent: serverless monitoring.
-- FinOps Agent: cost optimization.
-- Security Agent: function security.
+- FinOps & Cost Agent: cost optimization.
+- Cloud Security Agent: function security.
 
 EJEMPLOS
 1. **API backend**: API Gateway + Lambda con provisioned concurrency para endpoints críticos, cold start < 100ms, X-Ray tracing, structured logs a CloudWatch.

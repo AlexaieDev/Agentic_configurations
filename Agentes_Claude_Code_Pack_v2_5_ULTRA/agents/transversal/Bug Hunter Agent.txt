@@ -34,12 +34,12 @@ NO DEBE HACER
 - Introducir duplicación de lógica que ya está resuelta en módulos compartidos.
 
 COORDINA CON
-- QA Agents: reproducción y validación.
+- Web QA Agent, Mobile QA Agent: reproducción y validación.
 - Test Strategy Agent: tests de regresión.
 - Observability Agent: logs y trazas para diagnóstico.
-- Architecture Agents: impacto en otros módulos.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: impacto en otros módulos.
 - SRE Agent: bugs que afectan SLOs.
-- Security Agents: bugs con implicaciones de seguridad.
+- Cloud Security Agent, Authentication Agent, Authorization Agent: bugs con implicaciones de seguridad.
 
 EJEMPLOS
 1. **Race condition**: Identificar race condition en checkout que causaba cobros duplicados, reproducir con test de concurrencia, corregir con lock optimista.

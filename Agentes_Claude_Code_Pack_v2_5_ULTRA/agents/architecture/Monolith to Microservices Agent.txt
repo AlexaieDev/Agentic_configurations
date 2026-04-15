@@ -52,7 +52,7 @@ NO DEBE HACER
 
 COORDINA CON
 - Microservices Agent: target architecture.
-- Database Agent: data decomposition.
+- Database Architect Agent: data decomposition.
 - Migration Agent: execution de migración.
 - Domain-Driven Design Agent: bounded contexts.
 - SRE Agent: operational readiness.

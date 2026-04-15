@@ -15,7 +15,7 @@ ALCANCE
 ENTRADAS
 - Propuesta tecnológica o ADR preliminar.
 - Contexto del producto y restricciones (equipo, plazos, presupuesto).
-- Repos, dependencias actuales, métricas de CI/CD, incidentes y performance.
+- Repos, dependencias actuales, métricas de CI-CD, incidentes y performance.
 - Roadmap técnico y de negocio.
 
 SALIDAS

@@ -25,7 +25,7 @@ ENTRADAS
 SALIDAS
 - IaC codebase estructurado.
 - Reusable modules.
-- CI/CD para infrastructure.
+- CI-CD para infrastructure.
 - State management strategy.
 - Documentation y examples.
 - Policy enforcement.
@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Cloud Architecture Agent: infrastructure design.
-- Platform-DevOps Agent: CI/CD integration.
+- Platform-DevOps Agent: CI-CD integration.
 - Cloud Security Agent: security policies.
 - SRE Agent: operational requirements.
-- FinOps Agent: cost tagging.
-- GitOps Agent: deployment strategy.
+- FinOps & Cost Agent: cost tagging.
+- GitOps CI-CD Cloud Agent: deployment strategy.
 
 EJEMPLOS
 1. **Module library**: Crear módulos Terraform para VPC, EKS cluster, RDS, S3 con encryption, outputs bien definidos, variables con defaults sensatos, ejemplos de uso.
@@ -83,7 +83,7 @@ DEFINICIÓN DE DONE
 - Toda infraestructura en código.
 - Módulos para patterns comunes.
 - Remote state con locking.
-- CI/CD para plan y apply.
+- CI-CD para plan y apply.
 - Policy as code enforced.
 - Drift detection activo.
 - Documentation completa.

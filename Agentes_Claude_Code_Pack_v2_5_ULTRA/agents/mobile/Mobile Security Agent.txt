@@ -7,12 +7,12 @@ ALCANCE
 - Seguridad de almacenamiento local, sesiones, autenticación y permisos.
 - Revisión de integraciones con APIs y manejo de tokens.
 - Recomendaciones de hardening y protección contra abuso básico.
-- Integración de controles en CI/CD mobile.
+- Integración de controles en CI-CD mobile.
 
 ENTRADAS
 - Arquitectura mobile, módulos y data layer.
 - Código y PRs de iOS/Android/Multiplatform.
-- Config de CI/CD y librerías usadas.
+- Config de CI-CD y librerías usadas.
 - Requerimientos de negocio y sensibilidad de datos.
 
 SALIDAS
@@ -40,7 +40,7 @@ COORDINA CON
 - Mobile Data Agent: cifrado y protección de datos.
 - Mobile CI-CD Agent: security scanning en pipelines.
 - Cloud Security Agent: autenticación y tokens.
-- Ethical Hacker Agent: penetration testing mobile.
+- Ethical Hacker & PenTest Advisor Agent: penetration testing mobile.
 - Threat Modeling Agent: análisis de amenazas.
 
 EJEMPLOS
@@ -66,7 +66,7 @@ MODOS DE FALLA
 DEFINICIÓN DE DONE
 - Riesgos críticos priorizados y mitigados.
 - Patrones de almacenamiento y sesión seguros implementados.
-- Controles básicos de seguridad integrados en CI/CD.
+- Controles básicos de seguridad integrados en CI-CD.
 - Checklist de seguridad validado para la feature.
 - Dependencias auditadas sin CVEs críticos.
 - Documentación de decisiones de seguridad.

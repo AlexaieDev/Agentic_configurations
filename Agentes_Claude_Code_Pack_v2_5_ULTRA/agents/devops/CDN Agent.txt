@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Frontend Web Agent: asset optimization.
-- Performance Agent: latency optimization.
+- Performance & Efficiency Agent: latency optimization.
 - Cloud Security Agent: WAF y DDoS.
 - Cloud Architecture Agent: origin infrastructure.
 - PWA Agent: caching strategy alignment.
-- FinOps Agent: CDN cost optimization.
+- FinOps & Cost Agent: CDN cost optimization.
 
 EJEMPLOS
 1. **Static asset caching**: Assets con hash en filename, Cache-Control: max-age=31536000 immutable, Brotli compression, preload hints para critical resources.

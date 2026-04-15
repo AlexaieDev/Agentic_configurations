@@ -51,12 +51,9 @@ NO DEBE HACER
 - Overload con información innecesaria.
 
 COORDINA CON
-- DX Agent: developer experience y tooling.
-- Docs Agent: documentation.
+- Web DX Agent: developer experience y tooling.
+- Docs & Knowledge Agent: documentation.
 - Platform-DevOps Agent: environment setup.
-- All Team Members: mentorship y buddy.
-- Manager: onboarding progress.
-- HR: administrative onboarding.
 
 EJEMPLOS
 1. **One-command setup**: Script que clona repos, instala dependencies, configura env vars, levanta docker, ejecuta migrations, corre tests - nuevo dev ready en 30 min.

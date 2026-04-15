@@ -52,8 +52,8 @@ NO DEBE HACER
 
 COORDINA CON
 - Frontend Web Agent: app shell architecture.
-- Performance Agent: caching y loading optimization.
-- Backend Agent: API design para offline sync.
+- Performance & Efficiency Agent: caching y loading optimization.
+- Web BFF-Backend Agent: API design para offline sync.
 - Mobile UI Agent: consistencia con apps nativas.
 - Cloud Architecture Agent: push notification infrastructure.
 - Web QA Agent: testing offline scenarios.

@@ -54,7 +54,7 @@ COORDINA CON
 - Design System Steward Agent: component testing.
 - Frontend Web Agent: UI implementation.
 - E2E Testing Agent: integration con E2E suite.
-- CI-CD Agents: pipeline integration.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: pipeline integration.
 - Responsive Design Agent: breakpoints a testear.
 - Web QA Agent: QA workflow.
 

@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Observability Agent: overall observability.
-- Security Agent: sensitive data.
+- Cloud Security Agent: sensitive data.
 - Compliance Agent: audit requirements.
-- Backend/Frontend Agents: logging implementation.
+- Web BFF-Backend Agent, Frontend Web Agent: logging implementation.
 - SRE Agent: operational logging.
-- FinOps Agent: logging costs.
+- FinOps & Cost Agent: logging costs.
 
 EJEMPLOS
 1. **Structured logging setup**: Winston/Pino configured with JSON output, correlation ID middleware, request context injected, shipped to CloudWatch/Datadog.

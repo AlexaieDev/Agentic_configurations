@@ -51,12 +51,12 @@ NO DEBE HACER
 - Aprobar sin realmente revisar.
 
 COORDINA CON
-- All Development Agents: code quality standards.
-- DX Agent: review tooling.
+- Frontend Web Agent, Web BFF-Backend Agent, Mobile UI Agent: code quality standards.
+- Web DX Agent: review tooling.
 - Test Strategy Agent: test review.
-- Security Agents: security review.
-- Tech Debt Agent: debt introduction.
-- Architecture Agents: architecture decisions.
+- Cloud Security Agent, Authentication Agent, Authorization Agent: security review.
+- Technical Debt Agent: debt introduction.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: architecture decisions.
 
 EJEMPLOS
 1. **Automated gates**: ESLint + Prettier + TypeScript check antes de review humano, test coverage gate, security scan, solo llega a humano lo que machines no pueden revisar.

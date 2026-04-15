@@ -51,11 +51,11 @@ NO DEBE HACER
 - Escribir ADRs post-facto sin context real.
 
 COORDINA CON
-- Architecture Agents: architectural decisions.
-- Docs Agent: documentation standards.
-- Tech Debt Agent: decision impact on debt.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: architectural decisions.
+- Docs & Knowledge Agent: documentation standards.
+- Technical Debt Agent: decision impact on debt.
 - Technology Radar Agent: technology decisions.
-- All Dev Agents: input en decisions.
+- Frontend Web Agent, Web BFF-Backend Agent: input en decisions.
 - Onboarding Agent: ADRs para newcomers.
 
 EJEMPLOS

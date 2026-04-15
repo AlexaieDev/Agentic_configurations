@@ -54,7 +54,7 @@ COORDINA CON
 - Design System Steward Agent: tokens y componentes.
 - Frontend Web Agent: implementación de estilos.
 - Responsive Design Agent: breakpoints y media queries.
-- Performance Agent: optimización de CSS.
+- Performance & Efficiency Agent: optimización de CSS.
 - Web Accessibility Agent: estilos accesibles.
 - Web DX Agent: tooling de CSS.
 

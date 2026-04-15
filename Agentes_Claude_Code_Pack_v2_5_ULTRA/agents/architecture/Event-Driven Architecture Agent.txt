@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Message Queue Agent: infraestructura de eventos.
-- Domain Modeling Agent: bounded contexts y eventos.
-- Backend Agents: producers y consumers.
-- Database Agent: event store y projections.
+- Domain-Driven Design Agent: bounded contexts y eventos.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: producers y consumers.
+- Database Architect Agent: event store y projections.
 - Observability Agent: event tracing.
-- CQRS Agent: read models y projections.
+- Event-Driven Architecture Agent: read models y projections.
 
 EJEMPLOS
 1. **Order saga**: Diseñar saga de order con eventos: OrderPlaced → PaymentProcessed → InventoryReserved → OrderConfirmed, con compensating events para rollback.

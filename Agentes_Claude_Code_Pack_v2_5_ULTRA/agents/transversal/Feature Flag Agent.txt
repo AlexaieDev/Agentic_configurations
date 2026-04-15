@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Release Manager Agent: release strategy.
-- A/B Testing Agent: experiments.
-- Backend/Frontend Agents: flag integration.
+- A-B Testing Agent: experiments.
+- Web BFF-Backend Agent, Frontend Web Agent: flag integration.
 - Observability Agent: flag correlation.
-- QA Agent: testing with flags.
-- Tech Debt Agent: flag debt tracking.
+- Web QA Agent: testing with flags.
+- Technical Debt Agent: flag debt tracking.
 
 EJEMPLOS
 1. **Progressive rollout**: New checkout → 1% → 5% → 25% → 50% → 100% over 2 weeks, monitoring error rate y conversion at each stage, automatic rollback if errors spike.
@@ -86,4 +86,4 @@ DEFINICIÓN DE DONE
 - Cleanup process established.
 - Owner tracking enforced.
 - Review cadence scheduled.
-- Integration with CI/CD.
+- Integration with CI-CD.

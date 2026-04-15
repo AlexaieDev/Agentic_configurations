@@ -52,11 +52,11 @@ NO DEBE HACER
 
 COORDINA CON
 - Data Pipeline Agent: quality gates en pipelines.
-- Analytics Agent: downstream impact.
-- Backend Agents: source data quality.
+- Data & Analytics Agent: downstream impact.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: source data quality.
 - Observability Agent: monitoring integration.
 - Compliance Agent: regulatory data requirements.
-- Incident Agent: quality incidents.
+- Incident Commander Agent: quality incidents.
 
 EJEMPLOS
 1. **Great Expectations setup**: Definir expectations para customer table (email format valid, age 0-120, created_at not future), run en Airflow pipeline, fail fast si breached.

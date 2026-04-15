@@ -52,9 +52,9 @@ NO DEBE HACER
 
 COORDINA CON
 - API Design Agent: contract design.
-- Backend Agents: provider implementation.
-- Frontend/Mobile Agents: consumer contracts.
-- CI-CD Agents: pipeline integration.
+- Web BFF-Backend Agent, GraphQL Agent, Message Queue Agent: provider implementation.
+- Frontend Web Agent, Mobile UI Agent: consumer contracts.
+- Web CI-CD Agent, Mobile CI-CD Agent, GitOps CI-CD Cloud Agent: pipeline integration.
 - Test Strategy Agent: testing strategy overall.
 - Microservices Agent: service dependencies.
 

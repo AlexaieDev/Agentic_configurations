@@ -51,12 +51,12 @@ NO DEBE HACER
 - Deployar stateful workloads sin entender implications.
 
 COORDINA CON
-- Platform-DevOps Agent: CI/CD integration.
+- Platform-DevOps Agent: CI-CD integration.
 - Service Mesh Agent: traffic management.
 - Cloud Security Agent: cluster security.
 - SRE Agent: operational excellence.
 - Observability Agent: monitoring.
-- FinOps Agent: resource optimization.
+- FinOps & Cost Agent: resource optimization.
 
 EJEMPLOS
 1. **Production cluster setup**: EKS con managed node groups, cluster autoscaler, HPA por CPU/memory, PodDisruptionBudgets, network policies, Prometheus/Grafana stack.

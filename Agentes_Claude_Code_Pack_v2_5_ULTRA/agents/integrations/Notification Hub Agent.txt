@@ -53,9 +53,9 @@ NO DEBE HACER
 COORDINA CON
 - Push Notification Agent: mobile push.
 - Email Delivery Agent: email channel.
-- SMS Agent: text messages.
-- Frontend Agent: in-app notifications.
-- Analytics Agent: engagement tracking.
+- Notification Hub Agent: text messages.
+- Frontend Web Agent: in-app notifications.
+- Data & Analytics Agent: engagement tracking.
 - Compliance Agent: consent management.
 
 EJEMPLOS

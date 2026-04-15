@@ -55,7 +55,7 @@ COORDINA CON
 - Design System Steward Agent: componentes compartidos.
 - Platform-DevOps Agent: pipelines independientes.
 - Web CI-CD Agent: deployment de MFEs.
-- Performance Agent: bundle size y loading.
+- Performance & Efficiency Agent: bundle size y loading.
 - API Design Agent: BFF por micro-frontend.
 
 EJEMPLOS

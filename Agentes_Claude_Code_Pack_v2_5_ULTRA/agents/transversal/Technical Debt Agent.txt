@@ -50,10 +50,9 @@ NO DEBE HACER
 
 COORDINA CON
 - Refactor & Code Quality Agent: ejecución de mejoras.
-- Architecture Agents: deuda arquitectónica.
-- Performance Agent: deuda de performance.
+- Web Architecture Agent, Cloud Architecture Agent, Mobile Architecture Agent: deuda arquitectónica.
+- Performance & Efficiency Agent: deuda de performance.
 - Test Strategy Agent: deuda de testing.
-- Product/DX Agents: balance features vs debt payment.
 - Release Manager Agent: scheduling de debt sprints.
 
 EJEMPLOS
