@@ -1,8 +1,9 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "release_date": "2025-12",
-  "purpose": "Comprehensive 100+ agent catalog covering the entire software development lifecycle: architecture, development, testing, security, operations, data, and integrations. Each agent includes standardized sections for maximum actionability.",
+  "purpose": "Comprehensive 120+ agent catalog covering the entire software development lifecycle: architecture, development, testing, security, compliance, operations, data, integrations, and technology stacks. Includes pre-configured crews for common scenarios and production-grade tooling.",
   "changelog": {
+    "3.1": "Added Crews system (4 pre-configured teams), Compliance agents (HIPAA, PCI-DSS, SOC2, GDPR), Stack-specific agents (React, Vue, Node.js, Python, Go, Rust, TypeScript, Next.js). Added production tooling: validation script, agent generator CLI, GitHub Actions CI, format specification, workflows documentation.",
     "3.0": "Major expansion to 100+ agents. Added new categories: Backend, DevOps, Testing, Architecture, Data, Integrations. Added 60+ specialized agents including: responsive design, migrations, technology radar, CSS architecture, animations, PWA, state management, micro-frontends, GraphQL, message queues, caching, search, WebSockets, event-driven, DDD, microservices, clean architecture, authentication, authorization, secrets, vulnerabilities, IaC, containers, service mesh, CDN, serverless, multi-cloud, ASO, push notifications, offline-first, deep linking, data pipelines, data quality, MLOps, payments, email, file storage, notifications, code review, onboarding, ADRs, feature flags, logging, error handling, and more.",
     "2.7": "Added 8 agents for operational excellence and software lifecycle.",
     "2.6": "Quality improvement with standardized sections."
@@ -209,7 +210,61 @@
         "Configuration Management Agent.txt",
         "Data & Analytics Agent.txt"
       ]
+    },
+    "compliance": {
+      "description": "Industry-specific compliance frameworks and regulatory requirements",
+      "agent_count": 4,
+      "agents": [
+        "HIPAA Agent.txt",
+        "PCI-DSS Agent.txt",
+        "SOC2 Agent.txt",
+        "GDPR Agent.txt"
+      ]
+    },
+    "stacks": {
+      "description": "Technology stack-specific agents with framework best practices and patterns",
+      "agent_count": 8,
+      "agents": [
+        "React Agent.txt",
+        "Vue Agent.txt",
+        "Node.js Agent.txt",
+        "Python Agent.txt",
+        "Go Agent.txt",
+        "Rust Agent.txt",
+        "TypeScript Agent.txt",
+        "Next.js Agent.txt"
+      ]
     }
+  },
+  "crews": {
+    "description": "Pre-configured teams of agents for common scenarios",
+    "crew_count": 4,
+    "crews": [
+      {
+        "name": "startup-mvp-crew",
+        "file": "crews/startup-mvp-crew.md",
+        "description": "Build MVPs fast with essential best practices",
+        "agents": ["Web Product-Discovery Agent", "Web Architecture Agent", "Frontend Web Agent", "Web BFF-Backend Agent", "Web CI-CD Agent", "Test Strategy Agent"]
+      },
+      {
+        "name": "security-audit-crew",
+        "file": "crews/security-audit-crew.md",
+        "description": "Comprehensive security audits and compliance preparation",
+        "agents": ["Threat Modeling Agent", "Vulnerability Management Agent", "Authentication Agent", "Authorization Agent", "Secret Management Agent", "Compliance Agent", "Ethical Hacker & PenTest Advisor Agent"]
+      },
+      {
+        "name": "incident-response-crew",
+        "file": "crews/incident-response-crew.md",
+        "description": "Structured incident response and post-mortem",
+        "agents": ["Incident Commander Agent", "Bug Hunter Agent", "Observability Agent", "SRE Agent", "Chaos & Resilience Agent", "Docs & Knowledge Agent"]
+      },
+      {
+        "name": "platform-migration-crew",
+        "file": "crews/platform-migration-crew.md",
+        "description": "Safe and incremental technology migrations",
+        "agents": ["Technology Radar Agent", "Technology Critic & Improvement Agent", "ADR Agent", "Migration Agent", "Technical Debt Agent", "Refactor & Code Quality Agent"]
+      }
+    ]
   },
   "use_case_routing": {
     "new_feature_high_risk": {
@@ -291,7 +346,8 @@
     }
   },
   "agent_count_summary": {
-    "total_unique_agents": 102,
+    "total_unique_agents": 121,
+    "new_in_v31": 12,
     "new_in_v30": 62,
     "by_category": {
       "web": 16,
@@ -305,7 +361,16 @@
       "security": 11,
       "data": 5,
       "integrations": 5,
-      "transversal": 25
+      "transversal": 25,
+      "compliance": 4,
+      "stacks": 8
     }
+  },
+  "tooling": {
+    "validation": "scripts/validate.js",
+    "generator": "scripts/new-agent.js",
+    "ci_cd": ".github/workflows/validate.yml",
+    "template": "templates/agent-template.txt",
+    "format_spec": "docs/AGENT_FORMAT.md"
   }
 }

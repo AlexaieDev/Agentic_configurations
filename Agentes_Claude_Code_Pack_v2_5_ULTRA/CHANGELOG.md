@@ -5,6 +5,30 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [3.1.0] - 2025-12
+
+### Agregado
+- **Sistema de Crews**: 4 equipos pre-configurados para escenarios comunes
+  - `startup-mvp-crew`: Construir MVPs rápido
+  - `security-audit-crew`: Auditorías de seguridad completas
+  - `incident-response-crew`: Respuesta estructurada a incidentes
+  - `platform-migration-crew`: Migraciones tecnológicas seguras
+- **Agentes de Compliance**: HIPAA, PCI-DSS, SOC2, GDPR
+- **Agentes por Stack**: React, Vue, Node.js, Python, Go, Rust, TypeScript, Next.js
+- **Tooling de producción**:
+  - `scripts/validate.js`: Validación automática de agentes
+  - `scripts/new-agent.js`: Generador CLI interactivo
+  - `.github/workflows/validate.yml`: CI/CD pipeline
+  - `templates/agent-template.txt`: Template para nuevos agentes
+  - `docs/AGENT_FORMAT.md`: Especificación oficial del formato
+- **Workflows documentados**: Security Review, New Feature, Incident Response, Tech Stack Migration
+- **Archivos estándar**: CHANGELOG.md, CONTRIBUTING.md, LICENSE (MIT)
+
+### Cambiado
+- Total de agentes: 102 → 121 (+19 agentes)
+- Nueva estructura con categorías `compliance` y `stacks`
+- `index.json` actualizado con sección de crews y tooling
+
 ## [3.0.0] - 2025-12
 
 ### Agregado
