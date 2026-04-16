@@ -1,0 +1,133 @@
+{
+  "$schema": "https://claude.ai/settings-schema.json",
+  "version": "1.0",
+
+  "project": {
+    "name": "Python FastAPI Service",
+    "type": "api",
+    "framework": "fastapi",
+    "language": "python"
+  },
+
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
+        "SENTRY_ORG": "${SENTRY_ORG}",
+        "SENTRY_PROJECT": "python-api"
+      }
+    }
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "command": "./hooks/session-start/load-context.sh",
+        "timeout": 5000
+      },
+      {
+        "command": "./hooks/session-start/check-env.sh",
+        "timeout": 3000
+      }
+    ],
+    "PreCommit": [
+      {
+        "command": "ruff check src/ && ruff format --check src/",
+        "timeout": 30000,
+        "blocking": true
+      },
+      {
+        "command": "mypy src/",
+        "timeout": 60000,
+        "blocking": true
+      },
+      {
+        "command": "./hooks/pre-commit/security-scan.sh",
+        "timeout": 30000,
+        "blocking": true
+      }
+    ],
+    "PrePush": [
+      {
+        "command": "pytest --cov=src --cov-fail-under=80",
+        "timeout": 300000,
+        "blocking": true
+      }
+    ]
+  },
+
+  "commands": {
+    "enabled": true,
+    "directory": "./commands"
+  },
+
+  "agents": {
+    "default": ["Python Agent", "API Design Agent"],
+    "database": ["Database Architect Agent"],
+    "security": ["Security Agent", "Authentication Agent"],
+    "performance": ["Performance & Efficiency Agent"],
+    "infrastructure": ["Systems Agent", "SRE Agent"]
+  },
+
+  "permissions": {
+    "allowedPaths": [
+      "src/**",
+      "tests/**",
+      "alembic/**",
+      "scripts/**"
+    ],
+    "deniedPaths": [
+      ".env*",
+      "*.pem",
+      "*.key",
+      "secrets/"
+    ],
+    "allowedCommands": [
+      "python",
+      "pip",
+      "pytest",
+      "ruff",
+      "mypy",
+      "alembic",
+      "docker",
+      "docker-compose",
+      "git"
+    ]
+  },
+
+  "codeStyle": {
+    "formatter": "ruff",
+    "linter": "ruff",
+    "typeChecker": "mypy",
+    "lineLength": 88,
+    "importSort": "isort"
+  },
+
+  "testing": {
+    "framework": "pytest",
+    "coverageThreshold": 80,
+    "asyncMode": "auto"
+  },
+
+  "database": {
+    "type": "postgresql",
+    "orm": "sqlalchemy",
+    "migrations": "alembic"
+  }
+}

@@ -1,8 +1,9 @@
 {
-  "version": "3.1",
-  "release_date": "2025-12",
-  "purpose": "Comprehensive 120+ agent catalog covering the entire software development lifecycle: architecture, development, testing, security, compliance, operations, data, integrations, and technology stacks. Includes pre-configured crews for common scenarios and production-grade tooling.",
+  "version": "3.2",
+  "release_date": "2026-04",
+  "purpose": "Comprehensive 120+ agent catalog covering the entire software development lifecycle: architecture, development, testing, security, compliance, operations, data, integrations, and technology stacks. Includes pre-configured crews, MCP integrations, automation hooks, slash commands, integration guides, and example projects for common scenarios.",
   "changelog": {
+    "3.2": "Added MCP Server Configurations (8 services: GitHub, Jira, Slack, PostgreSQL, Linear, Sentry, Notion, Supabase). Added Hooks system (8 automation hooks for SessionStart, PreCommit, PostToolUse, OnError, PrePush). Added Slash Commands (8 commands: security-review, ship-checklist, tech-debt-scan, incident-start, standup, code-review, api-design, debug). Added Integration Guides (6 guides: GitHub, Jira, Slack, PostgreSQL, Sentry, Linear). Added Example Projects (4 project types: Next.js SaaS, Python API, Mobile App, Microservices). Added Documentation (Cheat Sheet, Agent Selector, Troubleshooting, Best Practices).",
     "3.1": "Added Crews system (4 pre-configured teams), Compliance agents (HIPAA, PCI-DSS, SOC2, GDPR), Stack-specific agents (React, Vue, Node.js, Python, Go, Rust, TypeScript, Next.js). Added production tooling: validation script, agent generator CLI, GitHub Actions CI, format specification, workflows documentation.",
     "3.0": "Major expansion to 100+ agents. Added new categories: Backend, DevOps, Testing, Architecture, Data, Integrations. Added 60+ specialized agents including: responsive design, migrations, technology radar, CSS architecture, animations, PWA, state management, micro-frontends, GraphQL, message queues, caching, search, WebSockets, event-driven, DDD, microservices, clean architecture, authentication, authorization, secrets, vulnerabilities, IaC, containers, service mesh, CDN, serverless, multi-cloud, ASO, push notifications, offline-first, deep linking, data pipelines, data quality, MLOps, payments, email, file storage, notifications, code review, onboarding, ADRs, feature flags, logging, error handling, and more.",
     "2.7": "Added 8 agents for operational excellence and software lifecycle.",
@@ -372,5 +373,219 @@
     "ci_cd": ".github/workflows/validate.yml",
     "template": "templates/agent-template.txt",
     "format_spec": "docs/AGENT_FORMAT.md"
+  },
+  "mcp_servers": {
+    "description": "MCP (Model Context Protocol) server configurations for external integrations",
+    "server_count": 8,
+    "servers": [
+      {
+        "name": "github",
+        "file": "mcp/github.json",
+        "description": "GitHub API for issues, PRs, code search"
+      },
+      {
+        "name": "jira",
+        "file": "mcp/jira.json",
+        "description": "Jira for tickets, sprints, boards"
+      },
+      {
+        "name": "slack",
+        "file": "mcp/slack.json",
+        "description": "Slack for notifications and messaging"
+      },
+      {
+        "name": "postgres",
+        "file": "mcp/postgres.json",
+        "description": "PostgreSQL database queries"
+      },
+      {
+        "name": "linear",
+        "file": "mcp/linear.json",
+        "description": "Linear for project management"
+      },
+      {
+        "name": "sentry",
+        "file": "mcp/sentry.json",
+        "description": "Sentry for error tracking"
+      },
+      {
+        "name": "notion",
+        "file": "mcp/notion.json",
+        "description": "Notion for documentation"
+      },
+      {
+        "name": "supabase",
+        "file": "mcp/supabase.json",
+        "description": "Supabase for database and auth"
+      }
+    ]
+  },
+  "hooks": {
+    "description": "Automation hooks for Claude Code lifecycle events",
+    "hook_count": 8,
+    "hooks": [
+      {
+        "name": "load-context",
+        "file": "hooks/session-start/load-context.sh",
+        "trigger": "SessionStart",
+        "description": "Load project context on session start"
+      },
+      {
+        "name": "check-env",
+        "file": "hooks/session-start/check-env.sh",
+        "trigger": "SessionStart",
+        "description": "Verify environment variables"
+      },
+      {
+        "name": "security-scan",
+        "file": "hooks/pre-commit/security-scan.sh",
+        "trigger": "PreCommit",
+        "description": "Scan for secrets before commit"
+      },
+      {
+        "name": "lint-check",
+        "file": "hooks/pre-commit/lint-check.sh",
+        "trigger": "PreCommit",
+        "description": "Verify linting and formatting"
+      },
+      {
+        "name": "log-actions",
+        "file": "hooks/post-tool-use/log-actions.sh",
+        "trigger": "PostToolUse",
+        "description": "Log actions for audit"
+      },
+      {
+        "name": "notify",
+        "file": "hooks/on-error/notify.sh",
+        "trigger": "OnError",
+        "description": "Send error notifications"
+      },
+      {
+        "name": "validate-branch",
+        "file": "hooks/pre-push/validate-branch.sh",
+        "trigger": "PrePush",
+        "description": "Validate branch before push"
+      }
+    ]
+  },
+  "commands": {
+    "description": "Slash commands for quick invocation of agent workflows",
+    "command_count": 8,
+    "commands": [
+      {
+        "name": "security-review",
+        "file": "commands/security-review.md",
+        "description": "Execute complete security audit"
+      },
+      {
+        "name": "ship-checklist",
+        "file": "commands/ship-checklist.md",
+        "description": "Pre-deploy checklist"
+      },
+      {
+        "name": "tech-debt-scan",
+        "file": "commands/tech-debt-scan.md",
+        "description": "Analyze technical debt"
+      },
+      {
+        "name": "incident-start",
+        "file": "commands/incident-start.md",
+        "description": "Start incident response"
+      },
+      {
+        "name": "standup",
+        "file": "commands/standup.md",
+        "description": "Generate standup update"
+      },
+      {
+        "name": "code-review",
+        "file": "commands/code-review.md",
+        "description": "Structured code review"
+      },
+      {
+        "name": "api-design",
+        "file": "commands/api-design.md",
+        "description": "Design API endpoint"
+      },
+      {
+        "name": "debug",
+        "file": "commands/debug.md",
+        "description": "Structured debugging"
+      }
+    ]
+  },
+  "guides": {
+    "description": "Step-by-step integration guides for external services",
+    "guide_count": 6,
+    "guides": [
+      {
+        "name": "GitHub Workflow",
+        "file": "guides/GITHUB_WORKFLOW.md",
+        "description": "CI/CD and GitHub integration"
+      },
+      {
+        "name": "Jira Integration",
+        "file": "guides/JIRA_INTEGRATION.md",
+        "description": "Connect with Jira"
+      },
+      {
+        "name": "Slack Notifications",
+        "file": "guides/SLACK_NOTIFICATIONS.md",
+        "description": "Set up Slack alerts"
+      },
+      {
+        "name": "Database Queries",
+        "file": "guides/DATABASE_QUERIES.md",
+        "description": "Secure SQL queries"
+      },
+      {
+        "name": "Sentry Debugging",
+        "file": "guides/SENTRY_DEBUGGING.md",
+        "description": "Debug with Sentry"
+      },
+      {
+        "name": "Linear Workflow",
+        "file": "guides/LINEAR_WORKFLOW.md",
+        "description": "Project management with Linear"
+      }
+    ]
+  },
+  "examples": {
+    "description": "Complete example configurations for different project types",
+    "example_count": 4,
+    "examples": [
+      {
+        "name": "Next.js SaaS",
+        "directory": "examples/nextjs-saas/",
+        "stack": "Next.js 14, Supabase, Stripe, Tailwind",
+        "files": ["CLAUDE.md", ".claude/settings.json", "README.md"]
+      },
+      {
+        "name": "Python API",
+        "directory": "examples/python-api/",
+        "stack": "FastAPI, PostgreSQL, SQLAlchemy, Celery",
+        "files": ["CLAUDE.md", ".claude/settings.json", "README.md"]
+      },
+      {
+        "name": "Mobile App",
+        "directory": "examples/mobile-app/",
+        "stack": "React Native, Expo, TypeScript",
+        "files": ["CLAUDE.md", ".claude/settings.json", "README.md"]
+      },
+      {
+        "name": "Microservices",
+        "directory": "examples/microservices/",
+        "stack": "Go, gRPC, Kubernetes, Prometheus",
+        "files": ["CLAUDE.md", ".claude/settings.json", "README.md"]
+      }
+    ]
+  },
+  "documentation": {
+    "usage_guide": "COMO_USAR.md",
+    "cheat_sheet": "docs/CHEAT_SHEET.md",
+    "agent_selector": "docs/AGENT_SELECTOR.md",
+    "troubleshooting": "docs/TROUBLESHOOTING.md",
+    "best_practices": "docs/BEST_PRACTICES.md",
+    "description": "Complete documentation for using agents with Claude Code"
   }
 }

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "jira",
+  "description": "Jira integration for issues, sprints, boards, and project management",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@anthropic/mcp-server-jira"]
+  },
+
+  "env": {
+    "JIRA_HOST": {
+      "description": "Jira instance URL (e.g., https://company.atlassian.net)",
+      "required": true,
+      "secret": false
+    },
+    "JIRA_EMAIL": {
+      "description": "Email associated with Jira account",
+      "required": true,
+      "secret": false
+    },
+    "JIRA_API_TOKEN": {
+      "description": "Jira API token",
+      "required": true,
+      "secret": true
+    },
+    "JIRA_DEFAULT_PROJECT": {
+      "description": "Default project key (e.g., PROJ)",
+      "required": false,
+      "secret": false
+    }
+  },
+
+  "tools": [
+    {
+      "name": "search_issues",
+      "description": "Search issues using JQL (Jira Query Language)"
+    },
+    {
+      "name": "get_issue",
+      "description": "Get detailed information about a specific issue"
+    },
+    {
+      "name": "create_issue",
+      "description": "Create a new issue"
+    },
+    {
+      "name": "update_issue",
+      "description": "Update an existing issue"
+    },
+    {
+      "name": "transition_issue",
+      "description": "Move issue to different status (e.g., In Progress, Done)"
+    },
+    {
+      "name": "add_comment",
+      "description": "Add a comment to an issue"
+    },
+    {
+      "name": "get_project",
+      "description": "Get project information"
+    },
+    {
+      "name": "list_sprints",
+      "description": "List sprints for a board"
+    },
+    {
+      "name": "get_sprint_issues",
+      "description": "Get issues in a specific sprint"
+    },
+    {
+      "name": "assign_issue",
+      "description": "Assign an issue to a user"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to https://id.atlassian.com/manage-profile/security/api-tokens",
+      "2. Click 'Create API token'",
+      "3. Give it a descriptive name",
+      "4. Copy the token immediately (shown only once)",
+      "5. Set environment variables:",
+      "   export JIRA_HOST='https://yourcompany.atlassian.net'",
+      "   export JIRA_EMAIL='you@company.com'",
+      "   export JIRA_API_TOKEN='xxxxxxxx'"
+    ],
+    "test_command": "curl -u $JIRA_EMAIL:$JIRA_API_TOKEN $JIRA_HOST/rest/api/3/myself",
+    "guide": "guides/JIRA_INTEGRATION.md"
+  },
+
+  "recommended_agents": [
+    "Bug Hunter Agent",
+    "Release Manager Agent",
+    "Incident Commander Agent",
+    "Technical Debt Agent",
+    "Web Product-Discovery Agent"
+  ],
+
+  "example_prompts": [
+    "Find all bugs assigned to me in the current sprint",
+    "Create a bug ticket for the login issue with priority High",
+    "What issues are blocking the release?",
+    "Move PROJ-123 to 'In Review' and add a comment with the PR link",
+    "Show me the burndown for the current sprint"
+  ],
+
+  "jql_examples": [
+    "project = PROJ AND status = 'In Progress'",
+    "assignee = currentUser() AND sprint in openSprints()",
+    "labels = bug AND priority >= High",
+    "created >= -7d AND type = Bug",
+    "fixVersion = '2.0' AND status != Done"
+  ]
+}

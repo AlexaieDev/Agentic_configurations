@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "slack",
+  "description": "Slack integration for messaging, channels, and team communication",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@anthropic/mcp-server-slack"]
+  },
+
+  "env": {
+    "SLACK_BOT_TOKEN": {
+      "description": "Slack Bot User OAuth Token (starts with xoxb-)",
+      "required": true,
+      "secret": true
+    },
+    "SLACK_TEAM_ID": {
+      "description": "Slack Workspace ID (optional, for multi-workspace)",
+      "required": false,
+      "secret": false
+    }
+  },
+
+  "tools": [
+    {
+      "name": "list_channels",
+      "description": "List channels in the workspace"
+    },
+    {
+      "name": "post_message",
+      "description": "Post a message to a channel or DM"
+    },
+    {
+      "name": "reply_to_thread",
+      "description": "Reply to a message thread"
+    },
+    {
+      "name": "add_reaction",
+      "description": "Add an emoji reaction to a message"
+    },
+    {
+      "name": "get_channel_history",
+      "description": "Get recent messages from a channel"
+    },
+    {
+      "name": "get_thread_replies",
+      "description": "Get replies in a thread"
+    },
+    {
+      "name": "search_messages",
+      "description": "Search messages in workspace"
+    },
+    {
+      "name": "get_users",
+      "description": "List users in workspace"
+    },
+    {
+      "name": "get_user_info",
+      "description": "Get information about a user"
+    },
+    {
+      "name": "create_channel",
+      "description": "Create a new channel"
+    },
+    {
+      "name": "invite_to_channel",
+      "description": "Invite users to a channel"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to https://api.slack.com/apps",
+      "2. Click 'Create New App' > 'From scratch'",
+      "3. Add Bot Token Scopes under OAuth & Permissions:",
+      "   - channels:read, channels:history, channels:write",
+      "   - chat:write, chat:write.public",
+      "   - reactions:write, reactions:read",
+      "   - users:read, search:read",
+      "4. Install App to Workspace",
+      "5. Copy Bot User OAuth Token",
+      "6. Set: export SLACK_BOT_TOKEN='xoxb-xxxxx'"
+    ],
+    "test_command": "curl -H 'Authorization: Bearer $SLACK_BOT_TOKEN' https://slack.com/api/auth.test",
+    "guide": "guides/SLACK_NOTIFICATIONS.md"
+  },
+
+  "recommended_agents": [
+    "Incident Commander Agent",
+    "Release Manager Agent",
+    "Onboarding Agent",
+    "SRE Agent"
+  ],
+
+  "example_prompts": [
+    "Post an incident update to #incidents with current status",
+    "Create a thread in #deployments announcing the release",
+    "Search for messages about the login bug in the last week",
+    "Notify @oncall in #alerts about the high error rate",
+    "Create an #incident-20240115 channel and invite the SRE team"
+  ],
+
+  "message_formatting": {
+    "bold": "*text*",
+    "italic": "_text_",
+    "code": "`code`",
+    "code_block": "```code block```",
+    "link": "<https://url|display text>",
+    "mention_user": "<@USER_ID>",
+    "mention_channel": "<#CHANNEL_ID>",
+    "emoji": ":emoji_name:"
+  },
+
+  "best_practices": [
+    "Use threads to keep channels clean",
+    "Include context in incident notifications",
+    "Use emoji reactions for acknowledgment",
+    "Create dedicated channels for incidents",
+    "Pin important messages for visibility"
+  ]
+}

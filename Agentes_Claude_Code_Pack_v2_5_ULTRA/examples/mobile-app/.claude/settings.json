@@ -1,0 +1,120 @@
+{
+  "$schema": "https://claude.ai/settings-schema.json",
+  "version": "1.0",
+
+  "project": {
+    "name": "React Native Mobile App",
+    "type": "mobile",
+    "framework": "react-native",
+    "language": "typescript"
+  },
+
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
+        "SENTRY_ORG": "${SENTRY_ORG}",
+        "SENTRY_PROJECT": "mobile-app"
+      }
+    }
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "command": "./hooks/session-start/load-context.sh",
+        "timeout": 5000
+      }
+    ],
+    "PreCommit": [
+      {
+        "command": "npm run lint && npm run typecheck",
+        "timeout": 60000,
+        "blocking": true
+      },
+      {
+        "command": "./hooks/pre-commit/security-scan.sh",
+        "timeout": 30000,
+        "blocking": true
+      }
+    ],
+    "PrePush": [
+      {
+        "command": "npm run test",
+        "timeout": 120000,
+        "blocking": true
+      }
+    ]
+  },
+
+  "commands": {
+    "enabled": true,
+    "directory": "./commands"
+  },
+
+  "agents": {
+    "default": ["React Agent"],
+    "navigation": ["React Agent"],
+    "performance": ["Frontend Performance Agent"],
+    "accessibility": ["Accessibility Agent"],
+    "testing": ["Test Architect Agent"]
+  },
+
+  "permissions": {
+    "allowedPaths": [
+      "src/**",
+      "assets/**",
+      "__tests__/**",
+      "scripts/**"
+    ],
+    "deniedPaths": [
+      ".env*",
+      "*.p12",
+      "*.mobileprovision",
+      "*.keystore"
+    ],
+    "allowedCommands": [
+      "npm",
+      "npx",
+      "expo",
+      "eas",
+      "git"
+    ]
+  },
+
+  "codeStyle": {
+    "formatter": "prettier",
+    "linter": "eslint",
+    "importOrder": [
+      "react",
+      "react-native",
+      "expo",
+      "@/components",
+      "@/hooks",
+      "@/services",
+      "@/stores",
+      "@/utils"
+    ]
+  },
+
+  "testing": {
+    "framework": "jest",
+    "e2e": "detox",
+    "coverageThreshold": 70
+  },
+
+  "mobile": {
+    "platforms": ["ios", "android"],
+    "buildSystem": "eas",
+    "navigation": "expo-router"
+  }
+}

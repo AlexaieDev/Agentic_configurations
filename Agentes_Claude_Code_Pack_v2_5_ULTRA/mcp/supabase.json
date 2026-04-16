@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "supabase",
+  "description": "Supabase integration for PostgreSQL database, authentication, storage, and edge functions",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@supabase/mcp-server"]
+  },
+
+  "env": {
+    "SUPABASE_URL": {
+      "description": "Supabase project URL",
+      "required": true,
+      "secret": false,
+      "format": "https://xxxxx.supabase.co"
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "description": "Service role key (for admin access)",
+      "required": true,
+      "secret": true
+    },
+    "SUPABASE_ANON_KEY": {
+      "description": "Anon/public key (for RLS testing)",
+      "required": false,
+      "secret": false
+    }
+  },
+
+  "tools": [
+    {
+      "name": "query",
+      "description": "Execute SQL query on database"
+    },
+    {
+      "name": "list_tables",
+      "description": "List all tables in schema"
+    },
+    {
+      "name": "describe_table",
+      "description": "Get table schema and constraints"
+    },
+    {
+      "name": "list_users",
+      "description": "List auth users"
+    },
+    {
+      "name": "get_user",
+      "description": "Get user details"
+    },
+    {
+      "name": "list_buckets",
+      "description": "List storage buckets"
+    },
+    {
+      "name": "list_files",
+      "description": "List files in a bucket"
+    },
+    {
+      "name": "list_functions",
+      "description": "List edge functions"
+    },
+    {
+      "name": "get_function_logs",
+      "description": "Get edge function logs"
+    },
+    {
+      "name": "list_policies",
+      "description": "List RLS policies"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to your Supabase project dashboard",
+      "2. Navigate to Settings > API",
+      "3. Copy the Project URL",
+      "4. Copy the service_role key (under 'Project API keys')",
+      "5. Set environment variables:",
+      "   export SUPABASE_URL='https://xxxxx.supabase.co'",
+      "   export SUPABASE_SERVICE_ROLE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'"
+    ],
+    "test_command": "curl '$SUPABASE_URL/rest/v1/' -H 'apikey: $SUPABASE_SERVICE_ROLE_KEY'",
+    "guide": "guides/SUPABASE_SETUP.md"
+  },
+
+  "recommended_agents": [
+    "Database Architect Agent",
+    "Authentication Agent",
+    "Authorization Agent",
+    "File Storage Agent",
+    "Serverless Agent"
+  ],
+
+  "example_prompts": [
+    "List all tables and their row counts",
+    "Show me the RLS policies for the profiles table",
+    "Find users who signed up in the last 7 days",
+    "What files are in the avatars bucket?",
+    "Check edge function logs for errors"
+  ],
+
+  "rls_examples": {
+    "select_own": "CREATE POLICY 'Users can view own data' ON profiles FOR SELECT USING (auth.uid() = user_id);",
+    "insert_own": "CREATE POLICY 'Users can insert own data' ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);",
+    "admin_all": "CREATE POLICY 'Admins can do everything' ON profiles FOR ALL USING (auth.jwt() ->> 'role' = 'admin');"
+  },
+
+  "common_queries": {
+    "auth_users": "SELECT id, email, created_at, last_sign_in_at FROM auth.users ORDER BY created_at DESC LIMIT 100;",
+    "table_sizes": "SELECT table_name, pg_size_pretty(pg_total_relation_size(quote_ident(table_name))) FROM information_schema.tables WHERE table_schema = 'public';",
+    "active_connections": "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database();"
+  },
+
+  "security_notes": [
+    "Never expose service_role key in client code",
+    "Use anon key for client-side operations",
+    "Always enable RLS on tables with user data",
+    "Test RLS policies with different user contexts",
+    "Audit edge function permissions regularly"
+  ]
+}

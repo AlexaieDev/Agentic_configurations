@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "notion",
+  "description": "Notion integration for documentation, databases, and knowledge management",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@notionhq/mcp-server"]
+  },
+
+  "env": {
+    "NOTION_API_KEY": {
+      "description": "Notion Integration Token",
+      "required": true,
+      "secret": true
+    }
+  },
+
+  "tools": [
+    {
+      "name": "search",
+      "description": "Search pages and databases"
+    },
+    {
+      "name": "get_page",
+      "description": "Get a page's content"
+    },
+    {
+      "name": "create_page",
+      "description": "Create a new page"
+    },
+    {
+      "name": "update_page",
+      "description": "Update a page's properties"
+    },
+    {
+      "name": "append_blocks",
+      "description": "Append content blocks to a page"
+    },
+    {
+      "name": "query_database",
+      "description": "Query a database with filters"
+    },
+    {
+      "name": "create_database_item",
+      "description": "Add an item to a database"
+    },
+    {
+      "name": "update_database_item",
+      "description": "Update a database item"
+    },
+    {
+      "name": "list_databases",
+      "description": "List accessible databases"
+    },
+    {
+      "name": "get_block_children",
+      "description": "Get child blocks of a block"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to https://www.notion.so/my-integrations",
+      "2. Click 'New integration'",
+      "3. Give it a name and select workspace",
+      "4. Copy the 'Internal Integration Token'",
+      "5. Share relevant pages with your integration:",
+      "   - Open page in Notion",
+      "   - Click '...' menu > 'Add connections'",
+      "   - Select your integration",
+      "6. Set: export NOTION_API_KEY='secret_xxxxx'"
+    ],
+    "test_command": "curl -H 'Authorization: Bearer $NOTION_API_KEY' -H 'Notion-Version: 2022-06-28' https://api.notion.com/v1/users/me",
+    "guide": "guides/NOTION_DOCS.md"
+  },
+
+  "recommended_agents": [
+    "Docs & Knowledge Agent",
+    "ADR Agent",
+    "Onboarding Agent",
+    "Release Manager Agent"
+  ],
+
+  "example_prompts": [
+    "Find all ADRs related to authentication",
+    "Create a new RFC page from the template",
+    "Update the project status in the roadmap database",
+    "Search for documentation about the payment system",
+    "Add meeting notes to the Engineering wiki"
+  ],
+
+  "block_types": [
+    "paragraph",
+    "heading_1",
+    "heading_2",
+    "heading_3",
+    "bulleted_list_item",
+    "numbered_list_item",
+    "to_do",
+    "toggle",
+    "code",
+    "quote",
+    "callout",
+    "divider",
+    "table"
+  ],
+
+  "database_filters": {
+    "text_equals": {"property": "Name", "rich_text": {"equals": "value"}},
+    "checkbox_true": {"property": "Done", "checkbox": {"equals": true}},
+    "date_after": {"property": "Created", "date": {"after": "2024-01-01"}},
+    "select_equals": {"property": "Status", "select": {"equals": "In Progress"}},
+    "multi_select_contains": {"property": "Tags", "multi_select": {"contains": "bug"}}
+  },
+
+  "best_practices": [
+    "Use databases for structured data (ADRs, RFCs, runbooks)",
+    "Create templates for recurring document types",
+    "Link related pages with mentions",
+    "Use properties for filtering and sorting",
+    "Keep integration permissions minimal"
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "sentry",
+  "description": "Sentry integration for error tracking, performance monitoring, and release management",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@sentry/mcp-server"]
+  },
+
+  "env": {
+    "SENTRY_AUTH_TOKEN": {
+      "description": "Sentry Auth Token with project:read scope",
+      "required": true,
+      "secret": true
+    },
+    "SENTRY_ORG": {
+      "description": "Sentry organization slug",
+      "required": true,
+      "secret": false
+    },
+    "SENTRY_PROJECT": {
+      "description": "Default Sentry project slug",
+      "required": false,
+      "secret": false
+    }
+  },
+
+  "tools": [
+    {
+      "name": "list_issues",
+      "description": "List error issues with filtering"
+    },
+    {
+      "name": "get_issue",
+      "description": "Get detailed information about an issue"
+    },
+    {
+      "name": "get_issue_events",
+      "description": "Get events/occurrences of an issue"
+    },
+    {
+      "name": "resolve_issue",
+      "description": "Mark an issue as resolved"
+    },
+    {
+      "name": "list_releases",
+      "description": "List releases for a project"
+    },
+    {
+      "name": "get_release",
+      "description": "Get release details and stats"
+    },
+    {
+      "name": "get_release_commits",
+      "description": "Get commits in a release"
+    },
+    {
+      "name": "list_transactions",
+      "description": "List performance transactions"
+    },
+    {
+      "name": "get_transaction_summary",
+      "description": "Get performance summary for a transaction"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to Sentry Settings > Auth Tokens",
+      "2. Click 'Create New Token'",
+      "3. Select scopes: project:read, issue:read, issue:write",
+      "4. Copy the token",
+      "5. Set environment variables:",
+      "   export SENTRY_AUTH_TOKEN='sntrys_xxxxx'",
+      "   export SENTRY_ORG='your-org-slug'",
+      "   export SENTRY_PROJECT='your-project'"
+    ],
+    "test_command": "curl -H 'Authorization: Bearer $SENTRY_AUTH_TOKEN' https://sentry.io/api/0/organizations/$SENTRY_ORG/",
+    "guide": "guides/SENTRY_DEBUGGING.md"
+  },
+
+  "recommended_agents": [
+    "Bug Hunter Agent",
+    "Incident Commander Agent",
+    "SRE Agent",
+    "Observability Agent",
+    "Release Manager Agent"
+  ],
+
+  "example_prompts": [
+    "Show me the top 5 unresolved errors from the last 24 hours",
+    "What's the stack trace for issue PROJ-ABC123?",
+    "Which release introduced the most new errors?",
+    "Find all errors affecting more than 100 users",
+    "What's the P95 latency for the /api/checkout endpoint?"
+  ],
+
+  "query_filters": {
+    "unresolved": "is:unresolved",
+    "last_24h": "lastSeen:-24h",
+    "high_volume": "times_seen:>100",
+    "new_errors": "is:unresolved is:new",
+    "assigned_to_me": "assigned:me",
+    "browser_errors": "browser.name:Chrome"
+  },
+
+  "severity_levels": [
+    "fatal",
+    "error",
+    "warning",
+    "info",
+    "debug"
+  ],
+
+  "common_workflows": {
+    "triage": [
+      "1. List unresolved issues sorted by frequency",
+      "2. Get stack trace for top issue",
+      "3. Identify root cause",
+      "4. Create fix or workaround",
+      "5. Mark as resolved with commit reference"
+    ],
+    "release_check": [
+      "1. Get latest release stats",
+      "2. Compare error rate with previous release",
+      "3. Identify new errors introduced",
+      "4. Check performance regression"
+    ]
+  }
+}

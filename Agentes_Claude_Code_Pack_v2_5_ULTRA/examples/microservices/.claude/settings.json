@@ -1,0 +1,129 @@
+{
+  "$schema": "https://claude.ai/settings-schema.json",
+  "version": "1.0",
+
+  "project": {
+    "name": "Go Microservices Platform",
+    "type": "microservices",
+    "framework": "grpc",
+    "language": "go"
+  },
+
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
+        "SENTRY_ORG": "${SENTRY_ORG}",
+        "SENTRY_PROJECT": "microservices"
+      }
+    }
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "command": "./hooks/session-start/load-context.sh",
+        "timeout": 5000
+      }
+    ],
+    "PreCommit": [
+      {
+        "command": "make lint",
+        "timeout": 60000,
+        "blocking": true
+      },
+      {
+        "command": "./hooks/pre-commit/security-scan.sh",
+        "timeout": 30000,
+        "blocking": true
+      }
+    ],
+    "PrePush": [
+      {
+        "command": "make test",
+        "timeout": 300000,
+        "blocking": true
+      },
+      {
+        "command": "./hooks/pre-push/validate-branch.sh",
+        "timeout": 10000,
+        "blocking": true
+      }
+    ]
+  },
+
+  "commands": {
+    "enabled": true,
+    "directory": "./commands"
+  },
+
+  "agents": {
+    "default": ["Go Agent"],
+    "api": ["API Design Agent", "OpenAPI Spec Agent"],
+    "database": ["Database Architect Agent"],
+    "infrastructure": ["Systems Agent", "SRE Agent"],
+    "security": ["Security Agent"],
+    "performance": ["Performance & Efficiency Agent"]
+  },
+
+  "permissions": {
+    "allowedPaths": [
+      "services/**",
+      "proto/**",
+      "pkg/**",
+      "k8s/**",
+      "scripts/**",
+      "tests/**"
+    ],
+    "deniedPaths": [
+      ".env*",
+      "*.pem",
+      "*.key",
+      "secrets/",
+      "kubeconfig"
+    ],
+    "allowedCommands": [
+      "go",
+      "make",
+      "protoc",
+      "docker",
+      "kubectl",
+      "helm",
+      "git"
+    ]
+  },
+
+  "codeStyle": {
+    "formatter": "gofmt",
+    "linter": "golangci-lint",
+    "importOrder": "goimports"
+  },
+
+  "testing": {
+    "framework": "go test",
+    "coverageThreshold": 70,
+    "integrationPattern": "*_integration_test.go"
+  },
+
+  "infrastructure": {
+    "orchestration": "kubernetes",
+    "containerRegistry": "ghcr.io",
+    "cicd": "github-actions"
+  }
+}

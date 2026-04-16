@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "postgres",
+  "description": "PostgreSQL database integration for queries, schema inspection, and data analysis",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-postgres"]
+  },
+
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string",
+      "required": true,
+      "secret": true,
+      "format": "postgresql://user:password@host:port/database"
+    }
+  },
+
+  "tools": [
+    {
+      "name": "query",
+      "description": "Execute a read-only SQL query"
+    },
+    {
+      "name": "list_tables",
+      "description": "List all tables in the database"
+    },
+    {
+      "name": "describe_table",
+      "description": "Get schema information for a table"
+    },
+    {
+      "name": "list_indexes",
+      "description": "List indexes for a table"
+    },
+    {
+      "name": "explain_query",
+      "description": "Get query execution plan"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Get your PostgreSQL connection details",
+      "2. Format connection string:",
+      "   postgresql://username:password@hostname:5432/database",
+      "3. For SSL: add ?sslmode=require",
+      "4. Set: export DATABASE_URL='postgresql://...'",
+      "5. Test connection: psql $DATABASE_URL -c 'SELECT 1'"
+    ],
+    "test_command": "psql $DATABASE_URL -c 'SELECT version()'",
+    "guide": "guides/DATABASE_QUERIES.md"
+  },
+
+  "recommended_agents": [
+    "Database Architect Agent",
+    "Performance & Efficiency Agent",
+    "Data Quality Agent",
+    "Bug Hunter Agent"
+  ],
+
+  "example_prompts": [
+    "Show me all tables and their row counts",
+    "Find users who haven't logged in for 30 days",
+    "What indexes are missing for slow queries?",
+    "Analyze the schema and suggest normalization improvements",
+    "Find duplicate records in the customers table"
+  ],
+
+  "safety": {
+    "read_only": true,
+    "notes": [
+      "By default, only SELECT queries are allowed",
+      "Use a read replica when possible",
+      "Create a dedicated user with minimal permissions",
+      "Never expose production credentials",
+      "Consider query timeouts for large tables"
+    ],
+    "recommended_permissions": [
+      "GRANT SELECT ON ALL TABLES IN SCHEMA public TO claude_reader;",
+      "GRANT USAGE ON SCHEMA public TO claude_reader;",
+      "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO claude_reader;"
+    ]
+  },
+
+  "common_queries": {
+    "table_sizes": "SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC;",
+    "slow_queries": "SELECT query, calls, mean_time, total_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;",
+    "index_usage": "SELECT relname, indexrelname, idx_scan, idx_tup_read FROM pg_stat_user_indexes ORDER BY idx_scan;",
+    "table_bloat": "SELECT schemaname, relname, n_dead_tup, n_live_tup FROM pg_stat_user_tables WHERE n_dead_tup > 1000;"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "linear",
+  "description": "Linear integration for modern project management - issues, projects, cycles, and roadmaps",
+  "version": "1.0.0",
+
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@linear/mcp-server"]
+  },
+
+  "env": {
+    "LINEAR_API_KEY": {
+      "description": "Linear API key",
+      "required": true,
+      "secret": true
+    }
+  },
+
+  "tools": [
+    {
+      "name": "search_issues",
+      "description": "Search issues across projects"
+    },
+    {
+      "name": "get_issue",
+      "description": "Get detailed information about an issue"
+    },
+    {
+      "name": "create_issue",
+      "description": "Create a new issue"
+    },
+    {
+      "name": "update_issue",
+      "description": "Update an existing issue"
+    },
+    {
+      "name": "list_projects",
+      "description": "List all projects"
+    },
+    {
+      "name": "get_project",
+      "description": "Get project details and progress"
+    },
+    {
+      "name": "list_cycles",
+      "description": "List cycles (sprints)"
+    },
+    {
+      "name": "get_cycle",
+      "description": "Get cycle details and issues"
+    },
+    {
+      "name": "add_comment",
+      "description": "Add a comment to an issue"
+    },
+    {
+      "name": "list_teams",
+      "description": "List teams in workspace"
+    }
+  ],
+
+  "setup": {
+    "steps": [
+      "1. Go to Linear Settings > API",
+      "2. Click 'Create key' under Personal API keys",
+      "3. Give it a descriptive label",
+      "4. Copy the key (shown only once)",
+      "5. Set: export LINEAR_API_KEY='lin_api_xxxxx'"
+    ],
+    "test_command": "curl -H 'Authorization: $LINEAR_API_KEY' https://api.linear.app/graphql -d '{\"query\": \"{ viewer { id name } }\"}'",
+    "guide": "guides/LINEAR_WORKFLOW.md"
+  },
+
+  "recommended_agents": [
+    "Web Product-Discovery Agent",
+    "Release Manager Agent",
+    "Technical Debt Agent",
+    "Bug Hunter Agent"
+  ],
+
+  "example_prompts": [
+    "Create a bug issue for the checkout flow crash",
+    "What issues are in the current cycle?",
+    "Move ENG-123 to 'In Review' and assign to John",
+    "Show me all high priority bugs without an assignee",
+    "What's the progress on Project Alpha?"
+  ],
+
+  "issue_states": [
+    "Backlog",
+    "Todo",
+    "In Progress",
+    "In Review",
+    "Done",
+    "Canceled"
+  ],
+
+  "priority_levels": {
+    "0": "No priority",
+    "1": "Urgent",
+    "2": "High",
+    "3": "Medium",
+    "4": "Low"
+  },
+
+  "filters": {
+    "my_issues": "assignee:@me",
+    "bugs": "label:bug",
+    "current_cycle": "cycle:current",
+    "high_priority": "priority:1,2",
+    "no_assignee": "assignee:none"
+  }
+}
