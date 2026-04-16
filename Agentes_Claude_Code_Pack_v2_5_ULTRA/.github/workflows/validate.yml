@@ -1,0 +1,170 @@
+name: Validate Agents
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'agents/**'
+      - 'index.json'
+      - 'scripts/validate.js'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'agents/**'
+      - 'index.json'
+      - 'scripts/validate.js'
+
+jobs:
+  validate:
+    name: Validate Agent Catalog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run validation
+        run: node scripts/validate.js
+
+      - name: Run validation with verbose
+        if: failure()
+        run: node scripts/validate.js --verbose
+
+  count-agents:
+    name: Report Agent Count
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Count agents
+        run: |
+          echo "## Agent Catalog Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Count total agents
+          TOTAL=$(find agents -name "*.txt" -type f | wc -l)
+          echo "**Total agent files:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Count by category
+          echo "### By Category" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+
+          for dir in agents/*/; do
+            if [ -d "$dir" ]; then
+              category=$(basename "$dir")
+              count=$(find "$dir" -name "*.txt" -type f | wc -l)
+              echo "| $category | $count |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  check-references:
+    name: Check Cross-References
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for broken references
+        run: |
+          # Extract all agent names
+          echo "Extracting agent names..."
+          find agents -name "*.txt" -type f -exec basename {} .txt \; | sort > /tmp/agent_names.txt
+
+          echo "Found $(wc -l < /tmp/agent_names.txt) agents"
+
+          # Check COORDINA CON sections for references
+          echo "Checking cross-references..."
+
+          broken=0
+          while IFS= read -r file; do
+            if grep -q "COORDINA CON" "$file"; then
+              # Extract references (lines starting with -)
+              grep -A 50 "COORDINA CON" "$file" | grep "^-" | while read -r line; do
+                # Extract agent name (before the colon)
+                ref=$(echo "$line" | sed 's/^- *//' | cut -d':' -f1 | sed 's/ *$//')
+                if [ -n "$ref" ] && echo "$ref" | grep -q "Agent"; then
+                  # Check if reference exists
+                  if ! grep -qi "^${ref}$" /tmp/agent_names.txt; then
+                    echo "⚠️ Broken reference in $file: $ref"
+                    broken=$((broken + 1))
+                  fi
+                fi
+              done
+            fi
+          done < <(find agents -name "*.txt" -type f)
+
+          if [ $broken -gt 0 ]; then
+            echo "::warning::Found $broken broken references"
+          else
+            echo "✅ All cross-references are valid"
+          fi
+
+  lint-format:
+    name: Check Format Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for required sections
+        run: |
+          required_sections=("MISIÓN" "DEBE HACER" "NO DEBE HACER" "DEFINICIÓN DE DONE")
+          missing=0
+
+          for file in agents/*/*.txt; do
+            if [ -f "$file" ]; then
+              for section in "${required_sections[@]}"; do
+                if ! grep -q "^${section}$" "$file"; then
+                  echo "⚠️ Missing '$section' in $file"
+                  missing=$((missing + 1))
+                fi
+              done
+            fi
+          done
+
+          # Exclude global folder from strict checking
+          if [ $missing -gt 0 ]; then
+            echo "::warning::Found $missing missing required sections"
+          else
+            echo "✅ All required sections present"
+          fi
+
+      - name: Check file naming convention
+        run: |
+          invalid=0
+
+          for file in agents/*/*.txt; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file" .txt)
+              # Check if ends with "Agent" (except for special files)
+              if [[ ! "$filename" =~ Agent$ ]] && [[ ! "$filename" =~ ^(index|Global).*$ ]]; then
+                echo "⚠️ Invalid naming: $file (should end with 'Agent')"
+                invalid=$((invalid + 1))
+              fi
+            fi
+          done
+
+          if [ $invalid -gt 0 ]; then
+            echo "::warning::Found $invalid files with invalid naming"
+          else
+            echo "✅ All files follow naming convention"
+          fi

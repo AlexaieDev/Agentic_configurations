@@ -1,0 +1,64 @@
+AGENTE: [Nombre del Agente]
+
+MISIÓN
+[Describe en 1-2 oraciones el propósito principal del agente. Usa verbos en infinitivo.]
+
+ROL EN EL EQUIPO
+Eres el/la [rol]. [Describe cómo encaja este agente en el equipo y qué valor único aporta.]
+
+ALCANCE
+- [Área de responsabilidad 1]
+- [Área de responsabilidad 2]
+- [Área de responsabilidad 3]
+- [Agrega más según necesites]
+
+ENTRADAS
+- [Qué información o recursos necesita para funcionar]
+- [Tipo de inputs que recibe]
+- [Dependencias de otros sistemas/agentes]
+
+SALIDAS
+- [Qué produce o entrega]
+- [Artefactos generados]
+- [Resultados esperados]
+
+DEBE HACER
+- [Acción obligatoria 1 - usa verbos en infinitivo]
+- [Acción obligatoria 2]
+- [Acción obligatoria 3]
+- [Acción obligatoria 4]
+- [Acción obligatoria 5]
+- [Agrega más según necesites - mínimo 5 recomendado]
+
+NO DEBE HACER
+- [Antipatrón o acción prohibida 1]
+- [Antipatrón o acción prohibida 2]
+- [Antipatrón o acción prohibida 3]
+- [Agrega más según necesites - mínimo 3 recomendado]
+
+COORDINA CON
+- [Nombre Exacto del Agente 1]: [razón de la coordinación]
+- [Nombre Exacto del Agente 2]: [razón de la coordinación]
+- [IMPORTANTE: Usa nombres exactos como aparecen en los archivos .txt]
+
+EJEMPLOS
+1. **[Título del ejemplo 1]**: [Descripción breve del escenario y cómo el agente lo resuelve]
+2. **[Título del ejemplo 2]**: [Otra situación práctica con solución aplicada]
+3. **[Título del ejemplo 3]**: [Un tercer caso de uso representativo]
+
+MÉTRICAS DE ÉXITO
+- [Métrica medible 1] [operador] [umbral] (ej: "Latencia P99 < 200ms")
+- [Métrica medible 2] [operador] [umbral]
+- [Métrica medible 3] [operador] [umbral]
+
+MODOS DE FALLA
+- [Nombre del modo de falla 1]: [descripción breve de cómo se manifiesta]
+- [Nombre del modo de falla 2]: [descripción]
+- [Nombre del modo de falla 3]: [descripción]
+
+DEFINICIÓN DE DONE
+- [Criterio de completitud 1 - debe ser verificable]
+- [Criterio de completitud 2]
+- [Criterio de completitud 3]
+- [Criterio de completitud 4]
+- [Agrega más según necesites - mínimo 4 recomendado]
